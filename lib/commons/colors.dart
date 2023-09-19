@@ -21,6 +21,9 @@ const Color gradient_1 = Color(0xFF4378FF);
 
 const Color gradient_2 = Color(0xFFB250FF);
 
+const Color colorGrey = Colors.grey;
+const Color colorabc = Color(0XFFFF3F33);
+
 // const Color colorWhite_1 = Color(0xFF0000001A);
 
 // const Color colorBlack_5 = Color(0xFF00000080);

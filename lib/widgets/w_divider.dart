@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 
-
-// ignore: must_be_immutable
-class WSpacer extends StatelessWidget {
+class WDivider extends StatelessWidget {
   double? height = 5;
   double? width = 0;
+  EdgeInsets? margin;
   Color? color;
-  WSpacer({super.key, this.height = 5, this.width = 0, this.color});
+  WDivider({super.key, this.height = 5, this.width = 0, this.color,this.margin});
 
   @override
   Widget build(BuildContext context) {
@@ -14,6 +13,7 @@ class WSpacer extends StatelessWidget {
       height: height,
       width: width,
       color: color,
+      margin:margin,
     );
   }
 }

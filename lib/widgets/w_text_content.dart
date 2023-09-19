@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:photo_to_pdf/commons/constants.dart';
 
-class WBuildTextContent extends StatelessWidget {
+// ignore: must_be_immutable
+class WTextContent extends StatelessWidget {
   final String value;
   double? textSize;
   TextAlign? textAlign;
@@ -8,12 +10,12 @@ class WBuildTextContent extends StatelessWidget {
   double? textLineHeight;
   FontWeight? textFontWeight;
   Function()? onTap;
-  WBuildTextContent(
+  WTextContent(
       {required this.value,
       super.key,
       this.textAlign,
       this.textColor,
-      this.textFontWeight,
+      this.textFontWeight = FontWeight.w700,
       this.textLineHeight,
       this.textSize,
       this.onTap});
@@ -30,6 +32,7 @@ class WBuildTextContent extends StatelessWidget {
                   fontSize: textSize,
                   color: textColor,
                   fontWeight: textFontWeight,
+                  fontFamily: myCustomFont,
                   height: textLineHeight != null && textSize != null
                       ? (textLineHeight! / textSize!)
                       : null),
@@ -42,6 +45,7 @@ class WBuildTextContent extends StatelessWidget {
                 fontSize: textSize,
                 color: textColor,
                 fontWeight: textFontWeight,
+                fontFamily: myCustomFont,
                 height: textLineHeight != null && textSize != null
                     ? (textLineHeight! / textSize!)
                     : null),

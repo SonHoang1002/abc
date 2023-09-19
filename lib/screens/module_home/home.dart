@@ -1,9 +1,13 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/providers/project_provider.dart';
+import 'package:photo_to_pdf/screens/module_editor/editor.dart';
+import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/w_project_item.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
@@ -13,6 +17,7 @@ final testImageList = [
   "${pathPrefixImage}test_image_1.png",
   "${pathPrefixImage}test_image_2.png",
   "${pathPrefixImage}test_image_3.png",
+  "${pathPrefixImage}test_image_4.png",
 ];
 
 class HomePage extends flutter_riverpod.ConsumerStatefulWidget {
@@ -31,6 +36,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
   int _naviSelected = 0;
   late bool _galleryIsEmpty;
   late bool _isFocusProjectList;
+  late bool _isFocusProjectListBottom;
 
   @override
   void initState() {
@@ -39,6 +45,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
       ref.read(projectControllerProvider.notifier).setProject(testImageList);
     });
     _isFocusProjectList = false;
+    _isFocusProjectListBottom = true;
     _galleryIsEmpty = false;
   }
 
@@ -50,103 +57,105 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
             ? null
             : AppBar(
                 centerTitle: true,
-                title: WBuildTextContent(
+                title: WTextContent(
                   value: "All Files",
                   textSize: 15,
-                  textFontWeight: FontWeight.w700,
                   textLineHeight: 17.9,
                   textColor: Theme.of(context).textTheme.bodyLarge!.color,
                 ),
                 shadowColor: transparent,
                 actions: [
-                  Center(
-                    child: WBuildTextContent(
-                        value: "Done",
-                        textColor: Theme.of(context).textTheme.bodyLarge!.color,
-                        textSize: 15,
-                        textLineHeight: 17.9,
-                        textFontWeight: FontWeight.w700,
-                        onTap: () {
-                          setState(
-                            () {
-                              _isFocusProjectList = false;
-                            },
-                          );
-                        }),
-                  )
+                  _isFocusProjectList
+                      ? Container(
+                          alignment: Alignment.center,
+                          margin: const EdgeInsets.only(right: 10),
+                          child: WTextContent(
+                              value: "Done",
+                              textColor: colorBlue,
+                              textSize: 15,
+                              textLineHeight: 17.9,
+                              onTap: () {
+                                setState(
+                                  () {
+                                    _isFocusProjectList = false;
+                                  },
+                                );
+                              }),
+                        )
+                      : const SizedBox()
                 ],
                 backgroundColor: grey.shade100),
-        body: Stack(
-          alignment: _galleryIsEmpty
-              ? Alignment.center
-              : AlignmentDirectional.topStart,
-          children: [
-            _galleryIsEmpty
-                ? Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      WBuildTextContent(
-                          value: PHOTO_TO_PDF,
-                          textAlign: TextAlign.center,
-                          textSize: 32,
-                          textFontWeight: FontWeight.w700,
-                          textLineHeight: 38.19),
-                      WBuildSpacer(height: 10),
-                      WBuildTextContent(
-                          value: CONTENT_PHOTO_TO_PDF,
-                          textAlign: TextAlign.center,
-                          textSize: 14,
-                          textFontWeight: FontWeight.w500,
-                          textLineHeight: 16.71),
-                      WBuildSpacer(height: 20),
-                      _buildButtonSelect()
-                    ],
-                  )
-                : ReorderableGridView.count(
-                    padding: const EdgeInsets.only(top: 10),
-                    shrinkWrap: true,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                    crossAxisCount: 2,
-                    onReorder: (oldIndex, newIndex) {
-                      setState(() {
-                        final tempListProject = listProject;
-                        final element = tempListProject.removeAt(oldIndex);
-                        tempListProject.insert(newIndex, element);
-                        ref
-                            .read(projectControllerProvider.notifier)
-                            .setProject(tempListProject);
-                      });
-                    },
-                    onDragStart: (dragIndex) {
-                      setState(() {
-                        _isFocusProjectList = true;
-                      });
-                    },
-                    children: listProject.map((e) {
-                      final index = listProject.indexOf(e);
-                      return WProjectItem(
-                        key: ValueKey(listProject[index]),
-                        src: listProject[index],
-                        isFocusByLongPress: _isFocusProjectList,
-                        index: index,
-                      );
-                    }).toList(),
-                  ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [const SizedBox(), _buildBottomNavigatorButtons()],
-            )
-          ],
+        body: SafeArea(
+          child: Stack(
+            alignment: _galleryIsEmpty
+                ? Alignment.center
+                : AlignmentDirectional.topStart,
+            children: [
+              _galleryIsEmpty
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        WTextContent(
+                            value: PHOTO_TO_PDF,
+                            textAlign: TextAlign.center,
+                            textSize: 32,
+                            textLineHeight: 38.19),
+                        WSpacer(height: 10),
+                        WTextContent(
+                            value: CONTENT_PHOTO_TO_PDF,
+                            textAlign: TextAlign.center,
+                            textSize: 14,
+                            textFontWeight: FontWeight.w500,
+                            textLineHeight: 16.71),
+                        WSpacer(height: 20),
+                        WButtonElevated(
+                          message: "Select Photos",
+                          height: 60,
+                          width: 255,
+                          backgroundColor: colorBlue,
+                          onPressed: () {},
+                        )
+                      ],
+                    )
+                  : ReorderableGridView.count(
+                      padding: const EdgeInsets.only(top: 10),
+                      shrinkWrap: true,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      crossAxisCount: 2,
+                      onReorder: (oldIndex, newIndex) {
+                        setState(() {
+                          final tempListProject = listProject;
+                          final element = tempListProject.removeAt(oldIndex);
+                          tempListProject.insert(newIndex, element);
+                          ref
+                              .read(projectControllerProvider.notifier)
+                              .setProject(tempListProject);
+                        });
+                      },
+                      onDragStart: (dragIndex) {
+                        setState(() {
+                          _isFocusProjectList = true;
+                        });
+                      },
+                      children: listProject.map((e) {
+                        final index = listProject.indexOf(e);
+                        return WProjectItemHome(
+                          key: ValueKey(listProject[index]),
+                          src: listProject[index],
+                          isFocusByLongPress: _isFocusProjectList,
+                          index: index,
+                        );
+                      }).toList(),
+                    ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [const SizedBox(), _buildBottomNavigatorButtons()],
+              )
+            ],
+          ),
         ));
-  }
-
-  Widget buildItem(String text) {
-    return Card(
-      key: ValueKey(text),
-      child: Text(text),
-    );
   }
 
   Widget _buildBottomNavigatorButtons() {
@@ -181,30 +190,6 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
     );
   }
 
-  Widget _buildButtonSelect() {
-    return ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.only(bottom: 10),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            shadowColor: colorLightBlue,
-            elevation: 2,
-            backgroundColor: colorBlue),
-        onPressed: () {},
-        child: SizedBox(
-          width: 255,
-          height: 60,
-          // decoration: BoxDecoration(borderRadius: BorderRadius.circular(60)),
-          child: Center(
-            child: WBuildTextContent(
-                value: "Select Photos",
-                textFontWeight: FontWeight.w700,
-                textSize: 15,
-                textLineHeight: 34),
-          ),
-        ));
-  }
-
   Widget _buildButtonNavi(
       {String? iconValue,
       String? name,
@@ -228,14 +213,14 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                   )
                 : const SizedBox(),
             name != null
-                ? WBuildTextContent(
+                ? WTextContent(
                     value: name,
                     textSize: 13,
                     textColor: isSelected == true
                         ? colorBlue
                         : colorBlack.withOpacity(0.8),
                     textLineHeight: 15.51,
-                    textFontWeight: FontWeight.w700)
+                  )
                 : const SizedBox()
           ],
         ),
@@ -249,6 +234,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
         setState(() {
           _naviSelected = 1;
         });
+        _buildBottomSheetCreatePdf();
       },
       style: ElevatedButton.styleFrom(
         shape: const CircleBorder(),
@@ -278,5 +264,173 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
         ),
       ),
     );
+  }
+
+  _buildBottomSheetCreatePdf() {
+    final listProject = ref.watch(projectControllerProvider).listProject;
+    showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(builder: (context, setStatefull) {
+            return Container(
+                height: MediaQuery.sizeOf(context).height * 0.95,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20.0),
+                    topRight: Radius.circular(20.0),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      height: 50,
+                      alignment: Alignment.center,
+                      margin: const EdgeInsets.only(bottom: 7),
+                      child: Center(
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.only(top: 10),
+                              child: WTextContent(
+                                value: "Create PDF",
+                                textSize: 14,
+                                textLineHeight: 16.71,
+                              ),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const SizedBox(),
+                                GestureDetector(
+                                  onTap: () {
+                                    popNavigator(context);
+                                  },
+                                  child: Container(
+                                      height: 30,
+                                      width: 30,
+                                      margin: const EdgeInsets.only(
+                                          right: 10, top: 10),
+                                      child: Image.asset(
+                                          "${pathPrefixIcon}icon_close.png")),
+                                )
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // show available project list
+                    Expanded(
+                      child: Container(
+                        color: colorGrey.withOpacity(0.1),
+                        child: ReorderableGridView.count(
+                          padding: const EdgeInsets.only(
+                              top: 10, left: 10, right: 10),
+                          shrinkWrap: true,
+                          crossAxisSpacing: 5,
+                          mainAxisSpacing: 5,
+                          crossAxisCount: 3,
+                          onReorder: (oldIndex, newIndex) {
+                            setState(() {
+                              final tempListProject = listProject;
+                              final element =
+                                  tempListProject.removeAt(oldIndex);
+                              tempListProject.insert(newIndex, element);
+                              ref
+                                  .read(projectControllerProvider.notifier)
+                                  .setProject(tempListProject);
+                            });
+                            setStatefull(() {});
+                          },
+                          onDragStart: (dragIndex) {
+                            setStatefull(() {
+                              _isFocusProjectListBottom = true;
+                            });
+                          },
+                          children: listProject.map((e) {
+                            final index = listProject.indexOf(e);
+                            return WProjectItemHomeBottom(
+                              key: ValueKey(listProject[index]),
+                              src: listProject[index],
+                              isFocusByLongPress: _isFocusProjectListBottom,
+                              index: index,
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                    // buttons
+                    Container(
+                      height: 200,
+                      padding: const EdgeInsets.only(top: 10),
+                      color: colorWhite,
+                      child: Column(
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              WSpacer(
+                                width: 10,
+                              ),
+                              Flexible(
+                                child: WButtonFilled(
+                                  message: "Import Photos",
+                                  height: 60,
+                                  mediaSize: 20,
+                                  textColor: colorRed,
+                                  mediaColor: colorRed,
+                                  mediaValue:
+                                      "${pathPrefixIcon}icon_photos.png",
+                                  backgroundColor:
+                                      const Color.fromRGBO(255, 63, 51, 0.1),
+                                  onPressed: () {},
+                                ),
+                              ),
+                              WSpacer(
+                                width: 10,
+                              ),
+                              Flexible(
+                                child: WButtonFilled(
+                                  message: "Import Files",
+                                  height: 60,
+                                  mediaSize: 20,
+                                  textColor: colorBlue,
+                                  mediaColor: colorBlue,
+                                  backgroundColor:
+                                      const Color.fromRGBO(22, 115, 255, 0.08),
+                                  mediaValue: "${pathPrefixIcon}icon_files.png",
+                                  onPressed: () {},
+                                ),
+                              ),
+                              WSpacer(
+                                width: 10,
+                              )
+                            ],
+                          ),
+                          WSpacer(
+                            height: 20,
+                          ),
+                          WButtonElevated(
+                            message: "Continue",
+                            height: 60,
+                            width: MediaQuery.sizeOf(context).width * 0.85,
+                            backgroundColor: colorBlue,
+                            onPressed: () {
+                              popNavigator(context);
+                              pushNavigator(context, const Editor());
+                            },
+                          )
+                        ],
+                      ),
+                    )
+                  ],
+                ));
+          });
+        },
+        isScrollControlled: true,
+        // enableDrag: false,
+        backgroundColor: transparent);
   }
 }
