@@ -1,0 +1,35 @@
+GridView.builder(
+                    padding: const EdgeInsets.only(top: 20),
+                    shrinkWrap: true,
+                    itemCount: listProject.length,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2),
+                    itemBuilder: (context, index) {
+                      return WProjectItem(
+                        src: listProject[index],
+                        isFocusByLongPress: _isFocusProjectList,
+                        index: index,
+                        onLongPress: () {
+                          setState(() {
+                            _isFocusProjectList = true;
+                          });
+                        },
+                      );
+                    },
+                  ),
+
+
+                   // Wrap(
+        //     children: [
+        //       "${pathPrefixImage}test_image_1.png",
+        //       "${pathPrefixImage}test_image_2.png",
+        //       "${pathPrefixImage}test_image_3.png",
+        //       "${pathPrefixImage}test_image_4.png",
+        //     ]
+        //         .map<Widget>((e) => WProjectItem(
+        //               src: e,
+        //               isFocusByLongPress: false,
+        //             ))
+        //         .toList(),
+        //   )
