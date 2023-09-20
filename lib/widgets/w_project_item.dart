@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/providers/project_provider.dart';
+import 'package:photo_to_pdf/screens/module_editor/preview.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 
@@ -24,67 +26,72 @@ class WProjectItemHome extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      padding: const EdgeInsets.all(3),
-      child: Column(
-        children: [
-          SizedBox(
-            width: 160,
-            height: 160,
-            child: Center(
-              child: Stack(
-                children: [
-                  Container(
-                    padding:
-                        const EdgeInsets.only(top: 12, left: 12, right: 12),
-                    child: Image.asset(
-                      src,
+    return GestureDetector(
+      onTap: () {
+        pushCustomMaterialPageRoute(context, const Preview());
+      },
+      child: Container(
+        padding: const EdgeInsets.all(3),
+        child: Column(
+          children: [
+            SizedBox(
+              width: 160,
+              height: 160,
+              child: Center(
+                child: Stack(
+                  children: [
+                    Container(
+                      padding:
+                          const EdgeInsets.only(top: 12, left: 12, right: 12),
+                      child: Image.asset(
+                        src,
+                      ),
                     ),
-                  ),
-                  isFocusByLongPress
-                      ? Positioned(
-                          top: -10,
-                          left: -10,
-                          child: GestureDetector(
-                            onTap: () {
-                              final listProject = ref
-                                  .watch(projectControllerProvider)
-                                  .listProject;
-                              listProject.removeAt(index);
-                              ref
-                                  .read(projectControllerProvider.notifier)
-                                  .setProject(listProject);
-                            },
-                            child: Container(
-                              alignment: Alignment.topLeft,
-                              child: Image.asset(
-                                "${pathPrefixIcon}icon_remove_1.png",
-                                width: 50,
-                                height: 50,
+                    isFocusByLongPress
+                        ? Positioned(
+                            top: -10,
+                            left: -10,
+                            child: GestureDetector(
+                              onTap: () {
+                                final listProject = ref
+                                    .watch(projectControllerProvider)
+                                    .listProject;
+                                listProject.removeAt(index);
+                                ref
+                                    .read(projectControllerProvider.notifier)
+                                    .setProject(listProject);
+                              },
+                              child: Container(
+                                alignment: Alignment.topLeft,
+                                child: Image.asset(
+                                  "${pathPrefixIcon}icon_remove_1.png",
+                                  width: 50,
+                                  height: 50,
+                                ),
                               ),
-                            ),
-                          ))
-                      : const SizedBox(),
-                ],
+                            ))
+                        : const SizedBox(),
+                  ],
+                ),
               ),
             ),
-          ),
-          isHaveTitle!
-              ? Column(
-                  children: [
-                    WSpacer(
-                      height: 10,
-                    ),
-                    WTextContent(
-                      value: "Project ${index + 1}",
-                      textFontWeight: FontWeight.w600,
-                      textLineHeight: 14.32,
-                      textSize: 12,
-                    ),
-                  ],
-                )
-              : const SizedBox()
-        ],
+            isHaveTitle!
+                ? Column(
+                    children: [
+                      WSpacer(
+                        height: 10,
+                      ),
+                      WTextContent(
+                        value: "Project ${index + 1}",
+                        textFontWeight: FontWeight.w600,
+                        textLineHeight: 14.32,
+                        textSize: 12,
+                      ),
+                    ],
+                  )
+                : const SizedBox()
+          ],
+        ),
       ),
     );
   }
@@ -194,66 +201,71 @@ class WProjectItemEditor extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      padding: const EdgeInsets.all(3),
-      height: 180,
-      constraints: const BoxConstraints(minHeight: 180),
-      child: Column(
-        children: [
-          Container(
-            width: 125,
-            height: 125,
-            color: colorWhite,
-            child: Center(
-              child: Stack(
-                children: [
-                  Container(
-                    padding:
-                        const EdgeInsets.only(top: 12, left: 12, right: 12),
-                    constraints: const BoxConstraints(maxHeight: 110),
-                    child: Image.asset(
-                      src,
+    return GestureDetector(
+      onTap: () {
+        pushCustomMaterialPageRoute(context, const Preview());
+      },
+      child: Container(
+        padding: const EdgeInsets.all(3),
+        height: 180,
+        constraints: const BoxConstraints(minHeight: 180),
+        child: Column(
+          children: [
+            Container(
+              width: 125,
+              height: 125,
+              color: colorWhite,
+              child: Center(
+                child: Stack(
+                  children: [
+                    Container(
+                      padding:
+                          const EdgeInsets.only(top: 12, left: 12, right: 12),
+                      constraints: const BoxConstraints(maxHeight: 110),
+                      child: Image.asset(
+                        src,
+                      ),
                     ),
-                  ),
-                  isFocusByLongPress
-                      ? Positioned(
-                          top: -10,
-                          left: -10,
-                          child: GestureDetector(
-                            onTap: () {
-                              final listProject = ref
-                                  .watch(projectControllerProvider)
-                                  .listProject;
-                              listProject.removeAt(index);
-                              ref
-                                  .read(projectControllerProvider.notifier)
-                                  .setProject(listProject);
-                            },
-                            child: Container(
-                              alignment: Alignment.topLeft,
-                              child: Image.asset(
-                                "${pathPrefixIcon}icon_remove_1.png",
-                                width: 50,
-                                height: 50,
+                    isFocusByLongPress
+                        ? Positioned(
+                            top: -10,
+                            left: -10,
+                            child: GestureDetector(
+                              onTap: () {
+                                final listProject = ref
+                                    .watch(projectControllerProvider)
+                                    .listProject;
+                                listProject.removeAt(index);
+                                ref
+                                    .read(projectControllerProvider.notifier)
+                                    .setProject(listProject);
+                              },
+                              child: Container(
+                                alignment: Alignment.topLeft,
+                                child: Image.asset(
+                                  "${pathPrefixIcon}icon_remove_1.png",
+                                  width: 50,
+                                  height: 50,
+                                ),
                               ),
-                            ),
-                          ))
-                      : const SizedBox(),
-                ],
+                            ))
+                        : const SizedBox(),
+                  ],
+                ),
               ),
             ),
-          ),
-          WSpacer(
-            height: 10,
-          ),
-          WTextContent(
-            value: title ?? "",
-            textFontWeight: FontWeight.w600,
-            textLineHeight: 14.32,
-            textSize: 12,
-            textColor: const Color.fromRGBO(0, 0, 0, 0.5),
-          ),
-        ],
+            WSpacer(
+              height: 10,
+            ),
+            WTextContent(
+              value: title ?? "",
+              textFontWeight: FontWeight.w600,
+              textLineHeight: 14.32,
+              textSize: 12,
+              textColor: const Color.fromRGBO(0, 0, 0, 0.5),
+            ),
+          ],
+        ),
       ),
     );
   }

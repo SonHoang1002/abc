@@ -39,6 +39,9 @@ dependencies:
   provider: ^6.0.5
   flutter_riverpod: ^2.4.0
   reorderable_grid_view: ^2.2.7
+  carousel_slider: ^4.2.1
+  font_awesome_flutter: ^10.5.0
+  dropdown_button2: ^2.3.9
 
 dev_dependencies:
   flutter_test:

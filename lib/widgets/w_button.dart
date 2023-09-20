@@ -122,8 +122,8 @@ class WButtonFilled extends StatelessWidget {
     return FilledButton(
         style: FilledButton.styleFrom(
             padding: const EdgeInsets.only(bottom: 10),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(borderRadius?? 20)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(borderRadius ?? 20)),
             backgroundColor: backgroundColor),
         onPressed: onPressed,
         child: SizedBox(
