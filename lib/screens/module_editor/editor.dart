@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
 import 'package:photo_to_pdf/commons/colors.dart';
@@ -31,7 +32,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
 
   late List _listProject;
   late Size _size;
-  late bool _pageSizeIsPortrait = false;
+  late bool _pageSizeIsPortrait = true;
   FocusNode _widthFocusNode = FocusNode();
   FocusNode _heightFocusNode = FocusNode();
   FocusNode _presetFocusNode = FocusNode();
@@ -41,16 +42,30 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   late dynamic _layoutConfig;
   late dynamic _photosConfig;
   late dynamic _coverConfig;
+  int? _segmentCurrentIndex;
+  late List _listLayoutStatus;
+
+  // layout config keys
+  final GlobalKey _keyResizeMode = GlobalKey();
+  final GlobalKey _keyAlignment = GlobalKey();
+  final GlobalKey _keyBackground = GlobalKey();
+  final GlobalKey _keyPadding = GlobalKey();
+  final GlobalKey _keySpacing = GlobalKey();
+
+  // layout alignment variables
+  late List<dynamic> _listAlignment;
+
+  //layout padding variables
+  late dynamic _paddingOptions;
 
   @override
   void initState() {
     super.initState();
     // Future.delayed(Duration.zero, () {
-
     _pageConfig = {
       "mediaSrc": "${pathPrefixIcon}icon_letter.png",
       "title": "Paper Size",
-      "content": PAGE_SIZES[5]
+      "content": LIST_PAGE_SIZE[5]
     };
     _layoutConfig = {
       "mediaSrc": "${pathPrefixIcon}icon_layout.png",
@@ -96,6 +111,18 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         });
       }
     });
+    _segmentCurrentIndex = 0;
+    _listLayoutStatus = LIST_LAYOUT.map((e) {
+      return {"mediaSrc": e, "isFocus": false};
+    }).toList();
+    _listLayoutStatus[0]['isFocus'] = true;
+
+    _listAlignment = LIST_ALIGNMENT.map((e) {
+      return {"mediaSrc": e['mediaSrc'], "title": e['title'], "isFocus": false};
+    }).toList();
+    _listAlignment[2]['isFocus'] = true;
+
+    _paddingOptions = PADDING_OPTIONS;
   }
 
   _tranferValuePageSize() {
@@ -110,6 +137,35 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     final height = _pageSizeHeightController.text;
     _pageSizeHeightController.text = width;
     _pageSizeWidthController.text = height;
+  }
+
+  bool _overWHValue() {
+    return (double.parse(_pageSizeHeightController.text.trim()) > 50.0 ||
+        double.parse(_pageSizeWidthController.text.trim()) > 50.0);
+  }
+
+  double _renderPreviewHeight() {
+    if (_overWHValue()) {
+      return 0;
+    }
+    return (_pageSizeIsPortrait ? 220 : 170) *
+        double.parse(_pageSizeHeightController.text.trim()) /
+        double.parse(_pageSizeWidthController.text.trim());
+  }
+
+  double _renderPreviewWidth() {
+    if (_overWHValue()) {
+      return 0;
+    }
+    return (_pageSizeIsPortrait ? 170 : 220) *
+        double.parse(_pageSizeWidthController.text.trim()) /
+        double.parse(_pageSizeHeightController.text.trim());
+  }
+
+  void _resetLayoutSelections() {
+    _listLayoutStatus = _listLayoutStatus = LIST_LAYOUT.map((e) {
+      return {"mediaSrc": e, "isFocus": false};
+    }).toList();
   }
 
   @override
@@ -222,10 +278,14 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                               width: 10,
                             ),
                             buildSelection(
-                                context,
-                                _layoutConfig['mediaSrc'],
-                                _layoutConfig['title'],
-                                _layoutConfig['content']),
+                              context,
+                              _layoutConfig['mediaSrc'],
+                              _layoutConfig['title'],
+                              _layoutConfig['content'],
+                              onTap: () {
+                                _showBottomSheetLayout();
+                              },
+                            ),
                           ],
                         ),
                         WSpacer(
@@ -291,7 +351,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         ));
   }
 
-  _showBottomSheetPageSize() {
+  _showBottomSheetLayout() {
     showModalBottomSheet(
         context: context,
         builder: (context) {
@@ -300,214 +360,462 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                 bottom: MediaQuery.of(context).viewInsets.bottom >= 100
                     ? MediaQuery.of(context).viewInsets.bottom - 100
                     : 0.0),
-            child: SingleChildScrollView(
-              child: StatefulBuilder(builder: (context, setStatefull) {
-                return Container(
-                  height: _size.height * 0.55,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(20.0),
-                      topRight: Radius.circular(20.0),
-                    ),
+            child: StatefulBuilder(builder: (context, setStatefull) {
+              return Container(
+                height: _size.height * 0.95,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20.0),
+                    topRight: Radius.circular(20.0),
                   ),
-                  child: Stack(
-                    alignment: Alignment.topCenter,
-                    children: [
-                      Column(
-                        children: [
-                          Container(
-                            margin: const EdgeInsets.only(top: 20),
-                            child: WTextContent(
-                              value: "Paper Size",
-                              textSize: 14,
-                              textLineHeight: 16.71,
-                            ),
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.only(top: 20),
+                      child: WTextContent(
+                        value: "Layout",
+                        textSize: 14,
+                        textLineHeight: 16.71,
+                      ),
+                    ),
+                    WSpacer(
+                      height: 20,
+                    ),
+                    buildSegmentControl(
+                      groupValue: _segmentCurrentIndex,
+                      onValueChanged: (value) {
+                        setState(() {
+                          _segmentCurrentIndex = value;
+                        });
+                        setStatefull(() {});
+                      },
+                    ),
+                    Expanded(
+                      child: Container(
+                        height: _size.height * 404 / 791 * 0.9,
+                        decoration: BoxDecoration(
+                            color: const Color.fromRGBO(0, 0, 0, 0.03),
+                            borderRadius: BorderRadius.circular(10)),
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 20),
+                        child: SingleChildScrollView(
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: _listLayoutStatus
+                                        .sublist(0, 2)
+                                        .toList()
+                                        .map(
+                                      (e) {
+                                        final index =
+                                            _listLayoutStatus.indexOf(e);
+                                        return Container(
+                                          margin: const EdgeInsets.symmetric(
+                                              horizontal: 10),
+                                          child: buildLayoutWidget(
+                                            context: context,
+                                            mediaSrc: e['mediaSrc'],
+                                            title: "Layout ${index + 1}",
+                                            isFocus: e['isFocus'],
+                                            indexLayoutItem: index,
+                                            onTap: () {
+                                              _resetLayoutSelections();
+                                              setState(() {
+                                                _listLayoutStatus[index]
+                                                    ['isFocus'] = true;
+                                              });
+                                              setStatefull(() {});
+                                            },
+                                          ),
+                                        );
+                                      },
+                                    ).toList()),
+                                WSpacer(
+                                  height: 20,
+                                ),
+                                Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: _listLayoutStatus
+                                        .sublist(2, _listLayoutStatus.length)
+                                        .toList()
+                                        .map(
+                                      (e) {
+                                        final index =
+                                            _listLayoutStatus.indexOf(e);
+                                        return Container(
+                                          margin: const EdgeInsets.symmetric(
+                                              horizontal: 10),
+                                          child: buildLayoutWidget(
+                                            context: context,
+                                            mediaSrc: e['mediaSrc'],
+                                            title: "Layout ${index + 1}",
+                                            isFocus: e['isFocus'],
+                                            indexLayoutItem: index,
+                                            onTap: () {
+                                              setState(() {
+                                                _resetLayoutSelections();
+                                                _listLayoutStatus[index]
+                                                    ['isFocus'] = true;
+                                              });
+                                              setStatefull(() {});
+                                            },
+                                          ),
+                                        );
+                                      },
+                                    ).toList())
+                              ],
+                            )),
+                      ),
+                    ),
+                    _buildLayoutConfigs(() {
+                      setStatefull(() {});
+                    }),
+                    buildBottomButton(context)
+                  ],
+                ),
+              );
+            }),
+          );
+        },
+        isScrollControlled: true,
+        backgroundColor: transparent);
+  }
+
+  Widget _buildLayoutConfigs(Function rerenderFunction) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Column(
+        children: [
+          Flex(
+            direction: Axis.horizontal,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Flexible(
+                child: buildLayoutConfigItem(
+                    key: _keyResizeMode,
+                    title: "Resize Mode",
+                    content: "Aspect Fit",
+                    width: _size.width * 0.3,
+                    onTap: () {
+                      final renderBoxResize = _keyResizeMode.currentContext
+                          ?.findRenderObject() as RenderBox;
+                      final widgetPosition =
+                          renderBoxResize.localToGlobal(Offset.zero);
+                      showLayoutDialogWidthOffset(
+                          context: context,
+                          offset: widgetPosition,
+                          dialogWidget: buildResizeModeDialog(context, [
+                            () {
+                              popNavigator(context);
+                            },
+                            () {
+                              popNavigator(context);
+                            },
+                            () {
+                              popNavigator(context);
+                            }
+                          ]));
+                    }),
+              ),
+              Flexible(
+                  child: buildLayoutConfigItem(
+                      title: "Alignment",
+                      content: _listAlignment
+                          .where((element) => element['isFocus'] == true)
+                          .toList()
+                          .first['title'],
+                      width: _size.width * 0.3,
+                      key: _keyAlignment,
+                      onTap: () {
+                        final renderBoxAlignment = _keyAlignment.currentContext
+                            ?.findRenderObject() as RenderBox;
+                        final widgetOffset =
+                            renderBoxAlignment.localToGlobal(Offset.zero);
+                        showLayoutDialogWidthOffset(
+                            context: context,
+                            offset: Offset(_size.width * (1 - (200 / 390)) / 2,
+                                widgetOffset.dy),
+                            dialogWidget:
+                                buildAlignmentDialog(context, _listAlignment,
+                                    onSelected: (index, value) {
+                              setState(() {
+                                _listAlignment = LIST_ALIGNMENT.map((e) {
+                                  return {
+                                    "mediaSrc": e['mediaSrc'],
+                                    "title": e['title'],
+                                    "isFocus": false
+                                  };
+                                }).toList();
+                                _listAlignment[index]["isFocus"] = true;
+                              });
+                              rerenderFunction();
+                              popNavigator(context);
+                            }));
+                      })),
+              Flexible(
+                child: buildLayoutConfigItem(
+                    title: "Background",
+                    content: "White",
+                    width: _size.width * 0.3,
+                    contentWidgetColor: Colors.white),
+              ),
+            ],
+          ),
+          WSpacer(
+            height: 10,
+          ),
+          Flex(
+            direction: Axis.horizontal,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Flexible(
+                  child: buildLayoutConfigItem(
+                      title: "Padding",
+                      content: _paddingOptions['values'].join(",") +
+                          " " +
+                          _paddingOptions['unit'],
+                      width: _size.width * 0.46)),
+              Flexible(
+                child: buildLayoutConfigItem(
+                  title: "Spacing",
+                  content: "10pt,10pt",
+                  width: _size.width * 0.46,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showBottomSheetPageSize() {
+    showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return Padding(
+            padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom >= 100
+                    ? MediaQuery.of(context).viewInsets.bottom - 100
+                    : 0.0),
+            child: StatefulBuilder(builder: (context, setStatefull) {
+              return Container(
+                height: _size.height * 0.55,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20.0),
+                    topRight: Radius.circular(20.0),
+                  ),
+                ),
+                child: Stack(
+                  alignment: Alignment.topCenter,
+                  children: [
+                    Column(
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(top: 20),
+                          child: WTextContent(
+                            value: "Paper Size",
+                            textSize: 14,
+                            textLineHeight: 16.71,
                           ),
-                          Expanded(
-                              child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // page size selections
-                              Container(
-                                padding:
-                                    const EdgeInsets.only(left: 10, top: 20),
-                                child: Column(
-                                  children: [
-                                    // preset
-                                    buildPageSizePreset(
-                                      item: _pageConfig,
-                                      onTap: () {
-                                        setState(() {
-                                          _indexPageSizeSelectionWidget = 0;
-                                        });
-                                        setStatefull(() {});
-                                      },
-                                      isFocus:
-                                          _indexPageSizeSelectionWidget == 0,
-                                      onSelected: (value) {
-                                        setState(() {
-                                          _pageConfig['content'] = value;
-                                          _pageSizeWidthController.text =
-                                              (_pageConfig['content']['width'])
-                                                  .toString();
-                                          _pageSizeHeightController.text =
-                                              (_pageConfig['content']['height'])
-                                                  .toString();
-                                        });
-                                        setStatefull(() {});
-                                      },
-                                    ),
-                                    WSpacer(
-                                      height: 10,
-                                    ),
-                                    // width
-                                    buildCupertinoInput(
-                                        context: context,
-                                        controller: _pageSizeWidthController,
-                                        title: "Width",
-                                        focusNode: _widthFocusNode,
-                                        onTap: () {
-                                          if (_widthFocusNode.hasFocus) {
-                                            setState(() {
-                                              _indexPageSizeSelectionWidget = 1;
-                                            });
-                                            setStatefull(() {});
-                                          }
-                                        },
-                                        onChanged: (value) {
-                                          if (_pageSizeWidthController.text
-                                                  .trim() !=
-                                              _pageConfig['content']['width']) {
-                                            setState(() {
-                                              _pageConfig['content'] =
-                                                  PAGE_SIZES[7];
-                                            });
-                                            setStatefull(() {});
-                                          }
-                                          if (value.trim().isEmpty) {
-                                            _pageSizeWidthController.text = "1";
-                                          }
-                                        },
-                                        suffixValue: _pageConfig['content']
-                                            ['unit'],
-                                        isFocus:
-                                            _indexPageSizeSelectionWidget == 1),
-                                    WSpacer(
-                                      height: 10,
-                                    ),
-                                    // height
-                                    buildCupertinoInput(
-                                        context: context,
-                                        controller: _pageSizeHeightController,
-                                        title: "Height",
-                                        focusNode: _heightFocusNode,
-                                        onTap: () {
-                                          if (_heightFocusNode.hasFocus) {
-                                            setState(() {
-                                              _indexPageSizeSelectionWidget = 2;
-                                            });
-                                            setStatefull(() {});
-                                          }
-                                        },
-                                        onChanged: (value) {
-                                          if (_pageSizeHeightController.text
-                                                  .trim() !=
-                                              _pageConfig['content']
-                                                  ['height']) {
-                                            setState(() {
-                                              _pageConfig['content'] =
-                                                  PAGE_SIZES[7];
-                                            });
-                                            setStatefull(() {});
-                                          }
-                                          if (value.trim().isEmpty) {
-                                            _pageSizeHeightController.text =
-                                                "1";
-                                          }
-                                        },
-                                        suffixValue: _pageConfig['content']
-                                            ['unit'],
-                                        isFocus:
-                                            _indexPageSizeSelectionWidget == 2),
-                                    WSpacer(
-                                      height: 10,
-                                    ),
-                                    // orientation
-                                    _buildOrientation(() {
+                        ),
+                        Expanded(
+                            child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // page size selections
+                            Container(
+                              padding: const EdgeInsets.only(left: 10, top: 20),
+                              child: Column(
+                                children: [
+                                  // preset
+                                  buildPageSizePreset(
+                                    context: context,
+                                    item: _pageConfig,
+                                    onTap: () {
+                                      setState(() {
+                                        _indexPageSizeSelectionWidget = 0;
+                                      });
                                       setStatefull(() {});
-                                    })
+                                    },
+                                    isFocus: _indexPageSizeSelectionWidget == 0,
+                                    onSelected: (value) {
+                                      setState(() {
+                                        _pageConfig['content'] = value;
+                                        _pageSizeWidthController.text =
+                                            (_pageConfig['content']['width'])
+                                                .toString();
+                                        _pageSizeHeightController.text =
+                                            (_pageConfig['content']['height'])
+                                                .toString();
+                                      });
+                                      setStatefull(() {});
+                                    },
+                                  ),
+                                  WSpacer(
+                                    height: 10,
+                                  ),
+                                  // width
+                                  buildCupertinoInput(
+                                      context: context,
+                                      controller: _pageSizeWidthController,
+                                      title: "Width",
+                                      focusNode: _widthFocusNode,
+                                      onTap: () {
+                                        if (_widthFocusNode.hasFocus) {
+                                          setState(() {
+                                            _indexPageSizeSelectionWidget = 1;
+                                          });
+                                          setStatefull(() {});
+                                        }
+                                      },
+                                      onChanged: (value) {
+                                        if (_pageSizeWidthController.text
+                                                .trim() !=
+                                            _pageConfig['content']['width']) {
+                                          setState(() {
+                                            _pageConfig['content'] =
+                                                LIST_PAGE_SIZE[7];
+                                          });
+                                          setStatefull(() {});
+                                        }
+                                        if (value.trim().isEmpty) {
+                                          _pageSizeWidthController.text = "1";
+                                        }
+                                      },
+                                      suffixValue: _pageConfig['content']
+                                          ['unit'],
+                                      isFocus:
+                                          _indexPageSizeSelectionWidget == 1),
+                                  WSpacer(
+                                    height: 10,
+                                  ),
+                                  // height
+                                  buildCupertinoInput(
+                                      context: context,
+                                      controller: _pageSizeHeightController,
+                                      title: "Height",
+                                      focusNode: _heightFocusNode,
+                                      onTap: () {
+                                        if (_heightFocusNode.hasFocus) {
+                                          setState(() {
+                                            _indexPageSizeSelectionWidget = 2;
+                                          });
+                                          setStatefull(() {});
+                                        }
+                                      },
+                                      onChanged: (value) {
+                                        if (_pageSizeHeightController.text
+                                                .trim() !=
+                                            _pageConfig['content']['height']) {
+                                          setState(() {
+                                            _pageConfig['content'] =
+                                                LIST_PAGE_SIZE[7];
+                                          });
+                                          setStatefull(() {});
+                                        }
+                                        if (value.trim().isEmpty) {
+                                          _pageSizeHeightController.text = "1";
+                                        }
+                                      },
+                                      suffixValue: _pageConfig['content']
+                                          ['unit'],
+                                      isFocus:
+                                          _indexPageSizeSelectionWidget == 2),
+                                  WSpacer(
+                                    height: 10,
+                                  ),
+                                  // orientation
+                                  _overWHValue()
+                                      ? const SizedBox()
+                                      : _buildOrientation(() {
+                                          setStatefull(() {});
+                                        })
+                                ],
+                              ),
+                            ),
+                            // page size preview
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.only(
+                                    right: 20, left: 20, top: 20),
+                                alignment: Alignment.topCenter,
+                                child: Stack(
+                                  alignment: Alignment.topCenter,
+                                  children: [
+                                    AnimatedContainer(
+                                      alignment: Alignment.topCenter,
+                                      duration:
+                                          const Duration(milliseconds: 400),
+                                      constraints: const BoxConstraints(
+                                          maxHeight: 150, maxWidth: 150),
+                                      height: _renderPreviewHeight(),
+                                      width: _renderPreviewWidth(),
+                                      decoration: BoxDecoration(
+                                          border: _overWHValue()
+                                              ? null
+                                              : Border.all(
+                                                  color: const Color.fromRGBO(
+                                                      0, 0, 0, 0.1),
+                                                  width: 2)),
+                                      padding: const EdgeInsets.all(10),
+                                    ),
+                                    !_overWHValue()
+                                        ? Positioned.fill(
+                                            child: Container(
+                                                alignment: Alignment.center,
+                                                child: WTextContent(
+                                                  value:
+                                                      "${_pageSizeWidthController.text.trim()}x${_pageSizeHeightController.text.trim()}${_pageConfig['content']['unit']}",
+                                                  textSize: 16,
+                                                  textLineHeight: 19.09,
+                                                  textFontWeight:
+                                                      FontWeight.w600,
+                                                  textColor:
+                                                      const Color.fromRGBO(
+                                                          0, 0, 0, 0.5),
+                                                  textOverflow:
+                                                      TextOverflow.ellipsis,
+                                                )),
+                                          )
+                                        : Container(
+                                            alignment: Alignment.topCenter,
+                                            child: WTextContent(
+                                              value:
+                                                  "${_pageSizeWidthController.text.trim()}x${_pageSizeHeightController.text.trim()}${_pageConfig['content']['unit']}",
+                                              textSize: 16,
+                                              textLineHeight: 19.09,
+                                              textFontWeight: FontWeight.w600,
+                                              textColor: const Color.fromRGBO(
+                                                  0, 0, 0, 0.5),
+                                              textOverflow:
+                                                  TextOverflow.ellipsis,
+                                            ))
                                   ],
                                 ),
                               ),
-                              // page size preview
-                              Expanded(
-                                child: Container(
-                                  padding: const EdgeInsets.only(
-                                      right: 20, left: 20, top: 20),
-                                  alignment: Alignment.topCenter,
-                                  constraints: const BoxConstraints(
-                                      maxHeight: 150, minHeight: 100),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                        border: Border.all(
-                                            color: const Color.fromRGBO(
-                                                0, 0, 0, 0.1),
-                                            width: 2)),
-                                    child: Center(
-                                        child: WTextContent(
-                                      value:
-                                          "${_pageSizeWidthController.text.trim()}x${_pageSizeHeightController.text.trim()}${_pageConfig['content']['unit']}",
-                                      textSize: 16,
-                                      textLineHeight: 19.09,
-                                      textFontWeight: FontWeight.w600,
-                                      textColor:
-                                          const Color.fromRGBO(0, 0, 0, 0.5),
-                                    )),
-                                  ),
-                                ),
-                              )
-                            ],
-                          )),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 20),
-                            child: Flex(
-                              direction: Axis.horizontal,
-                              children: [
-                                Flexible(
-                                    child: WButtonFilled(
-                                  message: "Cancel",
-                                  backgroundColor:
-                                      const Color.fromRGBO(0, 0, 0, 0.03),
-                                  textColor: colorBlue,
-                                  height: 60,
-                                  onPressed: () {
-                                    popNavigator(context);
-                                  },
-                                )),
-                                WSpacer(
-                                  width: 20,
-                                ),
-                                Flexible(
-                                    child: WButtonFilled(
-                                  message: "Apply",
-                                  textColor: colorWhite,
-                                  height: 60,
-                                  backgroundColor:
-                                      const Color.fromRGBO(10, 132, 255, 1),
-                                  onPressed: () {},
-                                ))
-                              ],
-                            ),
-                          )
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              }),
-            ),
+                            )
+                          ],
+                        )),
+                        buildBottomButton(context)
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            }),
           );
         },
         isScrollControlled: true,

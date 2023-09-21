@@ -9,6 +9,9 @@ class WTextContent extends StatelessWidget {
   Color? textColor;
   double? textLineHeight;
   FontWeight? textFontWeight;
+  TextOverflow? textOverflow;
+  int? textMaxLength;
+  
   Function()? onTap;
   WTextContent(
       {required this.value,
@@ -18,7 +21,9 @@ class WTextContent extends StatelessWidget {
       this.textFontWeight = FontWeight.w700,
       this.textLineHeight,
       this.textSize,
-      this.onTap});
+      this.onTap,
+      this.textOverflow,
+      this.textMaxLength});
 
   @override
   Widget build(BuildContext context) {
@@ -28,11 +33,14 @@ class WTextContent extends StatelessWidget {
             child: Text(
               value,
               textAlign: textAlign,
+              maxLines: textMaxLength,
               style: TextStyle(
                   fontSize: textSize,
                   color: textColor,
+                   decoration: TextDecoration.none,
                   fontWeight: textFontWeight,
                   fontFamily: myCustomFont,
+                  overflow: textOverflow,
                   height: textLineHeight != null && textSize != null
                       ? (textLineHeight! / textSize!)
                       : null),
@@ -41,11 +49,14 @@ class WTextContent extends StatelessWidget {
         : Text(
             value,
             textAlign: textAlign,
+            maxLines: textMaxLength,
             style: TextStyle(
+               decoration: TextDecoration.none,
                 fontSize: textSize,
                 color: textColor,
                 fontWeight: textFontWeight,
                 fontFamily: myCustomFont,
+                overflow: textOverflow,
                 height: textLineHeight != null && textSize != null
                     ? (textLineHeight! / textSize!)
                     : null),

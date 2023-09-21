@@ -67,8 +67,8 @@ class _PreviewState extends State<Preview> {
                                         BoxShadow(
                                           color: Colors.black.withOpacity(0.2),
                                           spreadRadius:
-                                              0.5, // Độ lan rộng nhỏ hơn
-                                          blurRadius: 5, // Độ mờ nhỏ hơn
+                                              0.5,
+                                          blurRadius: 5,
                                           offset: const Offset(0, 1),
                                         ),
                                       ]),
