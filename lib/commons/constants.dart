@@ -1,3 +1,5 @@
+import 'dart:math';
+
 const String pathPrefixIcon = "assets/icons/";
 const String pathPrefixImage = "assets/images/";
 const String myCustomFont = "FontsFree-Net-SFProDisplay-Regular";
@@ -12,6 +14,7 @@ List<dynamic> LIST_PAGE_SIZE = [
   {"title": "Tabloid", "width": 11.0, "height": 17.0, "unit": INCH},
   {"title": "Custom", "width": 1.0, "height": 1.0, "unit": INCH},
 ];
+
 List<dynamic> LIST_LAYOUT = [
   "${pathPrefixIcon}icon_layout_1.png",
   "${pathPrefixIcon}icon_layout_2.png",
@@ -42,9 +45,28 @@ List<dynamic> LIST_ALIGNMENT = [
   },
 ];
 
+List<dynamic> LIST_RESIZE_MODE = [
+  {
+    "title": "Aspect Fit",
+    "mediaSrc": "${pathPrefixIcon}icon_aspect_fit.png",
+  },
+  {
+    "title": "Aspect Fill",
+    "mediaSrc": "${pathPrefixIcon}icon_aspect_fill.png",
+  },
+  {
+    "title": "Stretch",
+    "mediaSrc": "${pathPrefixIcon}icon_stretch.png",
+  },
+];
+
 dynamic PADDING_OPTIONS = {
-  "values": ["0", "0"],
+  "values": ["10.0", "10.0"],
   "unit": CENTIMET
+};
+dynamic SPACING_OPTIONS = {
+  "values": ["10.0", "10.0"],
+  "unit": POINT
 };
 
 // Map<String, dynamic> PAGE_SIZE = {

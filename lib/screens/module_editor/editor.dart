@@ -5,6 +5,7 @@ import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/providers/project_provider.dart';
+import 'package:photo_to_pdf/screens/module_editor/editor_padding_spacing.dart';
 import 'package:photo_to_pdf/screens/module_editor/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/w_divider.dart';
@@ -33,9 +34,6 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   late List _listProject;
   late Size _size;
   late bool _pageSizeIsPortrait = true;
-  FocusNode _widthFocusNode = FocusNode();
-  FocusNode _heightFocusNode = FocusNode();
-  FocusNode _presetFocusNode = FocusNode();
   int? _indexPageSizeSelectionWidget;
 
   late dynamic _pageConfig;
@@ -48,20 +46,30 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   // layout config keys
   final GlobalKey _keyResizeMode = GlobalKey();
   final GlobalKey _keyAlignment = GlobalKey();
-  final GlobalKey _keyBackground = GlobalKey();
-  final GlobalKey _keyPadding = GlobalKey();
-  final GlobalKey _keySpacing = GlobalKey();
 
+  // layout alignment variables
+  late dynamic _resizeModeSelectedValue;
   // layout alignment variables
   late List<dynamic> _listAlignment;
 
   //layout padding variables
+  final TextEditingController _paddingHorizontalController =
+      TextEditingController(text: "");
+  final TextEditingController _paddingVerticalController =
+      TextEditingController(text: "");
   late dynamic _paddingOptions;
+
+  //layout spacing variables
+  final TextEditingController _spacingHorizontalController =
+      TextEditingController(text: "");
+  final TextEditingController _spacingVerticalController =
+      TextEditingController(text: "");
+  late dynamic _spacingOptions;
 
   @override
   void initState() {
     super.initState();
-    // Future.delayed(Duration.zero, () {
+
     _pageConfig = {
       "mediaSrc": "${pathPrefixIcon}icon_letter.png",
       "title": "Paper Size",
@@ -83,34 +91,14 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
       "content": "None"
     };
     _listProject = ref.read(projectControllerProvider).listProject;
-    // });
 
     _pageSizeWidthController.text =
         (_pageConfig['content']['width']).toString();
     _pageSizeHeightController.text =
         (_pageConfig['content']['height']).toString();
 
-    _widthFocusNode.addListener(() {
-      if (_widthFocusNode.hasFocus) {
-        setState(() {
-          _indexPageSizeSelectionWidget = 1;
-        });
-      }
-    });
-    _heightFocusNode.addListener(() {
-      if (_heightFocusNode.hasFocus) {
-        setState(() {
-          _indexPageSizeSelectionWidget = 2;
-        });
-      }
-    });
-    _presetFocusNode.addListener(() {
-      if (_presetFocusNode.hasFocus) {
-        setState(() {
-          _indexPageSizeSelectionWidget = 0;
-        });
-      }
-    });
+    _resizeModeSelectedValue = LIST_RESIZE_MODE[0];
+
     _segmentCurrentIndex = 0;
     _listLayoutStatus = LIST_LAYOUT.map((e) {
       return {"mediaSrc": e, "isFocus": false};
@@ -123,6 +111,12 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     _listAlignment[2]['isFocus'] = true;
 
     _paddingOptions = PADDING_OPTIONS;
+    _paddingHorizontalController.text = _paddingOptions['values'][0];
+    _paddingVerticalController.text = _paddingOptions['values'][1];
+
+    _spacingOptions = SPACING_OPTIONS;
+    _spacingHorizontalController.text = _spacingOptions['values'][0];
+    _spacingVerticalController.text = _spacingOptions['values'][1];
   }
 
   _tranferValuePageSize() {
@@ -166,6 +160,14 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     _listLayoutStatus = _listLayoutStatus = LIST_LAYOUT.map((e) {
       return {"mediaSrc": e, "isFocus": false};
     }).toList();
+  }
+
+  String _renderPreviewPaddingOptions() {
+    return "${_paddingHorizontalController.text.trim()}${_paddingOptions['unit']} , ${_paddingVerticalController.text.trim()} ${_paddingOptions['unit']}";
+  }
+
+  String _renderPreviewSpacingOptions() {
+    return "${_spacingHorizontalController.text.trim()}${_spacingOptions['unit']} , ${_spacingVerticalController.text.trim()} ${_spacingOptions['unit']}";
   }
 
   @override
@@ -351,147 +353,8 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         ));
   }
 
-  _showBottomSheetLayout() {
-    showModalBottomSheet(
-        context: context,
-        builder: (context) {
-          return Padding(
-            padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom >= 100
-                    ? MediaQuery.of(context).viewInsets.bottom - 100
-                    : 0.0),
-            child: StatefulBuilder(builder: (context, setStatefull) {
-              return Container(
-                height: _size.height * 0.95,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(20.0),
-                    topRight: Radius.circular(20.0),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(top: 20),
-                      child: WTextContent(
-                        value: "Layout",
-                        textSize: 14,
-                        textLineHeight: 16.71,
-                      ),
-                    ),
-                    WSpacer(
-                      height: 20,
-                    ),
-                    buildSegmentControl(
-                      groupValue: _segmentCurrentIndex,
-                      onValueChanged: (value) {
-                        setState(() {
-                          _segmentCurrentIndex = value;
-                        });
-                        setStatefull(() {});
-                      },
-                    ),
-                    Expanded(
-                      child: Container(
-                        height: _size.height * 404 / 791 * 0.9,
-                        decoration: BoxDecoration(
-                            color: const Color.fromRGBO(0, 0, 0, 0.03),
-                            borderRadius: BorderRadius.circular(10)),
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 20),
-                        child: SingleChildScrollView(
-                            padding: const EdgeInsets.symmetric(vertical: 20),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: _listLayoutStatus
-                                        .sublist(0, 2)
-                                        .toList()
-                                        .map(
-                                      (e) {
-                                        final index =
-                                            _listLayoutStatus.indexOf(e);
-                                        return Container(
-                                          margin: const EdgeInsets.symmetric(
-                                              horizontal: 10),
-                                          child: buildLayoutWidget(
-                                            context: context,
-                                            mediaSrc: e['mediaSrc'],
-                                            title: "Layout ${index + 1}",
-                                            isFocus: e['isFocus'],
-                                            indexLayoutItem: index,
-                                            onTap: () {
-                                              _resetLayoutSelections();
-                                              setState(() {
-                                                _listLayoutStatus[index]
-                                                    ['isFocus'] = true;
-                                              });
-                                              setStatefull(() {});
-                                            },
-                                          ),
-                                        );
-                                      },
-                                    ).toList()),
-                                WSpacer(
-                                  height: 20,
-                                ),
-                                Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: _listLayoutStatus
-                                        .sublist(2, _listLayoutStatus.length)
-                                        .toList()
-                                        .map(
-                                      (e) {
-                                        final index =
-                                            _listLayoutStatus.indexOf(e);
-                                        return Container(
-                                          margin: const EdgeInsets.symmetric(
-                                              horizontal: 10),
-                                          child: buildLayoutWidget(
-                                            context: context,
-                                            mediaSrc: e['mediaSrc'],
-                                            title: "Layout ${index + 1}",
-                                            isFocus: e['isFocus'],
-                                            indexLayoutItem: index,
-                                            onTap: () {
-                                              setState(() {
-                                                _resetLayoutSelections();
-                                                _listLayoutStatus[index]
-                                                    ['isFocus'] = true;
-                                              });
-                                              setStatefull(() {});
-                                            },
-                                          ),
-                                        );
-                                      },
-                                    ).toList())
-                              ],
-                            )),
-                      ),
-                    ),
-                    _buildLayoutConfigs(() {
-                      setStatefull(() {});
-                    }),
-                    buildBottomButton(context)
-                  ],
-                ),
-              );
-            }),
-          );
-        },
-        isScrollControlled: true,
-        backgroundColor: transparent);
-  }
-
-  Widget _buildLayoutConfigs(Function rerenderFunction) {
+  Widget _buildLayoutConfigs(
+      Function rerenderFunction, bool showPaddingAndSpacing) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Column(
@@ -504,7 +367,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                 child: buildLayoutConfigItem(
                     key: _keyResizeMode,
                     title: "Resize Mode",
-                    content: "Aspect Fit",
+                    content: _resizeModeSelectedValue['title'],
                     width: _size.width * 0.3,
                     onTap: () {
                       final renderBoxResize = _keyResizeMode.currentContext
@@ -514,17 +377,16 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                       showLayoutDialogWidthOffset(
                           context: context,
                           offset: widgetPosition,
-                          dialogWidget: buildResizeModeDialog(context, [
-                            () {
+                          dialogWidget: buildDialogResizeMode(
+                            context,
+                            (value) {
+                              setState(() {
+                                _resizeModeSelectedValue = value;
+                              });
+                              rerenderFunction();
                               popNavigator(context);
                             },
-                            () {
-                              popNavigator(context);
-                            },
-                            () {
-                              popNavigator(context);
-                            }
-                          ]));
+                          ));
                     }),
               ),
               Flexible(
@@ -546,7 +408,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                             offset: Offset(_size.width * (1 - (200 / 390)) / 2,
                                 widgetOffset.dy),
                             dialogWidget:
-                                buildAlignmentDialog(context, _listAlignment,
+                                buildDialogAlignment(context, _listAlignment,
                                     onSelected: (index, value) {
                               setState(() {
                                 _listAlignment = LIST_ALIGNMENT.map((e) {
@@ -574,29 +436,336 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
           WSpacer(
             height: 10,
           ),
-          Flex(
-            direction: Axis.horizontal,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Flexible(
-                  child: buildLayoutConfigItem(
+          showPaddingAndSpacing
+              ? Flex(
+                  direction: Axis.horizontal,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                        child: buildLayoutConfigItem(
                       title: "Padding",
-                      content: _paddingOptions['values'].join(",") +
-                          " " +
-                          _paddingOptions['unit'],
-                      width: _size.width * 0.46)),
-              Flexible(
-                child: buildLayoutConfigItem(
-                  title: "Spacing",
-                  content: "10pt,10pt",
-                  width: _size.width * 0.46,
-                ),
-              ),
-            ],
-          ),
+                      content: _renderPreviewPaddingOptions(),
+                      width: _size.width * 0.46,
+                      onTap: () {
+                        final renderBoxPadding = _keyAlignment.currentContext
+                            ?.findRenderObject() as RenderBox;
+                        final widgetOffset =
+                            renderBoxPadding.localToGlobal(Offset.zero);
+                        Offset offset =
+                            Offset(_size.width * 0.1 / 2, widgetOffset.dy - 50);
+                        pushCustomMaterialPageRoute(
+                            context,
+                            EditorPaddingSpacing(
+                              title: "Padding",
+                              offset: offset,
+                              controllers: [
+                                _paddingHorizontalController,
+                                _paddingVerticalController
+                              ],
+                              onChanged: (index, value) {
+                                if (index == 0) {
+                                  _paddingHorizontalController.text = value;
+                                }
+                                if (index == 1) {
+                                  _paddingVerticalController.text = value;
+                                }
+                              },
+                            ));
+                      },
+                    )),
+                    Flexible(
+                      child: buildLayoutConfigItem(
+                        title: "Spacing",
+                        content: _renderPreviewSpacingOptions(),
+                        width: _size.width * 0.46,
+                        onTap: () {
+                          final renderBoxPadding = _keyAlignment.currentContext
+                              ?.findRenderObject() as RenderBox;
+                          final widgetOffset =
+                              renderBoxPadding.localToGlobal(Offset.zero);
+                          Offset offset = Offset(
+                              _size.width * 0.1 / 2, widgetOffset.dy - 50);
+                          pushCustomMaterialPageRoute(
+                              context,
+                              EditorPaddingSpacing(
+                                title: "Spacing",
+                                offset: offset,
+                                controllers: [
+                                  _spacingHorizontalController,
+                                  _spacingVerticalController
+                                ],
+                                onChanged: (index, value) {
+                                  if (index == 0) {
+                                    _spacingHorizontalController.text = value;
+                                  }
+                                  if (index == 1) {
+                                    _spacingVerticalController.text = value;
+                                  }
+                                },
+                              ));
+                        },
+                      ),
+                    ),
+                  ],
+                )
+              : const SizedBox(),
         ],
       ),
     );
+  }
+
+  Widget _buildOrientation(
+    Function() rerenderFunc,
+  ) {
+    return Flexible(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        height: 70,
+        width: 200,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          color: const Color.fromRGBO(0, 0, 0, 0.03),
+        ),
+        child: Row(children: [
+          Container(
+            constraints: const BoxConstraints(minWidth: 50, maxWidth: 70),
+            padding: const EdgeInsets.only(left: 5),
+            child: WTextContent(
+              value: "Orientation",
+              textSize: 14,
+              textLineHeight: 16.71,
+              textColor: const Color.fromRGBO(0, 0, 0, 0.5),
+              textFontWeight: FontWeight.w600,
+            ),
+          ),
+          WSpacer(
+            width: 10,
+          ),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                buildPageSizeOrientationItem(
+                    mediaSrc: "${pathPrefixIcon}icon_portrait.png",
+                    isSelected: _pageSizeIsPortrait,
+                    onTap: () {
+                      setState(() {
+                        if (_pageSizeIsPortrait == false) {
+                          _tranferValuePageSize();
+                        }
+                        _pageSizeIsPortrait = true;
+                      });
+                      rerenderFunc();
+                    }),
+                buildPageSizeOrientationItem(
+                    mediaSrc: "${pathPrefixIcon}icon_landscape.png",
+                    isSelected: !_pageSizeIsPortrait,
+                    onTap: () {
+                      setState(() {
+                        if (_pageSizeIsPortrait == true) {
+                          _tranferValuePageSize();
+                        }
+                        _pageSizeIsPortrait = false;
+                      });
+                      rerenderFunc();
+                    }),
+              ],
+            ),
+          )
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildCustomArea() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      height: _size.height * 404 / 791 * 0.9,
+      width: _size.width,
+      decoration: BoxDecoration(
+          color: const Color.fromRGBO(0, 0, 0, 0.03),
+          borderRadius: BorderRadius.circular(10)),
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      child: Column(children: [
+        Expanded(
+            child: Container(
+          color: colorWhite,
+          margin: EdgeInsets.symmetric(horizontal: 10)
+        )),
+        Container(
+          width: _size.width * 0.5,
+          child: const Flex(
+            direction: Axis.horizontal,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                flex: 2,
+                child: WButtonFilled(
+                  message: "Add Placemnet",
+                  textColor: colorBlue,
+                  textLineHeight: 14.32,
+                  textSize: 12,
+                  height: 30,
+                  backgroundColor: Color.fromRGBO(22, 115, 255, 0.08),
+                ),
+              ),
+              Flexible(
+                flex: 1,
+                child: WButtonFilled(
+                  message: "Delete",
+                  height: 30,
+                  textColor: Color.fromRGBO(255, 63, 51, 1),
+                  textLineHeight: 14.32,
+                  textSize: 12,
+                  backgroundColor: Color.fromRGBO(255, 63, 51, 0.1),
+                ),
+              )
+            ],
+          ),
+        )
+      ]),
+    );
+  }
+
+  void _showBottomSheetLayout() {
+    showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(builder: (context, setStatefull) {
+            return Container(
+              height: _size.height * 0.95,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20.0),
+                  topRight: Radius.circular(20.0),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 20),
+                    child: WTextContent(
+                      value: "Layout",
+                      textSize: 14,
+                      textLineHeight: 16.71,
+                    ),
+                  ),
+                  WSpacer(
+                    height: 20,
+                  ),
+                  buildSegmentControl(
+                    groupValue: _segmentCurrentIndex,
+                    onValueChanged: (value) {
+                      setState(() {
+                        _segmentCurrentIndex = value;
+                      });
+                      setStatefull(() {});
+                    },
+                  ),
+                  Expanded(
+                    child: _segmentCurrentIndex == 0
+                        ? Container(
+                            height: _size.height * 404 / 791 * 0.9,
+                            decoration: BoxDecoration(
+                                color: const Color.fromRGBO(0, 0, 0, 0.03),
+                                borderRadius: BorderRadius.circular(10)),
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 10),
+                            child: SingleChildScrollView(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 20, horizontal: 20),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: _listLayoutStatus
+                                            .sublist(0, 2)
+                                            .toList()
+                                            .map(
+                                          (e) {
+                                            final index =
+                                                _listLayoutStatus.indexOf(e);
+                                            return Container(
+                                              margin:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 10),
+                                              child: buildLayoutWidget(
+                                                context: context,
+                                                mediaSrc: e['mediaSrc'],
+                                                title: "Layout ${index + 1}",
+                                                isFocus: e['isFocus'],
+                                                indexLayoutItem: index,
+                                                onTap: () {
+                                                  _resetLayoutSelections();
+                                                  setState(() {
+                                                    _listLayoutStatus[index]
+                                                        ['isFocus'] = true;
+                                                  });
+                                                  setStatefull(() {});
+                                                },
+                                              ),
+                                            );
+                                          },
+                                        ).toList()),
+                                    WSpacer(
+                                      height: 20,
+                                    ),
+                                    Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: _listLayoutStatus
+                                            .sublist(
+                                                2, _listLayoutStatus.length)
+                                            .toList()
+                                            .map(
+                                          (e) {
+                                            final index =
+                                                _listLayoutStatus.indexOf(e);
+                                            return Container(
+                                              margin:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 10),
+                                              child: buildLayoutWidget(
+                                                context: context,
+                                                mediaSrc: e['mediaSrc'],
+                                                title: "Layout ${index + 1}",
+                                                isFocus: e['isFocus'],
+                                                indexLayoutItem: index,
+                                                onTap: () {
+                                                  setState(() {
+                                                    _resetLayoutSelections();
+                                                    _listLayoutStatus[index]
+                                                        ['isFocus'] = true;
+                                                  });
+                                                  setStatefull(() {});
+                                                },
+                                              ),
+                                            );
+                                          },
+                                        ).toList())
+                                  ],
+                                )))
+                        : _buildCustomArea(),
+                  ),
+                  _buildLayoutConfigs(() {
+                    setStatefull(() {});
+                  }, _segmentCurrentIndex == 0),
+                  buildBottomButton(context)
+                ],
+              ),
+            );
+          });
+        },
+        isScrollControlled: true,
+        backgroundColor: transparent);
   }
 
   void _showBottomSheetPageSize() {
@@ -672,14 +841,11 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                       context: context,
                                       controller: _pageSizeWidthController,
                                       title: "Width",
-                                      focusNode: _widthFocusNode,
                                       onTap: () {
-                                        if (_widthFocusNode.hasFocus) {
-                                          setState(() {
-                                            _indexPageSizeSelectionWidget = 1;
-                                          });
-                                          setStatefull(() {});
-                                        }
+                                        setState(() {
+                                          _indexPageSizeSelectionWidget = 1;
+                                        });
+                                        setStatefull(() {});
                                       },
                                       onChanged: (value) {
                                         if (_pageSizeWidthController.text
@@ -707,14 +873,11 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                       context: context,
                                       controller: _pageSizeHeightController,
                                       title: "Height",
-                                      focusNode: _heightFocusNode,
                                       onTap: () {
-                                        if (_heightFocusNode.hasFocus) {
-                                          setState(() {
-                                            _indexPageSizeSelectionWidget = 2;
-                                          });
-                                          setStatefull(() {});
-                                        }
+                                        setState(() {
+                                          _indexPageSizeSelectionWidget = 2;
+                                        });
+                                        setStatefull(() {});
                                       },
                                       onChanged: (value) {
                                         if (_pageSizeHeightController.text
@@ -820,68 +983,5 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         },
         isScrollControlled: true,
         backgroundColor: transparent);
-  }
-
-  Widget _buildOrientation(
-    Function() rerenderFunc,
-  ) {
-    return Flexible(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        height: 70,
-        width: 200,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(15),
-          color: const Color.fromRGBO(0, 0, 0, 0.03),
-        ),
-        child: Row(children: [
-          Container(
-            constraints: const BoxConstraints(minWidth: 50, maxWidth: 70),
-            padding: const EdgeInsets.only(left: 5),
-            child: WTextContent(
-              value: "Orientation",
-              textSize: 14,
-              textLineHeight: 16.71,
-              textColor: const Color.fromRGBO(0, 0, 0, 0.5),
-              textFontWeight: FontWeight.w600,
-            ),
-          ),
-          WSpacer(
-            width: 10,
-          ),
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                buildPageSizeOrientationItem(
-                    mediaSrc: "${pathPrefixIcon}icon_portrait.png",
-                    isSelected: _pageSizeIsPortrait,
-                    onTap: () {
-                      setState(() {
-                        if (_pageSizeIsPortrait == false) {
-                          _tranferValuePageSize();
-                        }
-                        _pageSizeIsPortrait = true;
-                      });
-                      rerenderFunc();
-                    }),
-                buildPageSizeOrientationItem(
-                    mediaSrc: "${pathPrefixIcon}icon_landscape.png",
-                    isSelected: !_pageSizeIsPortrait,
-                    onTap: () {
-                      setState(() {
-                        if (_pageSizeIsPortrait == true) {
-                          _tranferValuePageSize();
-                        }
-                        _pageSizeIsPortrait = false;
-                      });
-                      rerenderFunc();
-                    }),
-              ],
-            ),
-          )
-        ]),
-      ),
-    );
   }
 }

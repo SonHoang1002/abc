@@ -95,6 +95,8 @@ class WButtonFilled extends StatelessWidget {
   final Function()? onPressed;
   final Color? backgroundColor;
   final Color? textColor;
+  final double? textSize;
+  final double? textLineHeight;
   final double? borderRadius;
 
   /// [mediaValue] can be IconData, assets String ( include icon or image )
@@ -115,7 +117,9 @@ class WButtonFilled extends StatelessWidget {
       this.mediaSize,
       this.haveShadow,
       this.textColor,
-      this.borderRadius});
+      this.borderRadius,
+      this.textSize = 15,
+      this.textLineHeight = 34});
 
   @override
   Widget build(BuildContext context) {
@@ -156,17 +160,18 @@ class WButtonFilled extends StatelessWidget {
                       ),
                       WTextContent(
                         value: message,
-                        textSize: 15,
-                        textLineHeight: 34,
+                        textSize: textSize,
+                        textLineHeight: textLineHeight,
                         textColor: textColor,
                       )
                     ],
                   )
                 : WTextContent(
                     value: message,
-                    textSize: 15,
-                    textLineHeight: 34,
+                    textSize: textSize,
+                    textLineHeight: textLineHeight,
                     textColor: textColor,
+                    textAlign: TextAlign.center,
                   ),
           ),
         ));

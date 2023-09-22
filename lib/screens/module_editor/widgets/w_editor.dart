@@ -136,7 +136,6 @@ Widget buildCupertinoInput(
     required TextEditingController controller,
     required String title,
     required String suffixValue,
-    required FocusNode focusNode,
     required Function() onTap,
     required bool isFocus,
     required Function(String value)? onChanged}) {
@@ -151,7 +150,6 @@ Widget buildCupertinoInput(
             width: 2)),
     height: 47,
     child: CupertinoTextField(
-      focusNode: focusNode,
       onTap: onTap,
       onChanged: onChanged,
       decoration: const BoxDecoration(),
@@ -362,7 +360,6 @@ Widget buildSegmentControl(
     // _segmentCurrentIndex,
     backgroundColor: const Color.fromRGBO(0, 0, 0, 0.04),
     onValueChanged: onValueChanged,
-
     children: {
       0: Container(
           margin: const EdgeInsets.symmetric(horizontal: 10),
@@ -386,7 +383,7 @@ Widget buildSegmentControl(
   );
 }
 
-// general 
+// general
 Widget buildLayoutWidget(
     {required BuildContext context,
     required mediaSrc,
@@ -652,31 +649,39 @@ void showLayoutDialogWidthOffset(
   showGeneralDialog(
     context: context,
     pageBuilder: (context, animation, secondaryAnimation) {
-      return Container(
+      return Material(
         color: transparent,
-        child: Stack(children: [
-          Positioned.fill(child: GestureDetector(
-            onTap: () {
-              popNavigator(context);
-            },
-          )),
-          Positioned(
-              bottom: size.height - offset.dy,
-              left: offset.dx,
-              child: dialogWidget)
-        ]),
+        child: Container(
+          color: transparent,
+          child: Stack(children: [
+            Positioned.fill(child: GestureDetector(
+              onTap: () {
+                popNavigator(context);
+              },
+            )),
+            Positioned(
+                bottom: size.height - offset.dy,
+                left: offset.dx,
+                child: dialogWidget)
+          ]),
+        ),
       );
     },
   );
 }
 
-Widget buildResizeModeDialog(BuildContext context, List<Function()> functions) {
+Widget buildDialogResizeMode(
+    BuildContext context, Function(dynamic value) onSelected) {
   return Column(children: [
-    _buildResizeModeDialogItem(
+    _buildDialogResizeModeItem(
       context,
-      "${pathPrefixIcon}icon_aspect_fit.png",
-      "Aspect Fit",
-      functions[0],
+      LIST_RESIZE_MODE[0]['mediaSrc'],
+      LIST_RESIZE_MODE[0]['title'],
+      () {
+        onSelected(
+          LIST_RESIZE_MODE[0],
+        );
+      },
       boxDecoration: const BoxDecoration(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           color: Color.fromRGBO(255, 255, 255, 1)),
@@ -685,19 +690,28 @@ Widget buildResizeModeDialog(BuildContext context, List<Function()> functions) {
       height: 1,
       color: const Color.fromRGBO(0, 0, 0, 0.3),
     ),
-    _buildResizeModeDialogItem(context, "${pathPrefixIcon}icon_aspect_fill.png",
-        "Aspect Fill", functions[1],
+    _buildDialogResizeModeItem(
+        context, LIST_RESIZE_MODE[1]['mediaSrc'], LIST_RESIZE_MODE[1]['title'],
+        () {
+      onSelected(
+        LIST_RESIZE_MODE[1],
+      );
+    },
         boxDecoration:
             const BoxDecoration(color: Color.fromRGBO(255, 255, 255, 1))),
     WDivider(
       height: 1,
       color: const Color.fromRGBO(0, 0, 0, 0.3),
     ),
-    _buildResizeModeDialogItem(
+    _buildDialogResizeModeItem(
       context,
-      "${pathPrefixIcon}icon_stretch.png",
-      "Stretch",
-      functions[2],
+      LIST_RESIZE_MODE[2]['mediaSrc'],
+      LIST_RESIZE_MODE[2]['title'],
+      () {
+        onSelected(
+          LIST_RESIZE_MODE[2],
+        );
+      },
       boxDecoration: const BoxDecoration(
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
           color: Color.fromRGBO(255, 255, 255, 1)),
@@ -705,7 +719,160 @@ Widget buildResizeModeDialog(BuildContext context, List<Function()> functions) {
   ]);
 }
 
-Widget _buildResizeModeDialogItem(
+Widget buildDialogAlignment(BuildContext context, List<dynamic> datas,
+    {Function(int index, dynamic value)? onSelected}) {
+  // final size = MediaQuery.sizeOf(context);
+  return Container(
+    height: 200,
+    width: 200,
+    padding: const EdgeInsets.all(10),
+    decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(15),
+        color: const Color.fromRGBO(255, 255, 255, 0.8)),
+    child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          _buildDialogAlignmentItem(
+              context, datas[0]["mediaSrc"], datas[0]["title"], () {
+            onSelected!(0, datas[0]);
+          }, datas[0]["isFocus"]),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _buildDialogAlignmentItem(
+                  context, datas[1]["mediaSrc"], datas[1]["title"], () {
+                onSelected!(1, datas[1]);
+              }, datas[1]["isFocus"]),
+              _buildDialogAlignmentItem(
+                  context, datas[2]["mediaSrc"], datas[2]["title"], () {
+                onSelected!(2, datas[2]);
+              }, datas[2]["isFocus"]),
+              _buildDialogAlignmentItem(
+                  context, datas[3]["mediaSrc"], datas[3]["title"], () {
+                onSelected!(3, datas[3]);
+              }, datas[3]["isFocus"]),
+            ],
+          ),
+          _buildDialogAlignmentItem(
+              context, datas[4]["mediaSrc"], datas[4]["title"], () {
+            onSelected!(4, datas[4]);
+          }, datas[4]["isFocus"]),
+        ]),
+  );
+}
+
+Widget buildDialogPadding(
+    {required BuildContext context,
+    required List<String> listValue,
+    required Function(int index, dynamic value) onChanged}) {
+  final size = MediaQuery.sizeOf(context);
+  final horizontalController = TextEditingController(text: listValue[0]);
+  final verticalController = TextEditingController(text: listValue[1]);
+  return Container(
+    height: 150,
+    padding: const EdgeInsets.all(10),
+    alignment: Alignment.center,
+    width: size.width * 0.9,
+    decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(15),
+        color: const Color.fromRGBO(255, 255, 255, 0.8)),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        WTextContent(
+          value: "Padding",
+          textColor: const Color.fromRGBO(0, 0, 0, 0.5),
+          textLineHeight: 16.71,
+          textSize: 14,
+        ),
+        Flex(direction: Axis.horizontal, children: [
+          Flexible(
+            child: Column(
+              children: [
+                _buildPaddingInput(
+                  horizontalController,
+                  (value) {
+                    onChanged(0, value);
+                  },
+                ),
+                WSpacer(
+                  height: 7,
+                ),
+                WTextContent(
+                  value: "Horizontal",
+                  textSize: 12,
+                  textFontWeight: FontWeight.w600,
+                  textLineHeight: 14.32,
+                  textColor: const Color.fromRGBO(0, 0, 0, 0.5),
+                ),
+              ],
+            ),
+          ),
+          WSpacer(
+            width: 20,
+          ),
+          Flexible(
+            child: Column(
+              children: [
+                _buildPaddingInput(
+                  verticalController,
+                  (value) {
+                    onChanged(1, value);
+                  },
+                ),
+                WSpacer(
+                  height: 7,
+                ),
+                WTextContent(
+                  value: "Horizontal",
+                  textSize: 12,
+                  textFontWeight: FontWeight.w600,
+                  textLineHeight: 14.32,
+                  textColor: const Color.fromRGBO(0, 0, 0, 0.5),
+                ),
+              ],
+            ),
+          ),
+        ]),
+        const SizedBox()
+      ],
+    ),
+  );
+}
+
+//////////////////////
+
+Widget _buildPaddingInput(
+    TextEditingController controller, void Function(String)? onChanged) {
+  return Container(
+      height: 30,
+      width: 170,
+      // padding: EdgeInsets.only(top: 5),
+      alignment: Alignment.center,
+      child: CupertinoTextField(
+        onTap: () {
+          print(" controller ssdfsdfds");
+        },
+        textAlign: TextAlign.center,
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: const Color.fromRGBO(255, 255, 255, 1),
+            border: Border.all(
+                color: const Color.fromRGBO(98, 161, 255, 1), width: 2)),
+        style: const TextStyle(
+          color: colorBlue,
+          height: 16.71 / 14,
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
+          fontFamily: myCustomFont,
+        ),
+        controller: controller,
+      ));
+}
+
+Widget _buildDialogResizeModeItem(
     BuildContext context, String mediaSrc, String value, Function() onTap,
     {BoxDecoration? boxDecoration}) {
   final size = MediaQuery.sizeOf(context);
@@ -738,51 +905,7 @@ Widget _buildResizeModeDialogItem(
   );
 }
 
-Widget buildAlignmentDialog(BuildContext context, List<dynamic> datas,
-    {Function(int index, dynamic value)? onSelected}) {
-  // final size = MediaQuery.sizeOf(context);
-  return Container(
-    height: 200,
-    width: 200,
-    padding: const EdgeInsets.all(10),
-    decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
-        color: const Color.fromRGBO(255, 255, 255, 0.8)),
-    child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          _buildAlignmentDialogItem(
-              context, datas[0]["mediaSrc"], datas[0]["title"], () {
-            onSelected!(0, datas[0]);
-          }, datas[0]["isFocus"]),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              _buildAlignmentDialogItem(
-                  context, datas[1]["mediaSrc"], datas[1]["title"], () {
-                onSelected!(1, datas[1]);
-              }, datas[1]["isFocus"]),
-              _buildAlignmentDialogItem(
-                  context, datas[2]["mediaSrc"], datas[2]["title"], () {
-                onSelected!(2, datas[2]);
-              }, datas[2]["isFocus"]),
-              _buildAlignmentDialogItem(
-                  context, datas[3]["mediaSrc"], datas[3]["title"], () {
-                onSelected!(3, datas[3]);
-              }, datas[3]["isFocus"]),
-            ],
-          ),
-          _buildAlignmentDialogItem(
-              context, datas[4]["mediaSrc"], datas[4]["title"], () {
-            onSelected!(4, datas[4]);
-          }, datas[4]["isFocus"]),
-        ]),
-  );
-}
-
-Widget _buildAlignmentDialogItem(BuildContext context, String mediaSrc,
+Widget _buildDialogAlignmentItem(BuildContext context, String mediaSrc,
     String value, Function()? onTap, bool isFocus) {
   return GestureDetector(
     onTap: onTap,
