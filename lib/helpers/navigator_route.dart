@@ -66,4 +66,3 @@ pushCustomMaterialPageRoute(
           fullscreenDialog: fullscreenDialog,
           allowSnapshotting: allowSnapshotting));
 }
-

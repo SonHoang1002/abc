@@ -8,13 +8,11 @@ import 'package:photo_to_pdf/widgets/w_text_content.dart';
 
 class EditorPaddingSpacing extends StatefulWidget {
   final String title;
-  final Offset offset;
   final List<TextEditingController> controllers;
   final Function(int index, String value) onChanged;
   const EditorPaddingSpacing(
       {super.key,
       required this.title,
-      required this.offset,
       required this.controllers,
       required this.onChanged});
 
@@ -23,128 +21,285 @@ class EditorPaddingSpacing extends StatefulWidget {
 }
 
 class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
-  late bool _isVertical;
+  late String _selectedLabel;
+  late Size _size;
+  late List<String> _labelInputs;
+
+  List<String> LABELS_PADDING_SPACING = ["Horizontal", "Vertical"];
+  List<String> LABELS_EDIT_PLACEMENT = [
+    "Width",
+    "Height",
+    "Top",
+    "Left",
+    "Right",
+    "Bottom"
+  ];
+
   @override
   void initState() {
     super.initState();
-    _isVertical = false;
+
+    if ([TITLE_EDIT_PLACEMENT].contains(widget.title)) {
+      _labelInputs = LABELS_EDIT_PLACEMENT;
+       _selectedLabel = _labelInputs[2];
+    } else {
+      _labelInputs = LABELS_PADDING_SPACING;
+      _selectedLabel = _labelInputs[0];
+    }
+    
   }
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
-    return Material(
-      color: transparent,
-      child: Container(
-        color: transparent,
-        child: Stack(children: [
-          Positioned.fill(child: GestureDetector(
-            onTap: () {
-              popNavigator(context);
-            },
+    _size = MediaQuery.sizeOf(context);
+    return Scaffold(
+      backgroundColor: transparent,
+      resizeToAvoidBottomInset:
+          // false,
+          [TITLE_PADDING, TITLE_SPACING].contains(widget.title) ? false : true,
+      body: Container(
+          // margin: const EdgeInsets.only(bottom: 40),
+          color: transparent,
+          child: Stack(
+            children: [
+              Positioned.fill(child: GestureDetector(
+                onTap: () {
+                  for (int i = 0; i < widget.controllers.length; i++) {
+                    if (widget.controllers[i].text.trim().isEmpty) {
+                      widget.onChanged(i, "0.0");
+                    }
+                  }
+                  popNavigator(context);
+                },
+              )),
+              [TITLE_EDIT_PLACEMENT].contains(widget.title)
+                  ? _buildEditPlacementBody()
+                  : _buildPaddingSpacingBody(title: widget.title),
+            ],
           )),
-          Positioned(
-              bottom: size.height - widget.offset.dy,
-              left: widget.offset.dx,
-              child: Container(
-                height: 150,
-                padding: const EdgeInsets.all(10),
-                alignment: Alignment.center,
-                width: size.width * 0.9,
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15),
-                    color: Colors.grey.shade100),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    WTextContent(
-                      value: widget.title,
-                      textColor: const Color.fromRGBO(0, 0, 0, 0.5),
-                      textLineHeight: 16.71,
-                      textSize: 14,
-                    ),
-                    Flex(direction: Axis.horizontal, children: [
-                      Flexible(
-                        child: Column(
-                          children: [
-                            _buildPaddingInput(
-                                widget.controllers[0],
-                                (value) {
-                                  widget.onChanged(0, value);
-                                },
-                                !_isVertical,
-                                onTap: () {
-                                  setState(() {
-                                    _isVertical = false;
-                                  });
-                                },
-                                autoFocus: true),
-                            WSpacer(
-                              height: 7,
-                            ),
-                            WTextContent(
-                              value: "Horizontal",
-                              textSize: 12,
-                              textFontWeight: FontWeight.w600,
-                              textLineHeight: 14.32,
-                              textColor: const Color.fromRGBO(0, 0, 0, 0.5),
-                            ),
-                          ],
-                        ),
-                      ),
-                      WSpacer(
-                        width: 20,
-                      ),
-                      Flexible(
-                        child: Column(
-                          children: [
-                            _buildPaddingInput(
-                              widget.controllers[1],
-                              (value) {
-                                widget.onChanged(1, value);
-                              },
-                              _isVertical,
-                              onTap: () {
-                                setState(() {
-                                  _isVertical = true;
-                                });
-                              },
-                            ),
-                            WSpacer(
-                              height: 7,
-                            ),
-                            WTextContent(
-                              value: "Horizontal",
-                              textSize: 12,
-                              textFontWeight: FontWeight.w600,
-                              textLineHeight: 14.32,
-                              textColor: const Color.fromRGBO(0, 0, 0, 0.5),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ]),
-                    const SizedBox()
-                  ],
-                ),
-              ))
-        ]),
-      ),
     );
   }
 
-  Widget _buildPaddingInput(TextEditingController controller,
+  Widget _buildEditPlacementBody() {
+    return Center(
+        child: Container(
+      height: _size.width * 0.9,
+      padding: const EdgeInsets.all(10),
+      alignment: Alignment.center,
+      width: _size.width * 0.9,
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15), color: Colors.grey.shade100),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          WTextContent(
+            value: widget.title,
+            textColor: const Color.fromRGBO(0, 0, 0, 0.5),
+            textLineHeight: 16.71,
+            textSize: 14,
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: _size.width * 0.27,
+                child: _buildInput(
+                    widget.controllers[2],
+                    (value) {
+                      widget.onChanged(2, value);
+                    },
+                    _selectedLabel == _labelInputs[2],
+                    onTap: () {
+                      setState(() {
+                        _selectedLabel = _labelInputs[2];
+                      });
+                    },
+                    autoFocus: true),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: _size.width * 0.27,
+                      child: _buildInput(
+                          widget.controllers[3],
+                          (value) {
+                            widget.onChanged(3, value);
+                          },
+                          _selectedLabel == _labelInputs[3],
+                          onTap: () {
+                            setState(() {
+                              _selectedLabel = _labelInputs[3];
+                            });
+                          },
+                          autoFocus: false),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 5, vertical: 15),
+                      child: Image.asset(
+                        "${pathPrefixIcon}icon_placement_center.png",
+                        height: 60,
+                        width: 60,
+                        scale: 3,
+                      ),
+                    ),
+                    SizedBox(
+                      width: _size.width * 0.27,
+                      child: _buildInput(
+                          widget.controllers[4],
+                          (value) {
+                            widget.onChanged(4, value);
+                          },
+                          _selectedLabel == _labelInputs[4],
+                          onTap: () {
+                            setState(() {
+                              _selectedLabel = _labelInputs[4];
+                            });
+                          },
+                          autoFocus: false),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: _size.width * 0.27,
+                child: _buildInput(
+                    widget.controllers[5],
+                    (value) {
+                      widget.onChanged(5, value);
+                    },
+                    _selectedLabel == _labelInputs[5],
+                    onTap: () {
+                      setState(() {
+                        _selectedLabel = _labelInputs[5];
+                      });
+                    },
+                    autoFocus: true),
+              ),
+            ],
+          ),
+          _buildPaddingSpacingBody(
+            padding: EdgeInsets.zero,
+          )
+        ],
+      ),
+    ));
+  }
+
+  Widget _buildPaddingSpacingBody(
+      {double? height = 140,
+      EdgeInsets? padding = const EdgeInsets.all(10),
+      String? title}) {
+    return Center(
+        child: Container(
+      height: height,
+      padding: padding,
+      alignment: Alignment.center,
+      width: _size.width * 0.9,
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15), color: Colors.grey.shade100),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          title != null
+              ? WTextContent(
+                  value: widget.title,
+                  textColor: const Color.fromRGBO(0, 0, 0, 0.5),
+                  textLineHeight: 16.71,
+                  textSize: 14,
+                )
+              : const SizedBox(),
+          Flex(direction: Axis.horizontal, children: [
+            Flexible(
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: _size.width * 0.45,
+                    child: _buildInput(
+                        widget.controllers[0],
+                        (value) {
+                          widget.onChanged(0, value);
+                        },
+                        _selectedLabel == _labelInputs[0],
+                        onTap: () {
+                          setState(() {
+                            _selectedLabel = _labelInputs[0];
+                          });
+                        },
+                        autoFocus: true),
+                  ),
+                  WSpacer(
+                    height: 7,
+                  ),
+                  WTextContent(
+                    value: "Horizontal",
+                    textSize: 12,
+                    textFontWeight: FontWeight.w600,
+                    textLineHeight: 14.32,
+                    textColor: const Color.fromRGBO(0, 0, 0, 0.5),
+                  ),
+                ],
+              ),
+            ),
+            WSpacer(
+              width: 20,
+            ),
+            Flexible(
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: _size.width * 0.45,
+                    child: _buildInput(
+                      widget.controllers[1],
+                      (value) {
+                        widget.onChanged(1, value);
+                      },
+                      _selectedLabel == _labelInputs[1],
+                      onTap: () {
+                        setState(() {
+                          _selectedLabel = _labelInputs[1];
+                        });
+                      },
+                    ),
+                  ),
+                  WSpacer(
+                    height: 7,
+                  ),
+                  WTextContent(
+                    value: "Vertical",
+                    textSize: 12,
+                    textFontWeight: FontWeight.w600,
+                    textLineHeight: 14.32,
+                    textColor: const Color.fromRGBO(0, 0, 0, 0.5),
+                  ),
+                ],
+              ),
+            ),
+          ]),
+          const SizedBox()
+        ],
+      ),
+    ));
+  }
+
+  Widget _buildInput(TextEditingController controller,
       void Function(String)? onChanged, bool isFocus,
-      {void Function()? onTap, bool? autoFocus}) {
+      {void Function()? onTap, bool? autoFocus, bool? isHaveSuffix}) {
     return Container(
-        height: 30,
-        width: 170,
+        height: 35,
+        // width: width,
         alignment: Alignment.center,
         child: CupertinoTextField(
           onTap: onTap,
           onChanged: onChanged,
           autofocus: autoFocus ?? false,
           textAlign: TextAlign.center,
+          keyboardType: TextInputType.number,
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               color: const Color.fromRGBO(255, 255, 255, 1),
@@ -153,6 +308,19 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                       ? const Color.fromRGBO(98, 161, 255, 1)
                       : transparent,
                   width: 2)),
+          suffix: isHaveSuffix == true
+              ? Container(
+                  alignment: Alignment.centerLeft,
+                  margin: const EdgeInsets.only(right: 10),
+                  child: const Text("cm",
+                      style: TextStyle(
+                          color: Color.fromRGBO(0, 0, 0, 0.5),
+                          fontFamily: myCustomFont,
+                          fontWeight: FontWeight.w700,
+                          height: 16.71 / 14,
+                          fontSize: 14)),
+                )
+              : const SizedBox(),
           style: const TextStyle(
             color: colorBlue,
             height: 16.71 / 14,

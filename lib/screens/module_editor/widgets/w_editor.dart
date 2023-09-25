@@ -641,7 +641,7 @@ Widget _buildLayoutItem34({bool reverse = false}) {
 }
 
 // resize mode
-void showLayoutDialogWidthOffset(
+void showLayoutDialogWithOffset(
     {required BuildContext context,
     required Offset offset,
     required Widget dialogWidget}) {

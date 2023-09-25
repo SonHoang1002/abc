@@ -1,18 +1,23 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
+import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/providers/project_provider.dart';
 import 'package:photo_to_pdf/screens/module_editor/editor_padding_spacing.dart';
 import 'package:photo_to_pdf/screens/module_editor/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/w_divider.dart';
+import 'package:photo_to_pdf/widgets/w_matrix_gesture.dart';
 import 'package:photo_to_pdf/widgets/w_project_item.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
+import 'dart:math' as math;
 
 class Editor extends flutter_riverpod.ConsumerStatefulWidget {
   const Editor({
@@ -54,17 +59,34 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
 
   //layout padding variables
   final TextEditingController _paddingHorizontalController =
-      TextEditingController(text: "");
+      TextEditingController(text: "0.0");
   final TextEditingController _paddingVerticalController =
-      TextEditingController(text: "");
+      TextEditingController(text: "0.0");
   late dynamic _paddingOptions;
 
   //layout spacing variables
   final TextEditingController _spacingHorizontalController =
-      TextEditingController(text: "");
+      TextEditingController(text: "0.0");
   final TextEditingController _spacingVerticalController =
-      TextEditingController(text: "");
+      TextEditingController(text: "0.0");
   late dynamic _spacingOptions;
+  // layout custom variables
+  final List<ValueNotifier<Matrix4>> _matrix4Notifiers = [];
+  final List<Placement> _listPlacement = [];
+  Placement? _seletedPlacement;
+
+  final TextEditingController _placementTopController =
+      TextEditingController(text: "0.0");
+  final TextEditingController _placementLeftController =
+      TextEditingController(text: "0.0");
+  final TextEditingController _placementRightController =
+      TextEditingController(text: "0.0");
+  final TextEditingController _placementBottomController =
+      TextEditingController(text: "0.0");
+  final TextEditingController _placementWidthController =
+      TextEditingController(text: "0.0");
+  final TextEditingController _placementHeightController =
+      TextEditingController(text: "0.0");
 
   @override
   void initState() {
@@ -168,6 +190,31 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
 
   String _renderPreviewSpacingOptions() {
     return "${_spacingHorizontalController.text.trim()}${_spacingOptions['unit']} , ${_spacingVerticalController.text.trim()} ${_spacingOptions['unit']}";
+  }
+
+  void _onChangedEditPlacement(int index, String value) {
+    switch (index) {
+      case 0:
+        _placementWidthController.text = value;
+        break;
+      case 1:
+        _placementHeightController.text = value;
+        break;
+      case 2:
+        _placementTopController.text = value;
+        break;
+      case 3:
+        _placementLeftController.text = value;
+        break;
+      case 4:
+        _placementRightController.text = value;
+        break;
+      case 5:
+        _placementBottomController.text = value;
+        break;
+      default:
+        break;
+    }
   }
 
   @override
@@ -297,10 +344,14 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             buildSelection(
-                                context,
-                                _photosConfig['mediaSrc'],
-                                _photosConfig['title'],
-                                _photosConfig['content']),
+                              context,
+                              _photosConfig['mediaSrc'],
+                              _photosConfig['title'],
+                              _photosConfig['content'],
+                              onTap: () {
+                                _showBottomSheetSelectedPhotos();
+                              },
+                            ),
                             WSpacer(
                               width: 10,
                             ),
@@ -374,7 +425,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                           ?.findRenderObject() as RenderBox;
                       final widgetPosition =
                           renderBoxResize.localToGlobal(Offset.zero);
-                      showLayoutDialogWidthOffset(
+                      showLayoutDialogWithOffset(
                           context: context,
                           offset: widgetPosition,
                           dialogWidget: buildDialogResizeMode(
@@ -403,7 +454,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                             ?.findRenderObject() as RenderBox;
                         final widgetOffset =
                             renderBoxAlignment.localToGlobal(Offset.zero);
-                        showLayoutDialogWidthOffset(
+                        showLayoutDialogWithOffset(
                             context: context,
                             offset: Offset(_size.width * (1 - (200 / 390)) / 2,
                                 widgetOffset.dy),
@@ -443,21 +494,14 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                   children: [
                     Flexible(
                         child: buildLayoutConfigItem(
-                      title: "Padding",
+                      title: TITLE_PADDING,
                       content: _renderPreviewPaddingOptions(),
                       width: _size.width * 0.46,
                       onTap: () {
-                        final renderBoxPadding = _keyAlignment.currentContext
-                            ?.findRenderObject() as RenderBox;
-                        final widgetOffset =
-                            renderBoxPadding.localToGlobal(Offset.zero);
-                        Offset offset =
-                            Offset(_size.width * 0.1 / 2, widgetOffset.dy - 50);
                         pushCustomMaterialPageRoute(
                             context,
                             EditorPaddingSpacing(
-                              title: "Padding",
-                              offset: offset,
+                              title: TITLE_PADDING,
                               controllers: [
                                 _paddingHorizontalController,
                                 _paddingVerticalController
@@ -475,21 +519,14 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                     )),
                     Flexible(
                       child: buildLayoutConfigItem(
-                        title: "Spacing",
+                        title: TITLE_SPACING,
                         content: _renderPreviewSpacingOptions(),
                         width: _size.width * 0.46,
                         onTap: () {
-                          final renderBoxPadding = _keyAlignment.currentContext
-                              ?.findRenderObject() as RenderBox;
-                          final widgetOffset =
-                              renderBoxPadding.localToGlobal(Offset.zero);
-                          Offset offset = Offset(
-                              _size.width * 0.1 / 2, widgetOffset.dy - 50);
                           pushCustomMaterialPageRoute(
                               context,
                               EditorPaddingSpacing(
-                                title: "Spacing",
-                                offset: offset,
+                                title: TITLE_SPACING,
                                 controllers: [
                                   _spacingHorizontalController,
                                   _spacingVerticalController
@@ -577,54 +614,340 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     );
   }
 
-  Widget _buildCustomArea() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      height: _size.height * 404 / 791 * 0.9,
-      width: _size.width,
-      decoration: BoxDecoration(
-          color: const Color.fromRGBO(0, 0, 0, 0.03),
-          borderRadius: BorderRadius.circular(10)),
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-      child: Column(children: [
-        Expanded(
-            child: Container(
-          color: colorWhite,
-          margin: EdgeInsets.symmetric(horizontal: 10)
-        )),
-        Container(
-          width: _size.width * 0.5,
-          child: const Flex(
-            direction: Axis.horizontal,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Flexible(
-                flex: 2,
-                child: WButtonFilled(
-                  message: "Add Placemnet",
-                  textColor: colorBlue,
-                  textLineHeight: 14.32,
-                  textSize: 12,
-                  height: 30,
-                  backgroundColor: Color.fromRGBO(22, 115, 255, 0.08),
+  Widget _buildCustomArea(
+    Function rerenderFunction,
+  ) {
+    void disablePlacement() {
+      setState(() {
+        _seletedPlacement = null;
+      });
+      rerenderFunction();
+    }
+
+    return GestureDetector(
+      onTap: () {
+        disablePlacement();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        height: _size.height * 404 / 791 * 0.9,
+        width: _size.width,
+        decoration: BoxDecoration(
+            color: const Color.fromRGBO(0, 0, 0, 0.03),
+            borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        child: GestureDetector(
+          onTap: () {
+            disablePlacement();
+          },
+          child: Column(children: [
+            Expanded(
+                child: Container(
+                    width: _size.width * 0.8,
+                    decoration: BoxDecoration(color: colorWhite, boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        spreadRadius: 0.5,
+                        blurRadius: 5,
+                        offset: const Offset(0, 1),
+                      ),
+                    ]),
+                    margin: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Stack(
+                      children: _matrix4Notifiers.map<Widget>(
+                        (e) {
+                          final index = _matrix4Notifiers.indexOf(e);
+                          return MatrixGestureDetector(
+                            onMatrixUpdate: (matrix, translationDeltaMatrix,
+                                scaleDeltaMatrix, rotationDeltaMatrix) {
+                              setState(() {
+                                _matrix4Notifiers[index].value = matrix;
+                              });
+                              rerenderFunction();
+                            },
+                            onTap: () {
+                              setState(() {
+                                _seletedPlacement = _listPlacement[index];
+                              });
+                              rerenderFunction();
+                            },
+                            child: AnimatedBuilder(
+                              animation: _matrix4Notifiers[index],
+                              builder: (context, child) {
+                                final matrix = _matrix4Notifiers[index].value;
+                                final rotationAngle = math.atan2(0, 0);
+                                return Transform(
+                                  transform: matrix,
+                                  child: Container(
+                                    alignment: Alignment.center,
+                                    child: FittedBox(
+                                      fit: BoxFit.contain,
+                                      alignment: Alignment.bottomCenter,
+                                      child: RotatedBox(
+                                        quarterTurns:
+                                            rotationAngle ~/ (math.pi / 2),
+                                        // quarterTurns: 3,
+                                        child: Stack(
+                                          children: [
+                                            Container(
+                                              color: index == 0
+                                                  ? colorBlack
+                                                  : colorBlue,
+                                              child: Image.asset(
+                                                  "${pathPrefixImage}image_demo.png",
+                                                  fit: BoxFit.cover,
+                                                  height: 70,
+                                                  width: 70),
+                                            ),
+                                            _seletedPlacement?.id ==
+                                                    _listPlacement[index].id
+                                                ? Positioned.fill(
+                                                    child: Center(
+                                                        child: Container(
+                                                    width: 20,
+                                                    height: 20,
+                                                    color: colorGrey,
+                                                  )))
+                                                : const SizedBox()
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ).toList(),
+                    ))),
+            WSpacer(height: 10),
+            SizedBox(
+              width: _size.width * 0.7,
+              child: Flex(
+                direction: Axis.horizontal,
+                children: [
+                  Flexible(
+                    flex: 4,
+                    child: WButtonFilled(
+                      message: "Add Placement",
+                      textColor: colorBlue,
+                      textLineHeight: 14.32,
+                      textSize: 12,
+                      height: 30,
+                      backgroundColor: const Color.fromRGBO(22, 115, 255, 0.08),
+                      onPressed: () {
+                        setState(() {
+                          _matrix4Notifiers
+                              .add(ValueNotifier(Matrix4.identity()));
+                          _listPlacement.add(Placement(
+                              width: 70,
+                              height: 70,
+                              alignment: Alignment.center,
+                              id: Random().nextInt(10000)));
+                          _seletedPlacement = _listPlacement.last;
+                        });
+                        rerenderFunction();
+                      },
+                      padding: EdgeInsets.zero,
+                    ),
+                  ),
+                  _seletedPlacement != null
+                      ? WSpacer(
+                          width: 10,
+                        )
+                      : const SizedBox(),
+                  _seletedPlacement != null
+                      ? Flexible(
+                          flex: 2,
+                          child: WButtonFilled(
+                            message: "Edit",
+                            height: 30,
+                            textColor: colorBlue,
+                            textLineHeight: 14.32,
+                            textSize: 12,
+                            backgroundColor:
+                                const Color.fromRGBO(22, 115, 255, 0.08),
+                            padding: EdgeInsets.zero,
+                            onPressed: () {
+                              pushCustomMaterialPageRoute(
+                                  context,
+                                  EditorPaddingSpacing(
+                                    title: TITLE_EDIT_PLACEMENT,
+                                    // width and height is 0 and 1 to comparable with EditorPaddingSpacing (2 controller)
+                                    controllers: [
+                                      _placementWidthController,
+                                      _placementHeightController,
+                                      _placementTopController,
+                                      _placementLeftController,
+                                      _placementRightController,
+                                      _placementBottomController,
+                                    ],
+                                    onChanged: (index, value) {
+                                      _onChangedEditPlacement(index, value);
+                                    },
+                                  ));
+                            },
+                          ),
+                        )
+                      : const SizedBox(),
+                  _seletedPlacement != null
+                      ? WSpacer(
+                          width: 10,
+                        )
+                      : const SizedBox(),
+                  _seletedPlacement != null
+                      ? Flexible(
+                          flex: 2,
+                          child: WButtonFilled(
+                            message: "Delete",
+                            height: 30,
+                            textColor: const Color.fromRGBO(255, 63, 51, 1),
+                            textLineHeight: 14.32,
+                            textSize: 12,
+                            backgroundColor:
+                                const Color.fromRGBO(255, 63, 51, 0.1),
+                            padding: EdgeInsets.zero,
+                            onPressed: () {
+                              final index =
+                                  _listPlacement.indexOf(_seletedPlacement!);
+                              _listPlacement.removeAt(index);
+                              _matrix4Notifiers.removeAt(index);
+                              _seletedPlacement = null;
+                              setState(() {});
+                              rerenderFunction();
+                            },
+                          ),
+                        )
+                      : const SizedBox()
+                ],
+              ),
+            )
+          ]),
+        ),
+      ),
+    );
+  }
+
+  void _showBottomSheetSelectedPhotos() {
+    showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(builder: (context, setStatefull) {
+            return Container(
+              height: _size.height * 0.95,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20.0),
+                  topRight: Radius.circular(20.0),
                 ),
               ),
-              Flexible(
-                flex: 1,
-                child: WButtonFilled(
-                  message: "Delete",
-                  height: 30,
-                  textColor: Color.fromRGBO(255, 63, 51, 1),
-                  textLineHeight: 14.32,
-                  textSize: 12,
-                  backgroundColor: Color.fromRGBO(255, 63, 51, 0.1),
-                ),
-              )
-            ],
-          ),
-        )
-      ]),
-    );
+              child: Column(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 20),
+                    child: WTextContent(
+                      value: "Selected Photos",
+                      textSize: 14,
+                      textLineHeight: 16.71,
+                    ),
+                  ),
+                  Expanded(
+                    child: Container(
+                      height: _size.height * 404 / 791 * 0.9,
+                      decoration: BoxDecoration(
+                          color: const Color.fromRGBO(0, 0, 0, 0.03),
+                          borderRadius: BorderRadius.circular(10)),
+                      child: ReorderableGridView.count(
+                        padding:
+                            const EdgeInsets.only(top: 10, left: 10, right: 10),
+                        shrinkWrap: true,
+                        crossAxisSpacing: 5,
+                        mainAxisSpacing: 5,
+                        crossAxisCount: 3,
+                        onReorder: (oldIndex, newIndex) {
+                          setState(() {
+                            final tempListProject = ref
+                                .watch(projectControllerProvider)
+                                .listProject;
+                            final element = tempListProject.removeAt(oldIndex);
+                            tempListProject.insert(newIndex, element);
+                            ref
+                                .read(projectControllerProvider.notifier)
+                                .setProject(tempListProject);
+                          });
+                          setStatefull(() {});
+                        },
+                        onDragStart: (dragIndex) {},
+                        children: ref
+                            .watch(projectControllerProvider)
+                            .listProject
+                            .map((e) {
+                          final index = ref
+                              .watch(projectControllerProvider)
+                              .listProject
+                              .indexOf(e);
+                          return WProjectItemHomeBottom(
+                            key: ValueKey(ref
+                                .watch(projectControllerProvider)
+                                .listProject[index]),
+                            src: ref
+                                .watch(projectControllerProvider)
+                                .listProject[index],
+                            isFocusByLongPress: true,
+                            index: index,
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                  WSpacer(height: 5,),
+                  SizedBox(
+                    width: _size.width * 0.7,
+                    child: Flex(
+                      direction: Axis.horizontal,
+                      children: [
+                        Flexible(
+                          flex: 2,
+                          child: WButtonFilled(
+                            message: "Add Photo",
+                            textColor: colorBlue,
+                            textLineHeight: 14.32,
+                            textSize: 12,
+                            height: 30,
+                            backgroundColor:
+                                const Color.fromRGBO(22, 115, 255, 0.08),
+                            onPressed: () {},
+                            padding: EdgeInsets.zero,
+                          ),
+                        ),
+                        WSpacer(width: 10,),
+                        Flexible(
+                          flex: 2,
+                          child: WButtonFilled(
+                            message: "Add File",
+                            height: 30,
+                            textColor: colorBlue,
+                            textLineHeight: 14.32,
+                            textSize: 12,
+                            backgroundColor:
+                                const Color.fromRGBO(22, 115, 255, 0.08),
+                            padding: EdgeInsets.zero,
+                            onPressed: () {},
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  buildBottomButton(context)
+                ],
+              ),
+            );
+          });
+        },
+        isScrollControlled: true,
+        backgroundColor: transparent);
   }
 
   void _showBottomSheetLayout() {
@@ -753,7 +1076,9 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                         ).toList())
                                   ],
                                 )))
-                        : _buildCustomArea(),
+                        : _buildCustomArea(() {
+                            setStatefull(() {});
+                          }),
                   ),
                   _buildLayoutConfigs(() {
                     setStatefull(() {});

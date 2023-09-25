@@ -69,21 +69,9 @@ dynamic SPACING_OPTIONS = {
   "unit": POINT
 };
 
-// Map<String, dynamic> PAGE_SIZE = {
-//   "A3": {"title": "A3", "width": 29.7, "height": 42, "unit": CENTIMET},
-//   "A4": {"title": "A4", "width": 21.0, "height": 29.7, "unit": CENTIMET},
-//   "B5": {"title": "B5", "width": 17.6, "height": 25.0, "unit": CENTIMET},
-//   "JIS B5": {
-//     "title": "JIS B5",
-//     "width": 18.2,
-//     "height": 25.7,
-//     "unit": CENTIMET
-//   },
-//   "Legal": {"title": "Legal", "width": 8.5, "height": 14.0, "unit": INCH},
-//   "Letter": {"title": "Letter", "width": 8.5, "height": 11.0, "unit": INCH},
-//   "Tabloid": {"title": "Tabloid", "width": 11.0, "height": 17.0, "unit": INCH},
-//   "Custom": {"title": "Custom", "width": 1.0, "height": 1.0, "unit": INCH},
-// };
+const String TITLE_PADDING = "Padding";
+const String TITLE_SPACING = "Spacing";
+const String TITLE_EDIT_PLACEMENT = "Editing Placement";
 
 const String INCH = "”";
 const String CENTIMET = "cm";

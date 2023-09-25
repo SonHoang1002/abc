@@ -1,65 +1,61 @@
-
-project item trong man hinh editor hoi nho
-
-import 'dart:math';
-
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
-import 'package:photo_to_pdf/commons/colors.dart';
-import 'package:photo_to_pdf/commons/constants.dart';
-import 'package:photo_to_pdf/helpers/navigator_route.dart';
-import 'package:photo_to_pdf/models/placement.dart';
-import 'package:photo_to_pdf/widgets/w_button.dart';
-import 'package:photo_to_pdf/widgets/w_matrix_gesture.dart';
-import 'package:photo_to_pdf/widgets/w_spacer.dart';
+import 'dart:developer';
 import 'dart:math' as math;
 
+import 'package:flutter/material.dart';
+import 'package:photo_to_pdf/commons/colors.dart';
+import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/models/placement.dart';
 
-class TestDrag extends flutter_riverpod.ConsumerStatefulWidget {
+class TestDrag extends StatefulWidget {
   const TestDrag({
     super.key,
   });
 
   @override
-  flutter_riverpod.ConsumerState<TestDrag> createState() => _TestDragState();
+  State<TestDrag> createState() => _TestDragState();
 }
 
-class _TestDragState extends flutter_riverpod.ConsumerState<TestDrag> {
+class _TestDragState extends State<TestDrag> {
   late Size _size;
   final List<ValueNotifier<Matrix4>> _matrix4Notifiers = [];
   final List<Placement> _listPlacement = [];
 
+  var offset = const Offset(0, 0);
+  Size containerSize = Size.zero;
+  final GlobalKey _placementFrame = GlobalKey();
   @override
   void initState() {
     super.initState();
 
     _matrix4Notifiers.add(ValueNotifier(Matrix4.identity()));
-    // _matrix4Notifiers.add(ValueNotifier(Matrix4.identity()));
     _listPlacement
         .add(Placement(width: 70, height: 70, alignment: Alignment.center));
-    // _listPlacement
-    //     .add(Placement(width: 70, height: 70, alignment: Alignment.center));
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _size = MediaQuery.sizeOf(context);
+
+    containerSize = _placementFrame.currentContext != null
+        ? (_placementFrame.currentContext?.findRenderObject() as RenderBox).size
+        : Size(_size.width * 0.8, _size.width * 0.8);
   }
 
   @override
   Widget build(BuildContext context) {
-    _size = MediaQuery.sizeOf(context);
     return Scaffold(
         resizeToAvoidBottomInset: false,
         body: SafeArea(
-            child: Container(
-          padding: const EdgeInsets.only(top: 10),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [_buildCustomArea(() {})],
+          child: Container(
+            padding: const EdgeInsets.only(top: 10),
+            child: _buildCustomArea(() {}),
           ),
-        )));
+        ));
   }
 
   Widget _buildCustomArea(Function rerenderFunction) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10),
       height: _size.height * 404 / 791 * 0.9,
       width: _size.width,
       decoration: BoxDecoration(
@@ -68,9 +64,11 @@ class _TestDragState extends flutter_riverpod.ConsumerState<TestDrag> {
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       child: Column(children: [
         Expanded(
+            key: _placementFrame,
             child: Container(
                 width: _size.width * 0.8,
-                decoration: BoxDecoration(color: colorWhite, boxShadow: [
+                height: _size.width * 0.8,
+                decoration: BoxDecoration(color: Colors.white, boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.2),
                     spreadRadius: 0.5,
@@ -78,63 +76,60 @@ class _TestDragState extends flutter_riverpod.ConsumerState<TestDrag> {
                     offset: const Offset(0, 1),
                   ),
                 ]),
-                margin: const EdgeInsets.symmetric(horizontal: 10),
                 child: Stack(
                   children: _matrix4Notifiers.map<Widget>(
                     (e) {
                       final index = _matrix4Notifiers.indexOf(e);
-                      return MatrixGestureDetector(
-                        onMatrixUpdate: (matrix, translationDeltaMatrix,
-                            scaleDeltaMatrix, rotationDeltaMatrix) {
-                          setState(() {
-                            _matrix4Notifiers[index].value = matrix;
-                          });
-                          rerenderFunction();
-                        },
-                        onTap: () {
-                          print("$index hehehehe");
+                      return GestureDetector(
+                        onPanUpdate: (details) {
+                          offset = offset.translate(
+                              details.delta.dx, details.delta.dy);
+
+                          if (offset.dx <= 0) {
+                            offset = Offset(0, offset.dy);
+                          }
+                          if (offset.dy <= 0) {
+                            offset = Offset(offset.dx, 0);
+                          }
+                          if (offset.dx + _listPlacement[index].width >=
+                              containerSize.width - 20) {
+                            offset = Offset(
+                                containerSize.width -
+                                    _listPlacement[index].width,
+                                offset.dy);
+                          }
+                          if (offset.dy + _listPlacement[index].height >=
+                              containerSize.height) {
+                            offset = Offset(
+                                offset.dx,
+                                containerSize.height -
+                                    _listPlacement[index].height);
+                          }
+                          setState(() {});
                         },
                         child: AnimatedBuilder(
                           animation: _matrix4Notifiers[index],
                           builder: (context, child) {
-                            final matrix = _matrix4Notifiers[index].value;
-                            final rotationAngle = math.atan2(0, 0);
-                            return Transform(
-                              transform: matrix,
-                              child: Container(
-                                color: colorBlue,
-                                alignment: _listPlacement[index].alignment,
-                                child: FittedBox(
-                                  fit: BoxFit.contain,
-                                  child: RotatedBox(
-                                    quarterTurns:
-                                        rotationAngle ~/ (math.pi / 2),
-                                    // quarterTurns: 3,
-                                    child: Align(
-                                      // alignment:
-                                      // _listPlacement[index].alignment,
-                                      child: Stack(
-                                        children: [
-                                          Container(
-                                            margin: const EdgeInsets.all(7),
-                                            child: Image.asset(
-                                              "${pathPrefixImage}image_demo.png",
-                                              fit: BoxFit.cover,
-                                              height:
-                                                  _listPlacement[index].height,
-                                              width:
-                                                  _listPlacement[index].width,
-                                            ),
-                                          ),
-                                          Positioned.fill(
-                                              child:
-                                                  _buildPanGestureWidget(index))
-                                        ],
+                            return Stack(
+                              children: [
+                                Positioned(
+                                  top: offset.dy,
+                                  left: offset.dx,
+                                  child: Stack(fit: StackFit.loose, children: [
+                                    Container(
+                                      margin: const EdgeInsets.all(7),
+                                      child: Image.asset(
+                                        "${pathPrefixImage}image_demo.png",
+                                        fit: BoxFit.cover,
+                                        height: _listPlacement[index].height,
+                                        width: _listPlacement[index].width,
                                       ),
                                     ),
-                                  ),
+                                    Positioned.fill(
+                                        child: _buildPanGestureWidget(index))
+                                  ]),
                                 ),
-                              ),
+                              ],
                             );
                           },
                         ),
@@ -142,48 +137,12 @@ class _TestDragState extends flutter_riverpod.ConsumerState<TestDrag> {
                     },
                   ).toList(),
                 ))),
-        WSpacer(height: 10),
-        SizedBox(
-          width: _size.width * 0.6,
-          child: Flex(
-            direction: Axis.horizontal,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Flexible(
-                flex: 3,
-                child: WButtonFilled(
-                  message: "Add Placemnet",
-                  textColor: colorBlue,
-                  textLineHeight: 14.32,
-                  textSize: 12,
-                  height: 30,
-                  backgroundColor: const Color.fromRGBO(22, 115, 255, 0.08),
-                  onPressed: () {},
-                  padding: EdgeInsets.zero,
-                ),
-              ),
-              WSpacer(
-                width: 10,
-              ),
-              Flexible(
-                flex: 2,
-                child: WButtonFilled(
-                  message: "Delete",
-                  height: 30,
-                  textColor: const Color.fromRGBO(255, 63, 51, 1),
-                  textLineHeight: 14.32,
-                  textSize: 12,
-                  backgroundColor: const Color.fromRGBO(255, 63, 51, 0.1),
-                  padding: EdgeInsets.zero,
-                  onPressed: () {},
-                ),
-              )
-            ],
-          ),
-        )
+        const SizedBox(height: 10),
       ]),
     );
   }
+
+  var lastBottom = 0.0;
 
   Widget _buildPanGestureWidget(int index) {
     return Stack(
@@ -195,6 +154,7 @@ class _TestDragState extends flutter_riverpod.ConsumerState<TestDrag> {
               BoxDecoration(border: Border.all(color: colorBlue, width: 2)),
         )),
         Column(
+          mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -205,8 +165,10 @@ class _TestDragState extends flutter_riverpod.ConsumerState<TestDrag> {
                 // dot top left
                 _buildDotDrag(
                   index,
-                  20,
+                  15,
+                  margin: const EdgeInsets.only(bottom: 10),
                   onPanUpdate: (details) {
+                    offset = offset + details.delta;
                     setState(() {
                       _listPlacement[index].width -= details.delta.dx;
                       _listPlacement[index].height -= details.delta.dy;
@@ -221,13 +183,16 @@ class _TestDragState extends flutter_riverpod.ConsumerState<TestDrag> {
                 // dot top center
                 _buildDotDrag(
                   index,
-                  15,
+                  12,
+                  margin: const EdgeInsets.only(bottom: 11),
                   onPanUpdate: (details) {
-                    setState(() {
-                      _listPlacement[index].height -= details.delta.dy;
-                    });
+                    _listPlacement[index].height -= details.delta.dy;
+                    offset = Offset(
+                        offset.dx, lastBottom - _listPlacement[index].height);
+                    setState(() {});
                   },
                   onPanStart: (details) {
+                    lastBottom = _listPlacement[index].height + offset.dy;
                     setState(() {
                       _listPlacement[index].alignment = Alignment.bottomCenter;
                     });
@@ -236,12 +201,13 @@ class _TestDragState extends flutter_riverpod.ConsumerState<TestDrag> {
                 // dot top right
                 _buildDotDrag(
                   index,
-                  20,
+                  15,
+                  margin: const EdgeInsets.only(bottom: 10),
                   onPanUpdate: (details) {
-                    setState(() {
-                      _listPlacement[index].width += details.delta.dx;
-                      _listPlacement[index].height -= details.delta.dy;
-                    });
+                    offset = offset.translate(0, details.delta.dy);
+                    _listPlacement[index].width += details.delta.dx;
+                    _listPlacement[index].height -= details.delta.dy;
+                    setState(() {});
                   },
                   onPanStart: (p0) {
                     setState(() {
@@ -258,9 +224,10 @@ class _TestDragState extends flutter_riverpod.ConsumerState<TestDrag> {
                 //dot center left
                 _buildDotDrag(
                   index,
-                  15,
-                  margin: const EdgeInsets.only(left: 2),
+                  12,
+                  margin: const EdgeInsets.only(right: 11),
                   onPanUpdate: (details) {
+                    offset = offset.translate(details.delta.dx, 0);
                     setState(() {
                       _listPlacement[index].width -= details.delta.dx;
                     });
@@ -274,8 +241,8 @@ class _TestDragState extends flutter_riverpod.ConsumerState<TestDrag> {
                 // dot center right
                 _buildDotDrag(
                   index,
-                  15,
-                  margin: const EdgeInsets.only(right: 2),
+                  12,
+                  margin: const EdgeInsets.only(left: 11),
                   onPanUpdate: (details) {
                     setState(() {
                       _listPlacement[index].width += details.delta.dx;
@@ -296,8 +263,10 @@ class _TestDragState extends flutter_riverpod.ConsumerState<TestDrag> {
                 // dot bottom left
                 _buildDotDrag(
                   index,
-                  20,
+                  15,
+                  margin: const EdgeInsets.only(top: 11),
                   onPanUpdate: (details) {
+                    offset = offset.translate(details.delta.dx, 0);
                     setState(() {
                       _listPlacement[index].width -= details.delta.dx;
                       _listPlacement[index].height += details.delta.dy;
@@ -312,7 +281,8 @@ class _TestDragState extends flutter_riverpod.ConsumerState<TestDrag> {
                 // dot bottom center
                 _buildDotDrag(
                   index,
-                  15,
+                  12,
+                  margin: const EdgeInsets.only(top: 11),
                   onPanUpdate: (details) {
                     setState(() {
                       _listPlacement[index].height += details.delta.dy;
@@ -327,7 +297,8 @@ class _TestDragState extends flutter_riverpod.ConsumerState<TestDrag> {
                 // dot bottom right
                 _buildDotDrag(
                   index,
-                  20,
+                  15,
+                  margin: const EdgeInsets.only(top: 11),
                   onPanUpdate: (details) {
                     setState(() {
                       _listPlacement[index].width += details.delta.dx;
@@ -356,8 +327,6 @@ class _TestDragState extends flutter_riverpod.ConsumerState<TestDrag> {
     return GestureDetector(
       onPanUpdate: (details) {
         onPanUpdate!(details);
-        print("details.delta.dx ${details.delta.dx}");
-        print("details.delta.dy ${details.delta.dy}");
       },
       onTap: onTap,
       onPanStart: onPanStart,
@@ -366,9 +335,9 @@ class _TestDragState extends flutter_riverpod.ConsumerState<TestDrag> {
         width: size,
         margin: margin,
         decoration: BoxDecoration(
-          color: colorWhite,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(size / 2),
-          border: Border.all(color: colorBlue, width: 2),
+          border: Border.all(color: Colors.blue, width: 2),
         ),
       ),
     );

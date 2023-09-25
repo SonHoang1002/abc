@@ -21,3 +21,18 @@ class MyApp extends StatelessWidget {
 
 
 
+// void main() {
+//   runApp(MaterialApp(
+//     home: Scaffold(
+//       appBar: AppBar(
+//         title: Text('Resizable Box'),
+//       ),
+//       body: Center(
+//         child: TestDrag(),
+//       ),
+//     ),
+//   ));
+// }
+
+
+
