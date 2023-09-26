@@ -76,3 +76,6 @@ const String TITLE_EDIT_PLACEMENT = "Editing Placement";
 const String INCH = "”";
 const String CENTIMET = "cm";
 const String POINT = "pt";
+
+const String LANDSCAPE = "landscape";
+const String PORTRAIT = "portrait";

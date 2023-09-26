@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/widgets/w_opaque_cupertino.dart';
 import 'package:photo_to_pdf/widgets/w_opaque_material.dart';
 
@@ -65,4 +66,116 @@ pushCustomMaterialPageRoute(
           maintainState: maintainState,
           fullscreenDialog: fullscreenDialog,
           allowSnapshotting: allowSnapshotting));
+}
+
+/// drive from bottom to top screen
+pushCustomVerticalMaterialPageRoute(BuildContext context, Widget newScreen,
+    {bool opaque = true}) {
+  Navigator.push(
+    context,
+    MaterialPageRouteBuilder(
+      opaque: opaque,
+      pageBuilder: (context, animation, secondaryAnimation) => newScreen,
+      transitionDuration: const Duration(milliseconds: 200),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        var begin = const Offset(0.0, 1.0);
+        var end = Offset.zero;
+        var curve = Curves.ease;
+        var tween =
+            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        return SlideTransition(
+          position: animation.drive(tween),
+          child: child,
+        );
+      },
+      barrierColor:transparent
+    ),
+  );
+}
+
+abstract class PageRoute<T> extends ModalRoute<T> {
+  PageRoute({
+    super.settings,
+    this.fullscreenDialog = false,
+    this.allowSnapshotting = true,
+  });
+  final bool fullscreenDialog;
+
+  @override
+  final bool allowSnapshotting;
+
+  @override
+  bool get opaque => false;
+
+  @override
+  bool get barrierDismissible => false;
+
+  @override
+  bool canTransitionTo(TransitionRoute<dynamic> nextRoute) =>
+      nextRoute is PageRoute;
+
+  @override
+  bool canTransitionFrom(TransitionRoute<dynamic> previousRoute) =>
+      previousRoute is PageRoute;
+}
+
+Widget _defaultTransitionsBuilder(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child) {
+  return child;
+}
+
+class MaterialPageRouteBuilder<T> extends PageRoute<T> {
+  MaterialPageRouteBuilder({
+    super.settings,
+    required this.pageBuilder,
+    this.transitionsBuilder = _defaultTransitionsBuilder,
+    this.transitionDuration = const Duration(milliseconds: 300),
+    this.reverseTransitionDuration = const Duration(milliseconds: 300),
+    this.opaque = true,
+    this.barrierDismissible = false,
+    this.barrierColor,
+    this.barrierLabel,
+    this.maintainState = true,
+    super.fullscreenDialog,
+    super.allowSnapshotting = true,
+  });
+
+  final RoutePageBuilder pageBuilder;
+  final RouteTransitionsBuilder transitionsBuilder;
+
+  @override
+  final Duration transitionDuration;
+
+  @override
+  final Duration reverseTransitionDuration;
+
+  @override
+  final bool opaque;
+
+  @override
+  final bool barrierDismissible;
+
+  @override
+  final Color? barrierColor;
+
+  @override
+  final String? barrierLabel;
+
+  @override
+  final bool maintainState;
+
+  @override
+  Widget buildPage(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation) {
+    return pageBuilder(context, animation, secondaryAnimation);
+  }
+
+  @override
+  Widget buildTransitions(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation, Widget child) {
+    return transitionsBuilder(context, animation, secondaryAnimation, child);
+  }
 }

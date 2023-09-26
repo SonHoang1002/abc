@@ -41,12 +41,11 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
 
     if ([TITLE_EDIT_PLACEMENT].contains(widget.title)) {
       _labelInputs = LABELS_EDIT_PLACEMENT;
-       _selectedLabel = _labelInputs[2];
+      _selectedLabel = _labelInputs[2];
     } else {
       _labelInputs = LABELS_PADDING_SPACING;
       _selectedLabel = _labelInputs[0];
     }
-    
   }
 
   @override
@@ -74,7 +73,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
               )),
               [TITLE_EDIT_PLACEMENT].contains(widget.title)
                   ? _buildEditPlacementBody()
-                  : _buildPaddingSpacingBody(title: widget.title),
+                  : _buildPaddingSpacingBody(title: widget.title, height: 140),
             ],
           )),
     );
@@ -82,209 +81,214 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
 
   Widget _buildEditPlacementBody() {
     return Center(
-        child: Container(
-      height: _size.width * 0.9,
-      padding: const EdgeInsets.all(10),
-      alignment: Alignment.center,
-      width: _size.width * 0.9,
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(15), color: Colors.grey.shade100),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          WTextContent(
-            value: widget.title,
-            textColor: const Color.fromRGBO(0, 0, 0, 0.5),
-            textLineHeight: 16.71,
-            textSize: 14,
-          ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: _size.width * 0.27,
-                child: _buildInput(
-                    widget.controllers[2],
-                    (value) {
-                      widget.onChanged(2, value);
-                    },
-                    _selectedLabel == _labelInputs[2],
-                    onTap: () {
-                      setState(() {
-                        _selectedLabel = _labelInputs[2];
-                      });
-                    },
-                    autoFocus: true),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+      child: Container(
+        height: _size.width * 0.9,
+        padding: const EdgeInsets.all(10),
+        // margin:
+        //     EdgeInsets.only(top: _size.height * 0.07, left: _size.height * 0.025),
+        alignment: Alignment.center,
+        width: _size.width * 0.9,
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15), color: Colors.grey.shade100),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            WTextContent(
+              value: widget.title,
+              textColor: const Color.fromRGBO(0, 0, 0, 0.5),
+              textLineHeight: 16.71,
+              textSize: 14,
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: _size.width * 0.27,
+                  child: _buildInput(
+                      widget.controllers[2],
+                      (value) {
+                        widget.onChanged(2, value);
+                      },
+                      _selectedLabel == _labelInputs[2],
+                      onTap: () {
+                        setState(() {
+                          _selectedLabel = _labelInputs[2];
+                        });
+                      },
+                      autoFocus: true),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: _size.width * 0.27,
+                        child: _buildInput(
+                            widget.controllers[3],
+                            (value) {
+                              widget.onChanged(3, value);
+                            },
+                            _selectedLabel == _labelInputs[3],
+                            onTap: () {
+                              setState(() {
+                                _selectedLabel = _labelInputs[3];
+                              });
+                            },
+                            autoFocus: false),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 15),
+                        child: Image.asset(
+                          "${pathPrefixIcon}icon_placement_center.png",
+                          height: 60,
+                          width: 60,
+                          scale: 3,
+                        ),
+                      ),
+                      SizedBox(
+                        width: _size.width * 0.27,
+                        child: _buildInput(
+                            widget.controllers[4],
+                            (value) {
+                              widget.onChanged(4, value);
+                            },
+                            _selectedLabel == _labelInputs[4],
+                            onTap: () {
+                              setState(() {
+                                _selectedLabel = _labelInputs[4];
+                              });
+                            },
+                            autoFocus: false),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  width: _size.width * 0.27,
+                  child: _buildInput(
+                      widget.controllers[5],
+                      (value) {
+                        widget.onChanged(5, value);
+                      },
+                      _selectedLabel == _labelInputs[5],
+                      onTap: () {
+                        setState(() {
+                          _selectedLabel = _labelInputs[5];
+                        });
+                      },
+                      autoFocus: true),
+                ),
+              ],
+            ),
+            _buildPaddingSpacingBody(
+              padding: EdgeInsets.zero,
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPaddingSpacingBody(
+      {double? height,
+      EdgeInsets? padding = const EdgeInsets.all(10),
+      String? title}) {
+    return Center(
+      child: Container(
+        height: height,
+        padding: padding,
+        alignment: Alignment.center,
+        width: _size.width * 0.9,
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            color: Colors.grey.shade100),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            title != null
+                ? WTextContent(
+                    value: widget.title,
+                    textColor: const Color.fromRGBO(0, 0, 0, 0.5),
+                    textLineHeight: 16.71,
+                    textSize: 14,
+                  )
+                : const SizedBox(),
+            Flex(direction: Axis.horizontal, children: [
+              Flexible(
+                child: Column(
                   children: [
                     SizedBox(
-                      width: _size.width * 0.27,
+                      width: _size.width * 0.45,
                       child: _buildInput(
-                          widget.controllers[3],
+                          widget.controllers[0],
                           (value) {
-                            widget.onChanged(3, value);
+                            widget.onChanged(0, value);
                           },
-                          _selectedLabel == _labelInputs[3],
+                          _selectedLabel == _labelInputs[0],
                           onTap: () {
                             setState(() {
-                              _selectedLabel = _labelInputs[3];
+                              _selectedLabel = _labelInputs[0];
                             });
                           },
-                          autoFocus: false),
+                          autoFocus: true),
                     ),
-                    Container(
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 5, vertical: 15),
-                      child: Image.asset(
-                        "${pathPrefixIcon}icon_placement_center.png",
-                        height: 60,
-                        width: 60,
-                        scale: 3,
-                      ),
+                    WSpacer(
+                      height: 7,
                     ),
-                    SizedBox(
-                      width: _size.width * 0.27,
-                      child: _buildInput(
-                          widget.controllers[4],
-                          (value) {
-                            widget.onChanged(4, value);
-                          },
-                          _selectedLabel == _labelInputs[4],
-                          onTap: () {
-                            setState(() {
-                              _selectedLabel = _labelInputs[4];
-                            });
-                          },
-                          autoFocus: false),
+                    WTextContent(
+                      value: "Horizontal",
+                      textSize: 12,
+                      textFontWeight: FontWeight.w600,
+                      textLineHeight: 14.32,
+                      textColor: const Color.fromRGBO(0, 0, 0, 0.5),
                     ),
                   ],
                 ),
               ),
-              SizedBox(
-                width: _size.width * 0.27,
-                child: _buildInput(
-                    widget.controllers[5],
-                    (value) {
-                      widget.onChanged(5, value);
-                    },
-                    _selectedLabel == _labelInputs[5],
-                    onTap: () {
-                      setState(() {
-                        _selectedLabel = _labelInputs[5];
-                      });
-                    },
-                    autoFocus: true),
+              WSpacer(
+                width: 20,
               ),
-            ],
-          ),
-          _buildPaddingSpacingBody(
-            padding: EdgeInsets.zero,
-          )
-        ],
-      ),
-    ));
-  }
-
-  Widget _buildPaddingSpacingBody(
-      {double? height = 140,
-      EdgeInsets? padding = const EdgeInsets.all(10),
-      String? title}) {
-    return Center(
-        child: Container(
-      height: height,
-      padding: padding,
-      alignment: Alignment.center,
-      width: _size.width * 0.9,
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(15), color: Colors.grey.shade100),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          title != null
-              ? WTextContent(
-                  value: widget.title,
-                  textColor: const Color.fromRGBO(0, 0, 0, 0.5),
-                  textLineHeight: 16.71,
-                  textSize: 14,
-                )
-              : const SizedBox(),
-          Flex(direction: Axis.horizontal, children: [
-            Flexible(
-              child: Column(
-                children: [
-                  SizedBox(
-                    width: _size.width * 0.45,
-                    child: _buildInput(
-                        widget.controllers[0],
+              Flexible(
+                child: Column(
+                  children: [
+                    SizedBox(
+                      width: _size.width * 0.45,
+                      child: _buildInput(
+                        widget.controllers[1],
                         (value) {
-                          widget.onChanged(0, value);
+                          widget.onChanged(1, value);
                         },
-                        _selectedLabel == _labelInputs[0],
+                        _selectedLabel == _labelInputs[1],
                         onTap: () {
                           setState(() {
-                            _selectedLabel = _labelInputs[0];
+                            _selectedLabel = _labelInputs[1];
                           });
                         },
-                        autoFocus: true),
-                  ),
-                  WSpacer(
-                    height: 7,
-                  ),
-                  WTextContent(
-                    value: "Horizontal",
-                    textSize: 12,
-                    textFontWeight: FontWeight.w600,
-                    textLineHeight: 14.32,
-                    textColor: const Color.fromRGBO(0, 0, 0, 0.5),
-                  ),
-                ],
-              ),
-            ),
-            WSpacer(
-              width: 20,
-            ),
-            Flexible(
-              child: Column(
-                children: [
-                  SizedBox(
-                    width: _size.width * 0.45,
-                    child: _buildInput(
-                      widget.controllers[1],
-                      (value) {
-                        widget.onChanged(1, value);
-                      },
-                      _selectedLabel == _labelInputs[1],
-                      onTap: () {
-                        setState(() {
-                          _selectedLabel = _labelInputs[1];
-                        });
-                      },
+                      ),
                     ),
-                  ),
-                  WSpacer(
-                    height: 7,
-                  ),
-                  WTextContent(
-                    value: "Vertical",
-                    textSize: 12,
-                    textFontWeight: FontWeight.w600,
-                    textLineHeight: 14.32,
-                    textColor: const Color.fromRGBO(0, 0, 0, 0.5),
-                  ),
-                ],
+                    WSpacer(
+                      height: 7,
+                    ),
+                    WTextContent(
+                      value: "Vertical",
+                      textSize: 12,
+                      textFontWeight: FontWeight.w600,
+                      textLineHeight: 14.32,
+                      textColor: const Color.fromRGBO(0, 0, 0, 0.5),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ]),
-          const SizedBox()
-        ],
+            ]),
+            const SizedBox()
+          ],
+        ),
       ),
-    ));
+    );
   }
 
   Widget _buildInput(TextEditingController controller,

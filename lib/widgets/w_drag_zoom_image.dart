@@ -6,76 +6,86 @@ import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 
-class TestDrag extends StatefulWidget {
-  const TestDrag({
+class WDragZoomImage extends StatefulWidget {
+  final Function reRenerFunction;
+  final List<Placement> listPlacement;
+  final List<ValueNotifier<Matrix4>> matrix4Notifiers;
+  final Function(List<Placement> placements) updatePlacement;
+  final Placement? seletedPlacement;
+  final Function(Placement placement, ValueNotifier<Matrix4> matrix4)?
+      onFocusPlacement;
+  const WDragZoomImage({
     super.key,
+    required this.reRenerFunction,
+    required this.listPlacement,
+    required this.matrix4Notifiers,
+    required this.updatePlacement,
+    this.seletedPlacement,
+    this.onFocusPlacement,
   });
 
   @override
-  State<TestDrag> createState() => _TestDragState();
+  State<WDragZoomImage> createState() => _WDragZoomImageState();
 }
 
-class _TestDragState extends State<TestDrag> {
+class _WDragZoomImageState extends State<WDragZoomImage> {
   late Size _size;
-  final List<ValueNotifier<Matrix4>> _matrix4Notifiers = [];
-  final List<Placement> _listPlacement = [];
-
+  List<ValueNotifier<Matrix4>> _matrix4Notifiers = [];
+  List<Placement> _listPlacement = [];
+  double lastBottom = 0.0;
   Size containerSize = Size.zero;
   final GlobalKey _placementFrame = GlobalKey();
+
   @override
   void initState() {
     super.initState();
 
     _matrix4Notifiers.add(ValueNotifier(Matrix4.identity()));
-    _matrix4Notifiers.add(ValueNotifier(Matrix4.identity()));
     _listPlacement.add(Placement(
         width: 70,
         height: 70,
         alignment: Alignment.center,
         offset: const Offset(0, 0)));
-    _listPlacement.add(Placement(
-        width: 70,
-        height: 70,
-        alignment: Alignment.center,
-        offset: const Offset(0, 0)));
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      setState(() {
+        containerSize =
+            (_placementFrame.currentContext?.findRenderObject() as RenderBox)
+                .size;
+      });
+    });
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _size = MediaQuery.sizeOf(context);
-
-    containerSize = _placementFrame.currentContext != null
-        ? (_placementFrame.currentContext?.findRenderObject() as RenderBox).size
-        : Size(_size.width * 0.8, _size.width * 0.8);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        resizeToAvoidBottomInset: false,
-        body: SafeArea(
-          child: Container(
-            padding: const EdgeInsets.only(top: 10),
-            child: _buildCustomArea(() {}),
-          ),
-        ));
+    _matrix4Notifiers = widget.matrix4Notifiers;
+    _listPlacement = widget.listPlacement;
+    print("containerSize ${containerSize}");
+    return _buildCustomArea();
   }
 
-  Widget _buildCustomArea(Function rerenderFunction) {
-    return Container(
-      height: _size.height * 404 / 791 * 0.9,
-      width: _size.width,
-      decoration: BoxDecoration(
-          color: const Color.fromRGBO(0, 0, 0, 0.03),
-          borderRadius: BorderRadius.circular(10)),
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+  Widget _buildCustomArea() {
+    return Padding(
+      // height: _size.height * 404 / 791 * 0.9,
+      // width: _size.width,
+      // decoration: BoxDecoration(
+      //     color: const Color.fromRGBO(0, 0, 0, 0.03),
+      //     borderRadius: BorderRadius.circular(10)),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       child: Column(children: [
         Expanded(
-            key: _placementFrame,
-            child: Container(
-                width: _size.width * 0.8,
-                height: _size.width * 0.8,
+            child: Stack(
+          children: [
+            Container(
+              alignment: Alignment.center,
+              child: Container(
+                width: _size.width * 0.75,
+                height: _size.width * 0.85,
                 decoration: BoxDecoration(color: Colors.white, boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.2),
@@ -84,41 +94,67 @@ class _TestDragState extends State<TestDrag> {
                     offset: const Offset(0, 1),
                   ),
                 ]),
+              ),
+            ),
+            Container(
+              alignment: Alignment.center,
+              child: Container(
+                width: _size.width * 0.8,
+                height: _size.width * 0.9,
+                alignment: Alignment.center,
+                padding: EdgeInsets.only(left: 3),
                 child: Stack(
-                  children: _matrix4Notifiers.map<Widget>(
+                  key: _placementFrame,
+                  children: _listPlacement.map<Widget>(
                     (e) {
-                      final index = _matrix4Notifiers.indexOf(e);
+                      final index = _listPlacement.indexOf(e);
                       return GestureDetector(
                         onPanUpdate: (details) {
                           _listPlacement[index].offset = _listPlacement[index]
                               .offset
                               .translate(details.delta.dx, details.delta.dy);
-
+                          //left
                           if (_listPlacement[index].offset.dx <= 0) {
                             _listPlacement[index].offset =
                                 Offset(0, _listPlacement[index].offset.dy);
                           }
+                          //top
                           if (_listPlacement[index].offset.dy <= 0) {
                             _listPlacement[index].offset =
                                 Offset(_listPlacement[index].offset.dx, 0);
                           }
+                          //right
                           if (_listPlacement[index].offset.dx +
                                   _listPlacement[index].width >=
-                              containerSize.width - 20) {
+                              _size.width * 0.75) {
                             _listPlacement[index].offset = Offset(
-                                containerSize.width -
+                                _size.width * 0.75 -
                                     _listPlacement[index].width,
                                 _listPlacement[index].offset.dy);
                           }
+                          //bottom
                           if (_listPlacement[index].offset.dy +
                                   _listPlacement[index].height >=
-                              containerSize.height) {
+                              _size.width * 0.85) {
                             _listPlacement[index].offset = Offset(
                                 _listPlacement[index].offset.dx,
-                                containerSize.height -
+                                _size.width * 0.85 -
                                     _listPlacement[index].height);
                           }
+                          widget.updatePlacement(_listPlacement);
                           setState(() {});
+                        },
+                        onTap: () {
+                          widget.onFocusPlacement != null
+                              ? widget.onFocusPlacement!(_listPlacement[index],
+                                  _matrix4Notifiers[index])
+                              : null;
+                        },
+                        onPanStart: (details) {
+                          widget.onFocusPlacement != null
+                              ? widget.onFocusPlacement!(_listPlacement[index],
+                                  _matrix4Notifiers[index])
+                              : null;
                         },
                         child: AnimatedBuilder(
                           animation: _matrix4Notifiers[index],
@@ -128,7 +164,7 @@ class _TestDragState extends State<TestDrag> {
                                 Positioned(
                                   top: _listPlacement[index].offset.dy,
                                   left: _listPlacement[index].offset.dx,
-                                  child: Stack(fit: StackFit.loose, children: [
+                                  child: Stack(children: [
                                     Container(
                                       margin: const EdgeInsets.all(7),
                                       child: Image.asset(
@@ -139,7 +175,16 @@ class _TestDragState extends State<TestDrag> {
                                       ),
                                     ),
                                     Positioned.fill(
-                                        child: _buildPanGestureWidget(index))
+                                        child: Center(
+                                      child: Text(
+                                          _listPlacement[index].id.toString()),
+                                    )),
+                                    widget.seletedPlacement ==
+                                            _listPlacement[index]
+                                        ? Positioned.fill(
+                                            child:
+                                                _buildPanGestureWidget(index))
+                                        : const SizedBox()
                                   ]),
                                 ),
                               ],
@@ -149,13 +194,15 @@ class _TestDragState extends State<TestDrag> {
                       );
                     },
                   ).toList(),
-                ))),
+                ),
+              ),
+            )
+          ],
+        )),
         const SizedBox(height: 10),
       ]),
     );
   }
-
-  var lastBottom = 0.0;
 
   Widget _buildPanGestureWidget(int index) {
     return Stack(
@@ -183,6 +230,8 @@ class _TestDragState extends State<TestDrag> {
                   onPanUpdate: (details) {
                     _listPlacement[index].offset =
                         _listPlacement[index].offset + details.delta;
+                    widget.updatePlacement(
+                        widget.updatePlacement(_listPlacement));
                     setState(() {
                       _listPlacement[index].width -= details.delta.dx;
                       _listPlacement[index].height -= details.delta.dy;
@@ -204,6 +253,8 @@ class _TestDragState extends State<TestDrag> {
                     _listPlacement[index].offset = Offset(
                         _listPlacement[index].offset.dx,
                         lastBottom - _listPlacement[index].height);
+                    widget.updatePlacement(
+                        widget.updatePlacement(_listPlacement));
                     setState(() {});
                   },
                   onPanStart: (details) {
@@ -251,6 +302,7 @@ class _TestDragState extends State<TestDrag> {
                     setState(() {
                       _listPlacement[index].width -= details.delta.dx;
                     });
+                    // widget.updatePlacement(index,_listPlacement[index].copyWith(offset: _listPlacement[index].offset+details.delta));
                   },
                   onPanStart: (details) {
                     setState(() {
@@ -349,6 +401,7 @@ class _TestDragState extends State<TestDrag> {
     return GestureDetector(
       onPanUpdate: (details) {
         onPanUpdate!(details);
+        widget.updatePlacement(_listPlacement);
       },
       onTap: onTap,
       onPanStart: onPanStart,

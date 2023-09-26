@@ -7,8 +7,8 @@ import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/w_divider.dart';
-import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
+import 'package:photo_to_pdf/widgets/w_spacer.dart';
 
 ///////////// PAGE SIZE ///////////////
 
