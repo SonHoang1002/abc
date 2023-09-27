@@ -38,7 +38,8 @@ class _PreviewState extends State<Preview> {
                       value: "Preview",
                       textSize: 16,
                       textLineHeight: 19.09,
-                      textColor: Theme.of(context).textTheme.bodyLarge!.color,
+                      textColor:
+                          Theme.of(context).textTheme.displayLarge!.color,
                     ),
                   ),
                   Stack(
@@ -47,7 +48,7 @@ class _PreviewState extends State<Preview> {
                       Container(
                         height: size.height * (589 / 844),
                         decoration: BoxDecoration(
-                            color: const Color.fromRGBO(250, 250, 250, 1),
+                            color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(10)),
                       ),
                       CarouselSlider.builder(
@@ -66,8 +67,7 @@ class _PreviewState extends State<Preview> {
                                       boxShadow: [
                                         BoxShadow(
                                           color: Colors.black.withOpacity(0.2),
-                                          spreadRadius:
-                                              0.5,
+                                          spreadRadius: 0.5,
                                           blurRadius: 5,
                                           offset: const Offset(0, 1),
                                         ),
@@ -78,7 +78,13 @@ class _PreviewState extends State<Preview> {
                                 WSpacer(
                                   width: 40,
                                 ),
-                                WTextContent(value: "Page ${currentIndex + 1}")
+                                WTextContent(
+                                  value: "Page ${currentIndex + 1}",
+                                  textSize: 12,
+                                  textFontWeight: FontWeight.w600,
+                                  textLineHeight: 14.32,
+                                  textColor: Theme.of(context).textTheme.bodyMedium!.color,
+                                )
                               ],
                             ),
                           );
@@ -101,7 +107,7 @@ class _PreviewState extends State<Preview> {
                     message: "Close",
                     textColor: colorBlue,
                     height: 60,
-                    width: size.width * (311 / 390),
+                    width: size.width * (311 / 390)*0.7,
                     backgroundColor: colorWhite,
                     onPressed: () {
                       popNavigator(context);

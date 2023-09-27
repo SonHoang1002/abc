@@ -64,10 +64,29 @@ dynamic PADDING_OPTIONS = {
   "values": ["10.0", "10.0"],
   "unit": CENTIMET
 };
+
 dynamic SPACING_OPTIONS = {
   "values": ["10.0", "10.0"],
   "unit": POINT
 };
+
+List<dynamic> LIST_ADD_COVER = [
+  {
+    "key": "change_photo",
+    "mediaSrc": '${pathPrefixIcon}icon_change_photo.png',
+    "title": "Change Photo"
+  },
+  {
+    "key": "clear_photo",
+    "mediaSrc": '${pathPrefixIcon}icon_clear_photo.png',
+    "title": "Clear Photo"
+  },
+  {
+    "key": "cancel",
+    "mediaSrc": '${pathPrefixIcon}icon_cancel.png',
+    "title": "Cancel"
+  },
+];
 
 const String TITLE_PADDING = "Padding";
 const String TITLE_SPACING = "Spacing";

@@ -74,7 +74,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
       // height: _size.height * 404 / 791 * 0.9,
       // width: _size.width,
       // decoration: BoxDecoration(
-      //     color: const Color.fromRGBO(0, 0, 0, 0.03),
+      //     color: Theme.of(context).cardColor,
       //     borderRadius: BorderRadius.circular(10)),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       child: Column(children: [

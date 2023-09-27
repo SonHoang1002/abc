@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/commons/themes.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/providers/project_provider.dart';
 import 'package:photo_to_pdf/screens/module_editor/preview.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
+import "package:provider/provider.dart" as pv;
 
 class WProjectItemHome extends ConsumerWidget {
   final String src;
@@ -64,7 +66,9 @@ class WProjectItemHome extends ConsumerWidget {
                               child: Container(
                                 alignment: Alignment.topLeft,
                                 child: Image.asset(
-                                  "${pathPrefixIcon}icon_remove_1.png",
+                                  pv.Provider.of<ThemeManager>(context).isDarkMode
+                                      ? "${pathPrefixIcon}icon_remove_dark.png"
+                                      : "${pathPrefixIcon}icon_remove_light.png",
                                   width: 50,
                                   height: 50,
                                 ),
@@ -86,6 +90,7 @@ class WProjectItemHome extends ConsumerWidget {
                         textFontWeight: FontWeight.w600,
                         textLineHeight: 14.32,
                         textSize: 12,
+                        textColor: Theme.of(context).textTheme.bodyMedium!.color,
                       ),
                     ],
                   )
@@ -151,7 +156,9 @@ class WProjectItemHomeBottom extends ConsumerWidget {
                             child: Container(
                               alignment: Alignment.topLeft,
                               child: Image.asset(
-                                "${pathPrefixIcon}icon_remove_1.png",
+                                pv.Provider.of<ThemeManager>(context).isDarkMode
+                                      ? "${pathPrefixIcon}icon_remove_dark.png"
+                                      : "${pathPrefixIcon}icon_remove_light.png",
                                 width: 50,
                                 height: 50,
                               ),
@@ -243,7 +250,9 @@ class WProjectItemEditor extends ConsumerWidget {
                               child: Container(
                                 alignment: Alignment.topLeft,
                                 child: Image.asset(
-                                  "${pathPrefixIcon}icon_remove_1.png",
+                                    pv.Provider.of<ThemeManager>(context).isDarkMode
+                                      ? "${pathPrefixIcon}icon_remove_dark.png"
+                                      : "${pathPrefixIcon}icon_remove_light.png",
                                   width: 50,
                                   height: 50,
                                 ),
@@ -262,7 +271,7 @@ class WProjectItemEditor extends ConsumerWidget {
               textFontWeight: FontWeight.w600,
               textLineHeight: 14.32,
               textSize: 12,
-              textColor: const Color.fromRGBO(0, 0, 0, 0.5),
+              textColor: Theme.of(context).textTheme.bodyMedium!.color,
             ),
           ],
         ),

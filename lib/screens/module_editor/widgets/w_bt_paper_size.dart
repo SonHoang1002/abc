@@ -31,9 +31,9 @@ void showBottomSheetPageSize(
           child: StatefulBuilder(builder: (context, setStatefull) {
             return Container(
               height: size.height * 0.55,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
+              decoration:  BoxDecoration(
+             color: Theme.of(context).scaffoldBackgroundColor,
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20.0),
                   topRight: Radius.circular(20.0),
                 ),

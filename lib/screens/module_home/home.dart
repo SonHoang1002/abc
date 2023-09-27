@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -7,6 +9,7 @@ import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/providers/project_provider.dart';
 import 'package:photo_to_pdf/screens/module_editor/editor.dart';
+import 'package:photo_to_pdf/screens/module_setting/setting.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/w_project_item.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
@@ -37,6 +40,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
   late bool _galleryIsEmpty;
   late bool _isFocusProjectList;
   late bool _isFocusProjectListBottom;
+  late List _listProject;
 
   @override
   void initState() {
@@ -51,19 +55,20 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final listProject = ref.watch(projectControllerProvider).listProject;
+    _listProject = ref.watch(projectControllerProvider).listProject;
     return Scaffold(
-        appBar: _galleryIsEmpty
-            ? null
-            : AppBar(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        appBar: !_galleryIsEmpty && _naviSelected == 0
+            ? AppBar(
                 centerTitle: true,
                 title: WTextContent(
                   value: "All Files",
                   textSize: 15,
                   textLineHeight: 17.9,
-                  textColor: Theme.of(context).textTheme.bodyLarge!.color,
+                  textColor: Theme.of(context).textTheme.titleLarge!.color,
                 ),
                 shadowColor: transparent,
+                
                 actions: [
                   _isFocusProjectList
                       ? Container(
@@ -84,71 +89,15 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                         )
                       : const SizedBox()
                 ],
-                backgroundColor: grey.shade100),
+                backgroundColor: Theme.of(context).canvasColor)
+            : null,
         body: SafeArea(
           child: Stack(
             alignment: _galleryIsEmpty
                 ? Alignment.center
                 : AlignmentDirectional.topStart,
             children: [
-              _galleryIsEmpty
-                  ? Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        WTextContent(
-                            value: PHOTO_TO_PDF,
-                            textAlign: TextAlign.center,
-                            textSize: 32,
-                            textLineHeight: 38.19),
-                        WSpacer(height: 10),
-                        WTextContent(
-                            value: CONTENT_PHOTO_TO_PDF,
-                            textAlign: TextAlign.center,
-                            textSize: 14,
-                            textFontWeight: FontWeight.w500,
-                            textLineHeight: 16.71),
-                        WSpacer(height: 20),
-                        WButtonElevated(
-                          message: "Select Photos",
-                          height: 60,
-                          width: 255,
-                          backgroundColor: colorBlue,
-                          onPressed: () {},
-                        )
-                      ],
-                    )
-                  : ReorderableGridView.count(
-                      padding: const EdgeInsets.only(top: 10),
-                      shrinkWrap: true,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                      crossAxisCount: 2,
-                      onReorder: (oldIndex, newIndex) {
-                        setState(() {
-                          final tempListProject = listProject;
-                          final element = tempListProject.removeAt(oldIndex);
-                          tempListProject.insert(newIndex, element);
-                          ref
-                              .read(projectControllerProvider.notifier)
-                              .setProject(tempListProject);
-                        });
-                      },
-                      onDragStart: (dragIndex) {
-                        setState(() {
-                          _isFocusProjectList = true;
-                        });
-                      },
-                      children: listProject.map((e) {
-                        final index = listProject.indexOf(e);
-                        return WProjectItemHome(
-                          key: ValueKey(listProject[index]),
-                          src: listProject[index],
-                          isFocusByLongPress: _isFocusProjectList,
-                          index: index,
-                        );
-                      }).toList(),
-                    ),
+              _buildBody(),
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [const SizedBox(), _buildBottomNavigatorButtons()],
@@ -158,9 +107,80 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
         ));
   }
 
+  Widget _buildBody() {
+    if (_naviSelected == 0) {
+      if (_galleryIsEmpty) {
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            WTextContent(
+                value: PHOTO_TO_PDF,
+                textAlign: TextAlign.center,
+                textSize: 32,
+                textColor: Theme.of(context).textTheme.displayLarge!.color,
+                textLineHeight: 38.19),
+            WSpacer(height: 10),
+            WTextContent(
+                value: CONTENT_PHOTO_TO_PDF,
+                textAlign: TextAlign.center,
+                textSize: 14,
+                textFontWeight: FontWeight.w500,
+                textColor: Theme.of(context).textTheme.displayLarge!.color,
+                textLineHeight: 16.71),
+            WSpacer(height: 20),
+            WButtonElevated(
+              message: "Select Photos",
+              height: 60,
+              width: 255,
+              backgroundColor: colorBlue,
+              textColor: colorWhite,
+              onPressed: () {},
+            )
+          ],
+        );
+      } else {
+        return ReorderableGridView.count(
+          padding: const EdgeInsets.only(top: 10),
+          shrinkWrap: true,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          crossAxisCount: 2,
+          onReorder: (oldIndex, newIndex) {
+            setState(() {
+              final tempListProject = _listProject;
+              final element = tempListProject.removeAt(oldIndex);
+              tempListProject.insert(newIndex, element);
+              ref
+                  .read(projectControllerProvider.notifier)
+                  .setProject(tempListProject);
+            });
+          },
+          onDragStart: (dragIndex) {
+            setState(() {
+              _isFocusProjectList = true;
+            });
+          },
+          children: _listProject.map((e) {
+            final index = _listProject.indexOf(e);
+            return WProjectItemHome(
+              key: ValueKey(_listProject[index]),
+              src: _listProject[index],
+              isFocusByLongPress: _isFocusProjectList,
+              index: index,
+            );
+          }).toList(),
+        );
+      }
+    } else if (_naviSelected == 2) {
+      return const Setting();
+    }
+    return const SizedBox();
+  }
+
   Widget _buildBottomNavigatorButtons() {
     return Container(
-      color: grey.shade100,
+      color: Theme.of(context).canvasColor,
       height: 112,
       margin: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
       child: Row(
@@ -207,7 +227,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                     iconValue,
                     color: isSelected == true
                         ? colorBlue
-                        : colorBlack.withOpacity(0.8),
+                        : Theme.of(context).textTheme.titleMedium!.color,
                     height: 32.76,
                     width: 26.63,
                   )
@@ -218,7 +238,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                     textSize: 13,
                     textColor: isSelected == true
                         ? colorBlue
-                        : colorBlack.withOpacity(0.8),
+                        : Theme.of(context).textTheme.titleMedium!.color,
                     textLineHeight: 15.51,
                   )
                 : const SizedBox()
@@ -231,9 +251,6 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
   Widget _buildButtonNaviPlus() {
     return ElevatedButton(
       onPressed: () {
-        setState(() {
-          _naviSelected = 1;
-        });
         _buildBottomSheetCreatePdf();
       },
       style: ElevatedButton.styleFrom(
@@ -274,9 +291,9 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
           return StatefulBuilder(builder: (context, setStatefull) {
             return Container(
                 height: MediaQuery.sizeOf(context).height * 0.95,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                  borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(20.0),
                     topRight: Radius.circular(20.0),
                   ),
@@ -297,6 +314,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                                 value: "Create PDF",
                                 textSize: 14,
                                 textLineHeight: 16.71,
+                                textColor: Theme.of(context).textTheme.titleLarge!.color,
                               ),
                             ),
                             Row(
@@ -313,7 +331,12 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                                       margin: const EdgeInsets.only(
                                           right: 10, top: 10),
                                       child: Image.asset(
-                                          "${pathPrefixIcon}icon_close.png")),
+                                        "${pathPrefixIcon}icon_close.png",
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge!
+                                            .color,
+                                      )),
                                 )
                               ],
                             ),
@@ -365,7 +388,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                     Container(
                       height: 200,
                       padding: const EdgeInsets.only(top: 10),
-                      color: colorWhite,
+                      color: Theme.of(context).scaffoldBackgroundColor,
                       child: Column(
                         children: [
                           Row(
@@ -417,6 +440,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                             height: 60,
                             width: MediaQuery.sizeOf(context).width * 0.85,
                             backgroundColor: colorBlue,
+                            textColor: colorWhite,
                             onPressed: () {
                               popNavigator(context);
                               pushNavigator(context, const Editor());

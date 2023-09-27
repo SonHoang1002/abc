@@ -11,7 +11,7 @@ class WTextContent extends StatelessWidget {
   FontWeight? textFontWeight;
   TextOverflow? textOverflow;
   int? textMaxLength;
-  
+
   Function()? onTap;
   WTextContent(
       {required this.value,
@@ -36,8 +36,9 @@ class WTextContent extends StatelessWidget {
               maxLines: textMaxLength,
               style: TextStyle(
                   fontSize: textSize,
-                  color: textColor,
-                   decoration: TextDecoration.none,
+                  color:
+                      textColor ?? Theme.of(context).textTheme.bodySmall!.color,
+                  decoration: TextDecoration.none,
                   fontWeight: textFontWeight,
                   fontFamily: myCustomFont,
                   overflow: textOverflow,
@@ -51,9 +52,10 @@ class WTextContent extends StatelessWidget {
             textAlign: textAlign,
             maxLines: textMaxLength,
             style: TextStyle(
-               decoration: TextDecoration.none,
+                decoration: TextDecoration.none,
                 fontSize: textSize,
-                color: textColor,
+                color:
+                    textColor ?? Theme.of(context).textTheme.bodySmall!.color,
                 fontWeight: textFontWeight,
                 fontFamily: myCustomFont,
                 overflow: textOverflow,

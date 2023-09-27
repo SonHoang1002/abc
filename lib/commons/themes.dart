@@ -37,15 +37,23 @@ class ThemeManager with ChangeNotifier {
 class MyThemes {
   static final darkTheme = ThemeData(
       scaffoldBackgroundColor: Colors.grey.shade900,
-      cardColor: Colors.grey.shade800,
+      // mau nen cac nut
+      cardColor: const Color.fromRGBO(255, 255, 255, 0.1),
+      // mau nen block navigator
+      canvasColor: const Color.fromRGBO(34, 34, 34, 1),
+      // canvasColor: Colors.red,
       primaryColor: Colors.grey.withOpacity(0.6),
       appBarTheme: AppBarTheme(backgroundColor: Colors.grey.shade900),
-      textTheme: TextTheme(
-          displayLarge: const TextStyle(color: colorWhite),
-          bodySmall: TextStyle(color: Colors.grey.shade300)),
+      textTheme: const TextTheme(
+        displayLarge: TextStyle(color: colorWhite),
+        bodySmall: TextStyle(color: Color.fromRGBO(255, 255, 255, 0.4)),
+        bodyLarge: TextStyle(color: Color.fromRGBO(255, 255, 255, 0.4)),
+        bodyMedium: TextStyle(color: Color.fromRGBO(255, 255, 255, 0.5)),
+        titleLarge: TextStyle(color: Color.fromRGBO(255, 255, 255, 0.7)),
+        titleMedium: TextStyle(color: Color.fromRGBO(255, 255, 255, 0.5)),
+      ),
       colorScheme:
           const ColorScheme.dark().copyWith(background: Colors.grey.shade800),
-      canvasColor: Colors.black,
       highlightColor: Colors.transparent,
       splashColor: Colors.transparent,
       hoverColor: Colors.transparent,
@@ -55,15 +63,20 @@ class MyThemes {
 
   static final lightTheme = ThemeData(
       scaffoldBackgroundColor: colorWhite,
-      cardColor: colorWhite,
+      cardColor: const Color.fromRGBO(0, 0, 0, 0.03),
+      canvasColor: const Color.fromRGBO(250, 250, 250, 1),
       primaryColor: colorWhite,
       appBarTheme: const AppBarTheme(backgroundColor: colorWhite),
-      textTheme: TextTheme(
-          displayLarge: const TextStyle(color: Colors.black),
-          bodySmall: TextStyle(color: Colors.grey.shade800)),
+      textTheme: const TextTheme(
+        displayLarge: TextStyle(color: Colors.black),
+        bodySmall: TextStyle(color: Color.fromRGBO(0, 0, 0, 0.4)),
+        bodyLarge: TextStyle(color: Color.fromRGBO(0, 0, 0, 0.4)),
+        bodyMedium: TextStyle(color: Color.fromRGBO(0, 0, 0, 0.5)),
+        titleLarge: TextStyle(color: Color.fromRGBO(0, 0, 0, 0.7)),
+        titleMedium: TextStyle(color: Color.fromRGBO(0, 0, 0, 0.5)),
+      ),
       colorScheme: const ColorScheme.light()
           .copyWith(background: const Color(0xfff1f2f5)),
-      canvasColor: const Color(0xfff1f2f5),
       highlightColor: Colors.transparent,
       splashColor: Colors.transparent,
       hoverColor: Colors.transparent,

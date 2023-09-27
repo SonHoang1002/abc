@@ -137,7 +137,6 @@ class WButtonFilled extends StatelessWidget {
           child: SizedBox(
             width: width, // 255
             height: height, //60
-            // decoration: BoxDecoration(borderRadius: BorderRadius.circular(60)),
             child: Center(
               child: mediaValue != null
                   ? Row(

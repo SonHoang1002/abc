@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
 import 'package:photo_to_pdf/commons/themes.dart';
 import 'package:photo_to_pdf/material_with_them.dart';
 import 'package:photo_to_pdf/tests/test_drag.dart';
+import 'package:photo_to_pdf/tests/test_thumb.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -30,7 +31,7 @@ class MyApp extends StatelessWidget {
 //         title: Text('Resizable Box'),
 //       ),
 //       body: Center(
-//         child: TestDrag(),
+//         child: TestThumb(),
 //       ),
 //     ),
 //   ));

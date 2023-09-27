@@ -6,21 +6,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
+import 'package:photo_to_pdf/models/cover_photo.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/providers/project_provider.dart';
 import 'package:photo_to_pdf/screens/module_editor/editor_padding_spacing.dart';
-import 'package:photo_to_pdf/screens/module_editor/widgets/w_bt_paper_size.dart';
-import 'package:photo_to_pdf/screens/module_editor/widgets/w_bt_selected_photos.dart';
+import 'package:photo_to_pdf/screens/module_editor/widgets/body_add_cover.dart';
+import 'package:photo_to_pdf/screens/module_editor/widgets/body_selected_photos.dart';
 import 'package:photo_to_pdf/screens/module_editor/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/w_divider.dart';
 import 'package:photo_to_pdf/widgets/w_drag_zoom_image.dart';
-import 'package:photo_to_pdf/widgets/w_matrix_gesture.dart';
 import 'package:photo_to_pdf/widgets/w_project_item.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
-import 'dart:math' as math;
 
 class Editor extends flutter_riverpod.ConsumerStatefulWidget {
   const Editor({
@@ -92,7 +91,10 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
       TextEditingController(text: "0.0");
 
   // selected photos
-  late  double _sliderCompressionValue;
+  late double _sliderCompressionValue;
+
+  // add cover
+  late CoverPhoto _coverPhoto;
 
   @override
   void initState() {
@@ -146,6 +148,9 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     _spacingHorizontalController.text = _spacingOptions['values'][0];
     _spacingVerticalController.text = _spacingOptions['values'][1];
     _sliderCompressionValue = 1;
+    _coverPhoto = CoverPhoto(
+        backPhoto: "${pathPrefixImage}test_image_1.png",
+        frontPhoto: "${pathPrefixImage}test_image_1.png");
   }
 
   _tranferValuePageSize() {
@@ -228,6 +233,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   Widget build(BuildContext context) {
     _size = MediaQuery.sizeOf(context);
     return Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         resizeToAvoidBottomInset: false,
         body: SafeArea(
           child: Container(
@@ -247,7 +253,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                   width: _size.width * 0.9,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
-                    color: const Color.fromRGBO(0, 0, 0, 0.03),
+                    color: Theme.of(context).cardColor,
                   ),
                   child: ReorderableGridView.count(
                     padding: const EdgeInsets.symmetric(
@@ -293,7 +299,8 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                           children: [
                             WTextContent(
                               value: "${_listProject.length} Pages",
-                              textColor: const Color.fromRGBO(0, 0, 0, 0.5),
+                              textColor:
+                                  Theme.of(context).textTheme.bodyMedium!.color,
                               textLineHeight: 14.32,
                               textSize: 12,
                               textFontWeight: FontWeight.w600,
@@ -301,12 +308,16 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                             WDivider(
                                 width: 2,
                                 height: 14,
-                                color: const Color.fromRGBO(0, 0, 0, 0.1),
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium!
+                                    .color,
                                 margin:
                                     const EdgeInsets.symmetric(horizontal: 10)),
                             WTextContent(
                               value: "File Size: ${"----"} MB",
-                              textColor: const Color.fromRGBO(0, 0, 0, 0.5),
+                              textColor:
+                                  Theme.of(context).textTheme.bodyMedium!.color,
                               textLineHeight: 14.32,
                               textSize: 12,
                               textFontWeight: FontWeight.w600,
@@ -377,9 +388,9 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                     });
                                   },
                                   onSliderChanged: (value) {
-                                  setState(() {
+                                    setState(() {
                                       _sliderCompressionValue = value;
-                                  });
+                                    });
                                   },
                                   sliderCompressionLevelValue:
                                       _sliderCompressionValue,
@@ -389,8 +400,18 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                             WSpacer(
                               width: 10,
                             ),
-                            buildSelection(context, _coverConfig['mediaSrc'],
-                                _coverConfig['title'], _coverConfig['content']),
+                            buildSelection(
+                              context,
+                              _coverConfig['mediaSrc'],
+                              _coverConfig['title'],
+                              _coverConfig['content'],
+                              onTap: () {
+                                showBottomSheetCoveredPhotos(
+                                  context: context,
+                                  size: _size,
+                                );
+                              },
+                            ),
                           ],
                         ),
                       ]),
@@ -403,8 +424,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                             Flexible(
                               child: WButtonFilled(
                                 message: "Close",
-                                backgroundColor:
-                                    const Color.fromRGBO(0, 0, 0, 0.03),
+                                backgroundColor: Theme.of(context).cardColor,
                                 height: 55,
                                 textColor:
                                     const Color.fromRGBO(10, 132, 255, 1),
@@ -450,6 +470,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
             children: [
               Flexible(
                 child: buildLayoutConfigItem(
+                    context: context,
                     key: _keyResizeMode,
                     title: "Resize Mode",
                     content: _resizeModeSelectedValue['title'],
@@ -476,6 +497,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
               ),
               Flexible(
                   child: buildLayoutConfigItem(
+                      context: context,
                       title: "Alignment",
                       content: _listAlignment
                           .where((element) => element['isFocus'] == true)
@@ -511,6 +533,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                       })),
               Flexible(
                 child: buildLayoutConfigItem(
+                    context: context,
                     title: "Background",
                     content: "White",
                     width: _size.width * 0.3,
@@ -528,6 +551,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                   children: [
                     Flexible(
                         child: buildLayoutConfigItem(
+                      context: context,
                       title: TITLE_PADDING,
                       content: _renderPreviewPaddingOptions(),
                       width: _size.width * 0.46,
@@ -553,6 +577,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                     )),
                     Flexible(
                       child: buildLayoutConfigItem(
+                        context: context,
                         title: TITLE_SPACING,
                         content: _renderPreviewSpacingOptions(),
                         width: _size.width * 0.46,
@@ -604,7 +629,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         height: _size.height * 404 / 791 * 0.9,
         width: _size.width,
         decoration: BoxDecoration(
-            color: const Color.fromRGBO(0, 0, 0, 0.03),
+            color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(10)),
         margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         child: GestureDetector(
@@ -633,9 +658,6 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                       return element.id == placement.id;
                     },
                   );
-                  print("editor index ${index}");
-                  print(
-                      "editor _listPlacement _listPlacement ${_listPlacement.map((e) => e.id).toList()}");
                   if (index != -1) {
                     _matrix4Notifiers.removeAt(index);
                     _matrix4Notifiers.insert(0, matrix4);
@@ -768,9 +790,9 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
           return StatefulBuilder(builder: (context, setStatefull) {
             return Container(
               height: _size.height * 0.95,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20.0),
                   topRight: Radius.circular(20.0),
                 ),
@@ -783,12 +805,14 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                       value: "Layout",
                       textSize: 14,
                       textLineHeight: 16.71,
+                      textColor: Theme.of(context).textTheme.bodyMedium!.color,
                     ),
                   ),
                   WSpacer(
                     height: 20,
                   ),
                   buildSegmentControl(
+                    context: context,
                     groupValue: _segmentCurrentIndex,
                     onValueChanged: (value) {
                       setState(() {
@@ -802,7 +826,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                         ? Container(
                             height: _size.height * 404 / 791 * 0.9,
                             decoration: BoxDecoration(
-                                color: const Color.fromRGBO(0, 0, 0, 0.03),
+                                color: Theme.of(context).cardColor,
                                 borderRadius: BorderRadius.circular(10)),
                             margin: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 10),
@@ -916,9 +940,9 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
             child: StatefulBuilder(builder: (context, setStatefull) {
               return Container(
                 height: _size.height * 0.55,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                  borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(20.0),
                     topRight: Radius.circular(20.0),
                   ),
@@ -932,8 +956,11 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                           margin: const EdgeInsets.only(top: 20),
                           child: WTextContent(
                             value: "Paper Size",
-                            textSize: 14,
-                            textLineHeight: 16.71,
+                            textSize: 16,
+                            textLineHeight: 19.09,
+                            textFontWeight: FontWeight.w600,
+                            textColor:
+                                Theme.of(context).textTheme.bodyMedium!.color,
                           ),
                         ),
                         Expanded(
@@ -1063,6 +1090,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                       height: _renderPreviewHeight(),
                                       width: _renderPreviewWidth(),
                                       decoration: BoxDecoration(
+                                          color: colorWhite,
                                           border: _overWHValue()
                                               ? null
                                               : Border.all(
@@ -1131,7 +1159,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         width: 200,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
-          color: const Color.fromRGBO(0, 0, 0, 0.03),
+          color: Theme.of(context).cardColor,
         ),
         child: Row(children: [
           Container(
@@ -1141,7 +1169,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
               value: "Orientation",
               textSize: 14,
               textLineHeight: 16.71,
-              textColor: const Color.fromRGBO(0, 0, 0, 0.5),
+              textColor: Theme.of(context).textTheme.bodyMedium!.color,
               textFontWeight: FontWeight.w600,
             ),
           ),
@@ -1182,5 +1210,72 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         ]),
       ),
     );
+  }
+
+  void showBottomSheetSelectedPhotos(
+      {required BuildContext context,
+      required Size size,
+      required List datas,
+      required void Function(int, int) onReorderFunction,
+      required double sliderCompressionLevelValue,
+      required Function(double value) onSliderChanged}) {
+    showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(builder: (context, setStatefull) {
+            return SelectedPhotosBody(
+                onReorder: (oldIndex, newIndex) {
+                  onReorderFunction(oldIndex, newIndex);
+                  setStatefull(() {});
+                },
+                datas: datas,
+                sliderCompressionLevelValue: sliderCompressionLevelValue,
+                onChanged: (value) {
+                  setState(() {
+                    // use sliderCompressionLevelValue to announce for selected photos
+                    // body that have changable variable
+                    // if only use _sliderCompressionValue, don't change value
+                    // sliderCompressionLevelValue because pass data
+                    // through every child and don't listen changes
+                    sliderCompressionLevelValue = value;
+                    _sliderCompressionValue = value;
+                  });
+                  setStatefull(() {});
+                });
+          });
+        },
+        isScrollControlled: true,
+        backgroundColor: transparent);
+  }
+
+  void showBottomSheetCoveredPhotos({
+    required BuildContext context,
+    required Size size,
+  }) {
+    showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(builder: (context, setStatefull) {
+            return AddCoverBody(
+              coverPhoto: _coverPhoto,
+              updatePhoto: (label, src) {
+                if (label == "backPhoto") {
+                  _coverPhoto = CoverPhoto(
+                      backPhoto: src, frontPhoto: _coverPhoto.frontPhoto);
+                  setState(() {});
+                  setStatefull(() {});
+                }
+                if (label == "frontPhoto") {
+                  _coverPhoto = CoverPhoto(
+                      backPhoto: _coverPhoto.backPhoto, frontPhoto: src);
+                  setState(() {});
+                  setStatefull(() {});
+                }
+              },
+            );
+          });
+        },
+        isScrollControlled: true,
+        backgroundColor: transparent);
   }
 }

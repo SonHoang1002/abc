@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
+import 'package:photo_to_pdf/screens/module_editor/widgets/body_add_cover.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/w_divider.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
@@ -19,115 +20,113 @@ Widget buildPageSizePreset(
     required bool isFocus,
     required Function(dynamic value) onSelected}) {
   return Flexible(
-    child: GestureDetector(
-      child: Container(
-          height: 50,
-          width: 200 / 390 * MediaQuery.sizeOf(context).width,
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15),
-              color: const Color.fromRGBO(0, 0, 0, 0.03),
-              border: Border.all(
-                  color: isFocus
-                      ? const Color.fromRGBO(10, 132, 255, 1)
-                      : transparent,
-                  width: 2)),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton2<dynamic>(
-              isExpanded: true,
-              hint: Row(children: [
-                Container(
-                  constraints: const BoxConstraints(minWidth: 55),
-                  child: WTextContent(
-                    value: "Preset",
-                    textSize: 14,
-                    textLineHeight: 16.71,
-                    textColor: const Color.fromRGBO(0, 0, 0, 0.5),
-                    textFontWeight: FontWeight.w600,
-                  ),
+    child: Container(
+        height: 50,
+        width: 200 / 390 * MediaQuery.sizeOf(context).width,
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            color: Theme.of(context).cardColor,
+            border: Border.all(
+                color: isFocus
+                    ? const Color.fromRGBO(10, 132, 255, 1)
+                    : transparent,
+                width: 2)),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton2<dynamic>(
+            isExpanded: true,
+            hint: Row(children: [
+              Container(
+                constraints: const BoxConstraints(minWidth: 55),
+                child: WTextContent(
+                  value: "Preset",
+                  textSize: 14,
+                  textLineHeight: 16.71,
+                  textColor: Theme.of(context).textTheme.bodyMedium!.color,
+                  textFontWeight: FontWeight.w600,
                 ),
-                Expanded(
-                  child: Row(
+              ),
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    WTextContent(
+                      value: item['content']["title"],
+                      textSize: 14,
+                      textLineHeight: 16.71,
+                      textColor: const Color.fromRGBO(10, 132, 255, 1),
+                    ),
+                  ],
+                ),
+              )
+            ]),
+            items: LIST_PAGE_SIZE.map((dynamic item) {
+              final index = LIST_PAGE_SIZE.indexOf(item);
+              return DropdownMenuItem<dynamic>(
+                  value: item,
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      const SizedBox(),
                       WTextContent(
-                        value: item['content']["title"],
-                        textSize: 14,
-                        textLineHeight: 16.71,
+                        value: item['title'],
                         textColor: const Color.fromRGBO(10, 132, 255, 1),
+                        textSize: 14,
+                        textLineHeight: 19.09,
                       ),
+                      index != LIST_PAGE_SIZE.length - 1
+                          ? WDivider(
+                              color: const Color.fromRGBO(0, 0, 0, 0.3),
+                              width: 200 /
+                                  390 *
+                                  MediaQuery.sizeOf(context).width,
+                              height: 1,
+                              margin: EdgeInsets.zero,
+                            )
+                          : const SizedBox()
                     ],
-                  ),
-                )
-              ]),
-              items: LIST_PAGE_SIZE.map((dynamic item) {
-                final index = LIST_PAGE_SIZE.indexOf(item);
-                return DropdownMenuItem<dynamic>(
-                    value: item,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(),
-                        WTextContent(
-                          value: item['title'],
-                          textColor: const Color.fromRGBO(10, 132, 255, 1),
-                          textSize: 14,
-                          textLineHeight: 19.09,
-                        ),
-                        index != LIST_PAGE_SIZE.length - 1
-                            ? WDivider(
-                                color: const Color.fromRGBO(0, 0, 0, 0.3),
-                                width: 200 /
-                                    390 *
-                                    MediaQuery.sizeOf(context).width,
-                                height: 1,
-                                margin: EdgeInsets.zero,
-                              )
-                            : const SizedBox()
-                      ],
-                    ));
-              }).toList(),
-              onChanged: (dynamic value) {
-                onSelected(value);
-              },
-              onMenuStateChange: (bool isOpen) {
-                onTap();
-              },
-              buttonStyleData: ButtonStyleData(
-                height: 50,
-                width: 200 / 390 * MediaQuery.sizeOf(context).width,
-                padding: const EdgeInsets.only(left: 14, right: 14),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
-                ),
+                  ));
+            }).toList(),
+            onChanged: (dynamic value) {
+              onSelected(value);
+            },
+            onMenuStateChange: (bool isOpen) {
+              onTap();
+            },
+            buttonStyleData: ButtonStyleData(
+              height: 50,
+              width: 200 / 390 * MediaQuery.sizeOf(context).width,
+              padding: const EdgeInsets.only(left: 14, right: 14),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
               ),
-              iconStyleData: IconStyleData(
-                icon: Container(
-                  margin: const EdgeInsets.only(bottom: 5),
-                  child: const Icon(
-                    FontAwesomeIcons.sortDown,
-                    color: Color.fromRGBO(10, 132, 255, 1),
-                    size: 15,
-                  ),
-                ),
-              ),
-              dropdownStyleData: DropdownStyleData(
-                maxHeight: 300,
-                width: 185,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
-                  color: colorWhite,
-                ),
-                offset: const Offset(5, -5),
-                scrollbarTheme: ScrollbarThemeData(
-                  radius: const Radius.circular(40),
-                  thickness: MaterialStateProperty.all<double>(0),
-                  thumbVisibility: MaterialStateProperty.all<bool>(false),
+            ),
+            iconStyleData: IconStyleData(
+              icon: Container(
+                margin: const EdgeInsets.only(bottom: 5),
+                child: const Icon(
+                  FontAwesomeIcons.sortDown,
+                  color: Color.fromRGBO(10, 132, 255, 1),
+                  size: 15,
                 ),
               ),
             ),
-          )),
-    ),
+            dropdownStyleData: DropdownStyleData(
+              maxHeight: 300,
+              width: 185,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                color: colorWhite,
+              ),
+              offset: const Offset(5, -5),
+              scrollbarTheme: ScrollbarThemeData(
+                radius: const Radius.circular(40),
+                thickness: MaterialStateProperty.all<double>(0),
+                thumbVisibility: MaterialStateProperty.all<bool>(false),
+              ),
+            ),
+          ),
+        )),
   );
 }
 
@@ -142,7 +141,7 @@ Widget buildCupertinoInput(
   return Container(
     width: 200 / 390 * MediaQuery.sizeOf(context).width,
     decoration: BoxDecoration(
-        color: const Color.fromRGBO(0, 0, 0, 0.03),
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(15.0),
         border: Border.all(
             color:
@@ -165,8 +164,8 @@ Widget buildCupertinoInput(
         constraints: const BoxConstraints(minWidth: 50),
         margin: const EdgeInsets.only(left: 15),
         child: Text(title,
-            style: const TextStyle(
-                color: Color.fromRGBO(0, 0, 0, 0.5),
+            style: TextStyle(
+                color: Theme.of(context).textTheme.bodyMedium!.color,
                 fontFamily: myCustomFont,
                 fontWeight: FontWeight.w700,
                 height: 16.71 / 14,
@@ -178,7 +177,7 @@ Widget buildCupertinoInput(
         margin: const EdgeInsets.only(right: 30),
         child: Text(suffixValue,
             style: const TextStyle(
-                color: Color.fromRGBO(0, 0, 0, 0.5),
+                color: Color.fromRGBO(10, 132, 255, 1),
                 fontFamily: myCustomFont,
                 fontWeight: FontWeight.w700,
                 height: 16.71 / 14,
@@ -244,7 +243,7 @@ Widget buildFileNameInput(
           color: const Color.fromRGBO(10, 132, 255, 1),
           width: 2.0,
         ),
-        color: const Color.fromRGBO(0, 0, 0, 0.03),
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(15.0),
       ),
       height: 47,
@@ -256,7 +255,7 @@ Widget buildFileNameInput(
           margin: const EdgeInsets.only(left: 15),
           child: Text("File name",
               style: buildTextStyleInputFileName(
-                  const Color.fromRGBO(0, 0, 0, 0.4))),
+                  Theme.of(context).textTheme.bodyLarge!.color!)),
         ),
         placeholder: "Untitled",
         placeholderStyle: buildTextStyleInputFileName(colorBlue),
@@ -276,7 +275,7 @@ Widget buildSelection(
       width: size.width * 0.45,
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
-          color: const Color.fromRGBO(0, 0, 0, 0.03)),
+          color: Theme.of(context).cardColor),
       padding: const EdgeInsets.only(left: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -286,6 +285,7 @@ Widget buildSelection(
             child: Image.asset(
               mediaSrc,
               height: 35,
+              // color: Theme.of(context).cardColor,
             ),
           ),
           WSpacer(
@@ -300,7 +300,7 @@ Widget buildSelection(
                 textLineHeight: 14.32,
                 textFontWeight: FontWeight.w600,
                 textSize: 12,
-                textColor: const Color.fromRGBO(0, 0, 0, 0.4),
+                textColor: Theme.of(context).textTheme.bodySmall!.color,
               ),
               WSpacer(
                 height: 5,
@@ -328,7 +328,7 @@ Widget buildBottomButton(BuildContext context) {
         Flexible(
             child: WButtonFilled(
           message: "Cancel",
-          backgroundColor: const Color.fromRGBO(0, 0, 0, 0.03),
+          backgroundColor: Theme.of(context).cardColor,
           textColor: colorBlue,
           height: 60,
           onPressed: () {
@@ -354,7 +354,7 @@ Widget buildBottomButton(BuildContext context) {
 ///////////// LAYOUT ///////////////
 
 Widget buildSegmentControl(
-    {required int? groupValue, required void Function(int?) onValueChanged}) {
+    {required BuildContext context, required int? groupValue, required void Function(int?) onValueChanged}) {
   return CupertinoSlidingSegmentedControl<int>(
     groupValue: groupValue,
     // _segmentCurrentIndex,
@@ -365,7 +365,7 @@ Widget buildSegmentControl(
           margin: const EdgeInsets.symmetric(horizontal: 10),
           child: WTextContent(
             value: "Presets",
-            textColor: const Color.fromRGBO(0, 0, 0, 0.7),
+            textColor:  Theme.of(context).textTheme.titleLarge!.color,
             textSize: 14,
             textLineHeight: 16.71,
             textFontWeight: FontWeight.w600,
@@ -374,7 +374,7 @@ Widget buildSegmentControl(
           margin: const EdgeInsets.symmetric(horizontal: 10),
           child: WTextContent(
             value: "Custom",
-            textColor: const Color.fromRGBO(0, 0, 0, 0.7),
+            textColor:  Theme.of(context).textTheme.titleLarge!.color,
             textSize: 14,
             textLineHeight: 16.71,
             textFontWeight: FontWeight.w600,
@@ -428,7 +428,7 @@ Widget buildLayoutWidget(
               textLineHeight: 14.32,
               textSize: 12,
               textColor:
-                  isFocus ? colorWhite : const Color.fromRGBO(0, 0, 0, 0.5),
+                  isFocus ? colorWhite :  Theme.of(context).textTheme.bodyMedium!.color,
               textFontWeight: FontWeight.w600,
             ),
           ),
@@ -439,7 +439,8 @@ Widget buildLayoutWidget(
 }
 
 Widget buildLayoutConfigItem(
-    {required String title,
+    {required BuildContext context,
+    required String title,
     required String content,
     required double width,
     Color? contentWidgetColor,
@@ -452,7 +453,7 @@ Widget buildLayoutConfigItem(
       width: width,
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
-          color: const Color.fromRGBO(0, 0, 0, 0.03)),
+          color: Theme.of(context).cardColor),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       child: Column(children: [
         WTextContent(
@@ -460,7 +461,7 @@ Widget buildLayoutConfigItem(
           textSize: 12,
           textLineHeight: 14.32,
           textFontWeight: FontWeight.w600,
-          textColor: const Color.fromRGBO(0, 0, 0, 0.5),
+          textColor:  Theme.of(context).textTheme.bodyMedium!.color,
         ),
         WSpacer(
           height: 10,
@@ -673,48 +674,44 @@ void showLayoutDialogWithOffset(
 Widget buildDialogResizeMode(
     BuildContext context, Function(dynamic value) onSelected) {
   return Column(children: [
-    _buildDialogResizeModeItem(
+    _buildDialogInformationItem(
       context,
       LIST_RESIZE_MODE[0]['mediaSrc'],
       LIST_RESIZE_MODE[0]['title'],
-      () {
-        onSelected(
-          LIST_RESIZE_MODE[0],
-        );
-      },
-      boxDecoration: const BoxDecoration(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          color: Color.fromRGBO(255, 255, 255, 1)),
+      () => onSelected(
+        LIST_RESIZE_MODE[0],
+      ),
+      boxDecoration:  BoxDecoration(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          color:  Theme.of(context).cardColor,),
     ),
     WDivider(
       height: 1,
       color: const Color.fromRGBO(0, 0, 0, 0.3),
     ),
-    _buildDialogResizeModeItem(
-        context, LIST_RESIZE_MODE[1]['mediaSrc'], LIST_RESIZE_MODE[1]['title'],
-        () {
-      onSelected(
-        LIST_RESIZE_MODE[1],
-      );
-    },
+    _buildDialogInformationItem(
+        context,
+        LIST_RESIZE_MODE[1]['mediaSrc'],
+        LIST_RESIZE_MODE[1]['title'],
+        () => onSelected(
+              LIST_RESIZE_MODE[1],
+            ),
         boxDecoration:
-            const BoxDecoration(color: Color.fromRGBO(255, 255, 255, 1))),
+              BoxDecoration(color:  Theme.of(context).cardColor,)),
     WDivider(
       height: 1,
       color: const Color.fromRGBO(0, 0, 0, 0.3),
     ),
-    _buildDialogResizeModeItem(
+    _buildDialogInformationItem(
       context,
       LIST_RESIZE_MODE[2]['mediaSrc'],
       LIST_RESIZE_MODE[2]['title'],
-      () {
-        onSelected(
-          LIST_RESIZE_MODE[2],
-        );
-      },
-      boxDecoration: const BoxDecoration(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
-          color: Color.fromRGBO(255, 255, 255, 1)),
+      () => onSelected(
+        LIST_RESIZE_MODE[2],
+      ),
+      boxDecoration:   BoxDecoration(
+          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
+          color:  Theme.of(context).cardColor,),
     ),
   ]);
 }
@@ -842,6 +839,52 @@ Widget buildDialogPadding(
   );
 }
 
+Widget buildDialogAddCover(
+    BuildContext context, Function(dynamic value) onSelected) {
+  return Column(children: [
+    _buildDialogInformationItem(
+      context,
+      LIST_ADD_COVER[0]['mediaSrc'],
+      LIST_ADD_COVER[0]['title'],
+      () => onSelected(
+        LIST_ADD_COVER[0],
+      ),
+      boxDecoration:   BoxDecoration(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          color:  Theme.of(context).cardColor,),
+    ),
+    WDivider(
+      height: 1,
+      color: const Color.fromRGBO(0, 0, 0, 0.3),
+    ),
+    _buildDialogInformationItem(
+        context,
+        LIST_ADD_COVER[1]['mediaSrc'],
+        LIST_ADD_COVER[1]['title'],
+        () => onSelected(
+              LIST_ADD_COVER[1],
+            ),
+        boxDecoration:
+              BoxDecoration(color:  Theme.of(context).cardColor,)),
+    WDivider(
+      height: 1,
+      color: const Color.fromRGBO(0, 0, 0, 0.3),
+    ),
+    _buildDialogInformationItem(
+      context,
+      LIST_ADD_COVER[2]['mediaSrc'],
+      LIST_ADD_COVER[2]['title'],
+      () => onSelected(
+        LIST_ADD_COVER[2],
+      ),
+      textColor: const Color.fromRGBO(0, 0, 0, 0.5),
+      boxDecoration:   BoxDecoration(
+          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
+          color:  Theme.of(context).cardColor,),
+    ),
+  ]);
+}
+
 //////////////////////
 
 Widget _buildPaddingInput(
@@ -852,9 +895,7 @@ Widget _buildPaddingInput(
       // padding: EdgeInsets.only(top: 5),
       alignment: Alignment.center,
       child: CupertinoTextField(
-        onTap: () {
-          print(" controller ssdfsdfds");
-        },
+        onTap: () {},
         textAlign: TextAlign.center,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
@@ -872,9 +913,10 @@ Widget _buildPaddingInput(
       ));
 }
 
-Widget _buildDialogResizeModeItem(
+Widget _buildDialogInformationItem(
     BuildContext context, String mediaSrc, String value, Function() onTap,
-    {BoxDecoration? boxDecoration}) {
+    {Color? textColor = const Color.fromRGBO(10, 132, 255, 1),
+    BoxDecoration? boxDecoration}) {
   final size = MediaQuery.sizeOf(context);
   return GestureDetector(
     onTap: onTap,
@@ -895,7 +937,7 @@ Widget _buildDialogResizeModeItem(
           ),
           WTextContent(
             value: value,
-            textColor: const Color.fromRGBO(10, 132, 255, 1),
+            textColor: textColor,
             textLineHeight: 16.71,
             textSize: 14,
           ),
