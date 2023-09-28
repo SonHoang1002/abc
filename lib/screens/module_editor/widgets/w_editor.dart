@@ -77,9 +77,8 @@ Widget buildPageSizePreset(
                       index != LIST_PAGE_SIZE.length - 1
                           ? WDivider(
                               color: const Color.fromRGBO(0, 0, 0, 0.3),
-                              width: 200 /
-                                  390 *
-                                  MediaQuery.sizeOf(context).width,
+                              width:
+                                  200 / 390 * MediaQuery.sizeOf(context).width,
                               height: 1,
                               margin: EdgeInsets.zero,
                             )
@@ -354,7 +353,9 @@ Widget buildBottomButton(BuildContext context) {
 ///////////// LAYOUT ///////////////
 
 Widget buildSegmentControl(
-    {required BuildContext context, required int? groupValue, required void Function(int?) onValueChanged}) {
+    {required BuildContext context,
+    required int? groupValue,
+    required void Function(int?) onValueChanged}) {
   return CupertinoSlidingSegmentedControl<int>(
     groupValue: groupValue,
     // _segmentCurrentIndex,
@@ -365,7 +366,7 @@ Widget buildSegmentControl(
           margin: const EdgeInsets.symmetric(horizontal: 10),
           child: WTextContent(
             value: "Presets",
-            textColor:  Theme.of(context).textTheme.titleLarge!.color,
+            textColor: Theme.of(context).textTheme.titleLarge!.color,
             textSize: 14,
             textLineHeight: 16.71,
             textFontWeight: FontWeight.w600,
@@ -374,7 +375,7 @@ Widget buildSegmentControl(
           margin: const EdgeInsets.symmetric(horizontal: 10),
           child: WTextContent(
             value: "Custom",
-            textColor:  Theme.of(context).textTheme.titleLarge!.color,
+            textColor: Theme.of(context).textTheme.titleLarge!.color,
             textSize: 14,
             textLineHeight: 16.71,
             textFontWeight: FontWeight.w600,
@@ -384,13 +385,15 @@ Widget buildSegmentControl(
 }
 
 // general
-Widget buildLayoutWidget(
-    {required BuildContext context,
-    required mediaSrc,
-    required title,
-    required bool isFocus,
-    required Function() onTap,
-    required int indexLayoutItem}) {
+Widget buildLayoutWidget({
+  required BuildContext context,
+  required String mediaSrc,
+  required String title,
+  required Color backgroundColor,
+  required bool isFocus,
+  required Function() onTap,
+  required int indexLayoutItem,
+}) {
   return Column(
     children: [
       GestureDetector(
@@ -403,12 +406,12 @@ Widget buildLayoutWidget(
                       ? const Color.fromRGBO(22, 115, 255, 1)
                       : transparent)),
           child: indexLayoutItem == 0
-              ? _buildLayoutItem1()
+              ? _buildLayoutItem1(backgroundColor)
               : indexLayoutItem == 1
-                  ? _buildLayoutItem2()
+                  ? _buildLayoutItem2(backgroundColor)
                   : indexLayoutItem == 2
-                      ? _buildLayoutItem34()
-                      : _buildLayoutItem34(reverse: true),
+                      ? _buildLayoutItem34(backgroundColor)
+                      : _buildLayoutItem34(backgroundColor, reverse: true),
         ),
       ),
       WSpacer(
@@ -427,8 +430,9 @@ Widget buildLayoutWidget(
               value: title,
               textLineHeight: 14.32,
               textSize: 12,
-              textColor:
-                  isFocus ? colorWhite :  Theme.of(context).textTheme.bodyMedium!.color,
+              textColor: isFocus
+                  ? colorWhite
+                  : Theme.of(context).textTheme.bodyMedium!.color,
               textFontWeight: FontWeight.w600,
             ),
           ),
@@ -461,7 +465,7 @@ Widget buildLayoutConfigItem(
           textSize: 12,
           textLineHeight: 14.32,
           textFontWeight: FontWeight.w600,
-          textColor:  Theme.of(context).textTheme.bodyMedium!.color,
+          textColor: Theme.of(context).textTheme.bodyMedium!.color,
         ),
         WSpacer(
           height: 10,
@@ -504,10 +508,10 @@ Widget buildLayoutConfigItem(
   );
 }
 
-Widget _buildLayoutItem1() {
+Widget _buildLayoutItem1(Color backgroundColor) {
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-    decoration: BoxDecoration(color: Colors.white, boxShadow: [
+    decoration: BoxDecoration(color: backgroundColor, boxShadow: [
       BoxShadow(
         color: Colors.black.withOpacity(0.2),
         spreadRadius: 0.5,
@@ -525,12 +529,12 @@ Widget _buildLayoutItem1() {
   );
 }
 
-Widget _buildLayoutItem2() {
+Widget _buildLayoutItem2(Color backgroundColor) {
   return Container(
     // height: 185,
     // width: 150,
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-    decoration: BoxDecoration(color: Colors.white, boxShadow: [
+    decoration: BoxDecoration(color: backgroundColor, boxShadow: [
       BoxShadow(
         color: Colors.black.withOpacity(0.2),
         spreadRadius: 0.5,
@@ -560,12 +564,12 @@ Widget _buildLayoutItem2() {
   );
 }
 
-Widget _buildLayoutItem34({bool reverse = false}) {
+Widget _buildLayoutItem34(Color backgroundColor, {bool reverse = false}) {
   return Container(
     // height: 185,
     // width: 150,
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-    decoration: BoxDecoration(color: Colors.white, boxShadow: [
+    decoration: BoxDecoration(color: backgroundColor, boxShadow: [
       BoxShadow(
         color: Colors.black.withOpacity(0.2),
         spreadRadius: 0.5,
@@ -652,20 +656,18 @@ void showLayoutDialogWithOffset(
     pageBuilder: (context, animation, secondaryAnimation) {
       return Material(
         color: transparent,
-        child: Container(
-          color: transparent,
-          child: Stack(children: [
-            Positioned.fill(child: GestureDetector(
-              onTap: () {
-                popNavigator(context);
-              },
-            )),
-            Positioned(
-                bottom: size.height - offset.dy,
-                left: offset.dx,
-                child: dialogWidget)
-          ]),
-        ),
+        child: Stack(children: [
+          Positioned.fill(child: GestureDetector(
+            onTap: () {
+              popNavigator(context);
+            },
+            // child: Container(color: Color.fromRGBO(0, 0, 0, 0.03)),
+          )),
+          Positioned(
+              bottom: size.height - offset.dy,
+              left: offset.dx,
+              child: dialogWidget)
+        ]),
       );
     },
   );
@@ -681,9 +683,10 @@ Widget buildDialogResizeMode(
       () => onSelected(
         LIST_RESIZE_MODE[0],
       ),
-      boxDecoration:  BoxDecoration(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          color:  Theme.of(context).cardColor,),
+      boxDecoration: BoxDecoration(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        color: Theme.of(context).dialogBackgroundColor,
+      ),
     ),
     WDivider(
       height: 1,
@@ -697,7 +700,7 @@ Widget buildDialogResizeMode(
               LIST_RESIZE_MODE[1],
             ),
         boxDecoration:
-              BoxDecoration(color:  Theme.of(context).cardColor,)),
+            BoxDecoration(color: Theme.of(context).dialogBackgroundColor)),
     WDivider(
       height: 1,
       color: const Color.fromRGBO(0, 0, 0, 0.3),
@@ -709,9 +712,10 @@ Widget buildDialogResizeMode(
       () => onSelected(
         LIST_RESIZE_MODE[2],
       ),
-      boxDecoration:   BoxDecoration(
-          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
-          color:  Theme.of(context).cardColor,),
+      boxDecoration: BoxDecoration(
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
+        color: Theme.of(context).dialogBackgroundColor,
+      ),
     ),
   ]);
 }
@@ -725,7 +729,7 @@ Widget buildDialogAlignment(BuildContext context, List<dynamic> datas,
     padding: const EdgeInsets.all(10),
     decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
-        color: const Color.fromRGBO(255, 255, 255, 0.8)),
+        color: Theme.of(context).dialogBackgroundColor),
     child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -849,9 +853,10 @@ Widget buildDialogAddCover(
       () => onSelected(
         LIST_ADD_COVER[0],
       ),
-      boxDecoration:   BoxDecoration(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          color:  Theme.of(context).cardColor,),
+      boxDecoration: BoxDecoration(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        color: Theme.of(context).dialogBackgroundColor,
+      ),
     ),
     WDivider(
       height: 1,
@@ -865,7 +870,7 @@ Widget buildDialogAddCover(
               LIST_ADD_COVER[1],
             ),
         boxDecoration:
-              BoxDecoration(color:  Theme.of(context).cardColor,)),
+            BoxDecoration(color: Theme.of(context).dialogBackgroundColor)),
     WDivider(
       height: 1,
       color: const Color.fromRGBO(0, 0, 0, 0.3),
@@ -878,9 +883,10 @@ Widget buildDialogAddCover(
         LIST_ADD_COVER[2],
       ),
       textColor: const Color.fromRGBO(0, 0, 0, 0.5),
-      boxDecoration:   BoxDecoration(
-          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
-          color:  Theme.of(context).cardColor,),
+      boxDecoration: BoxDecoration(
+          borderRadius:
+              const BorderRadius.vertical(bottom: Radius.circular(20)),
+          color: Theme.of(context).dialogBackgroundColor),
     ),
   ]);
 }

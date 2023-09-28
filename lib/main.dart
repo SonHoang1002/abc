@@ -25,11 +25,8 @@ class MyApp extends StatelessWidget {
 
 
 // void main() {
-//   runApp(MaterialApp(
+//   runApp(const MaterialApp(
 //     home: Scaffold(
-//       appBar: AppBar(
-//         title: Text('Resizable Box'),
-//       ),
 //       body: Center(
 //         child: TestThumb(),
 //       ),

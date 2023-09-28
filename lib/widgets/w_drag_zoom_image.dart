@@ -65,7 +65,6 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
   Widget build(BuildContext context) {
     _matrix4Notifiers = widget.matrix4Notifiers;
     _listPlacement = widget.listPlacement;
-    print("containerSize ${containerSize}");
     return _buildCustomArea();
   }
 

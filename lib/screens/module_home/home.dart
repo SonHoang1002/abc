@@ -24,8 +24,7 @@ final testImageList = [
 ];
 
 class HomePage extends flutter_riverpod.ConsumerStatefulWidget {
-  const HomePage({super.key, required this.title});
-  final String title;
+  const HomePage({super.key,});
 
   @override
   flutter_riverpod.ConsumerState<HomePage> createState() => _HomePageState();

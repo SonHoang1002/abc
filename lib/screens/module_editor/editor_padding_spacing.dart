@@ -21,7 +21,7 @@ class EditorPaddingSpacing extends StatefulWidget {
 }
 
 class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
-  late String _selectedLabel;
+  String? _selectedLabel;
   late Size _size;
   late List<String> _labelInputs;
 
@@ -41,7 +41,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
 
     if ([TITLE_EDIT_PLACEMENT].contains(widget.title)) {
       _labelInputs = LABELS_EDIT_PLACEMENT;
-      _selectedLabel = _labelInputs[2];
+      // _selectedLabel = _labelInputs[2];
     } else {
       _labelInputs = LABELS_PADDING_SPACING;
       _selectedLabel = _labelInputs[0];
@@ -89,13 +89,14 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
         alignment: Alignment.center,
         width: _size.width * 0.9,
         decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(15), color: Colors.grey.shade100),
+            borderRadius: BorderRadius.circular(15),
+            color: Theme.of(context).canvasColor),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             WTextContent(
               value: widget.title,
-              textColor: const Color.fromRGBO(0, 0, 0, 0.5),
+              textColor: Theme.of(context).textTheme.bodyLarge!.color,
               textLineHeight: 16.71,
               textSize: 14,
             ),
@@ -116,7 +117,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                           _selectedLabel = _labelInputs[2];
                         });
                       },
-                      autoFocus: true),
+                      autoFocus: false),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -144,8 +145,8 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                             horizontal: 5, vertical: 15),
                         child: Image.asset(
                           "${pathPrefixIcon}icon_placement_center.png",
-                          height: 60,
-                          width: 60,
+                          height: 80,
+                          width: 80,
                           scale: 3,
                         ),
                       ),
@@ -180,7 +181,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                           _selectedLabel = _labelInputs[5];
                         });
                       },
-                      autoFocus: true),
+                      autoFocus: false),
                 ),
               ],
             ),
@@ -205,14 +206,14 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
         width: _size.width * 0.9,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
-            color: Colors.grey.shade100),
+            color: Theme.of(context).canvasColor),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             title != null
                 ? WTextContent(
                     value: widget.title,
-                    textColor: const Color.fromRGBO(0, 0, 0, 0.5),
+                    textColor: Theme.of(context).textTheme.bodyLarge!.color,
                     textLineHeight: 16.71,
                     textSize: 14,
                   )
@@ -234,7 +235,10 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                               _selectedLabel = _labelInputs[0];
                             });
                           },
-                          autoFocus: true),
+                          autoFocus:
+                              [TITLE_EDIT_PLACEMENT].contains(widget.title)
+                                  ? false
+                                  : true),
                     ),
                     WSpacer(
                       height: 7,
@@ -244,7 +248,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                       textSize: 12,
                       textFontWeight: FontWeight.w600,
                       textLineHeight: 14.32,
-                      textColor: const Color.fromRGBO(0, 0, 0, 0.5),
+                      textColor: Theme.of(context).textTheme.bodyLarge!.color,
                     ),
                   ],
                 ),
@@ -258,17 +262,17 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                     SizedBox(
                       width: _size.width * 0.45,
                       child: _buildInput(
-                        widget.controllers[1],
-                        (value) {
-                          widget.onChanged(1, value);
-                        },
-                        _selectedLabel == _labelInputs[1],
-                        onTap: () {
-                          setState(() {
-                            _selectedLabel = _labelInputs[1];
-                          });
-                        },
-                      ),
+                          widget.controllers[1],
+                          (value) {
+                            widget.onChanged(1, value);
+                          },
+                          _selectedLabel == _labelInputs[1],
+                          onTap: () {
+                            setState(() {
+                              _selectedLabel = _labelInputs[1];
+                            });
+                          },
+                          autoFocus: false),
                     ),
                     WSpacer(
                       height: 7,
@@ -278,7 +282,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                       textSize: 12,
                       textFontWeight: FontWeight.w600,
                       textLineHeight: 14.32,
-                      textColor: const Color.fromRGBO(0, 0, 0, 0.5),
+                      textColor: Theme.of(context).textTheme.bodyLarge!.color,
                     ),
                   ],
                 ),
@@ -306,7 +310,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
           keyboardType: TextInputType.number,
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              color: const Color.fromRGBO(255, 255, 255, 1),
+              color: Theme.of(context).cardColor,
               border: Border.all(
                   color: isFocus
                       ? const Color.fromRGBO(98, 161, 255, 1)

@@ -11,6 +11,7 @@ import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/providers/project_provider.dart';
 import 'package:photo_to_pdf/screens/module_editor/editor_padding_spacing.dart';
 import 'package:photo_to_pdf/screens/module_editor/widgets/body_add_cover.dart';
+import 'package:photo_to_pdf/screens/module_editor/widgets/body_background.dart';
 import 'package:photo_to_pdf/screens/module_editor/widgets/body_selected_photos.dart';
 import 'package:photo_to_pdf/screens/module_editor/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
@@ -96,6 +97,8 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   // add cover
   late CoverPhoto _coverPhoto;
 
+  // background variable
+  late Color _currentColor;
   @override
   void initState() {
     super.initState();
@@ -151,6 +154,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     _coverPhoto = CoverPhoto(
         backPhoto: "${pathPrefixImage}test_image_1.png",
         frontPhoto: "${pathPrefixImage}test_image_1.png");
+    _currentColor = colorWhite;
   }
 
   _tranferValuePageSize() {
@@ -241,7 +245,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                //input
+                // input
                 buildFileNameInput(context, _fileNameController),
                 //
                 WSpacer(
@@ -255,24 +259,13 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                     borderRadius: BorderRadius.circular(10),
                     color: Theme.of(context).cardColor,
                   ),
-                  child: ReorderableGridView.count(
+                  child: GridView.count(
                     padding: const EdgeInsets.symmetric(
                         vertical: 15, horizontal: 15),
                     shrinkWrap: true,
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
                     crossAxisCount: 2,
-                    onReorder: (oldIndex, newIndex) {
-                      setState(() {
-                        final tempListProject = _listProject;
-                        final element = tempListProject.removeAt(oldIndex);
-                        tempListProject.insert(newIndex, element);
-                        setState(() {
-                          _listProject = tempListProject;
-                        });
-                      });
-                    },
-                    onDragStart: (dragIndex) {},
                     children: _listProject.map((e) {
                       final index = _listProject.indexOf(e);
                       return WProjectItemEditor(
@@ -285,7 +278,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                     }).toList(),
                   ),
                 )),
-                //
+                // page size and bottom buttons
                 SizedBox(
                   height: _size.height * 0.4,
                   child: Column(
@@ -459,7 +452,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   }
 
   Widget _buildLayoutConfigs(
-      Function rerenderFunction, bool showPaddingAndSpacing) {
+      void Function() rerenderFunction, bool showPaddingAndSpacing) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Column(
@@ -533,11 +526,16 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                       })),
               Flexible(
                 child: buildLayoutConfigItem(
-                    context: context,
-                    title: "Background",
-                    content: "White",
-                    width: _size.width * 0.3,
-                    contentWidgetColor: Colors.white),
+                  context: context,
+                  title: "Background",
+                  content: "",
+                  width: _size.width * 0.3,
+                  contentWidgetColor: _currentColor,
+                  onTap: () {
+                    showBottomSheetBackground(
+                        rerenderFunction: rerenderFunction);
+                  },
+                ),
               ),
             ],
           ),
@@ -858,6 +856,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                                 mediaSrc: e['mediaSrc'],
                                                 title: "Layout ${index + 1}",
                                                 isFocus: e['isFocus'],
+                                                backgroundColor: _currentColor,
                                                 indexLayoutItem: index,
                                                 onTap: () {
                                                   _resetLayoutSelections();
@@ -897,6 +896,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                                 title: "Layout ${index + 1}",
                                                 isFocus: e['isFocus'],
                                                 indexLayoutItem: index,
+                                                backgroundColor: _currentColor,
                                                 onTap: () {
                                                   setState(() {
                                                     _resetLayoutSelections();
@@ -1271,6 +1271,27 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                   setState(() {});
                   setStatefull(() {});
                 }
+              },
+            );
+          });
+        },
+        isScrollControlled: true,
+        backgroundColor: transparent);
+  }
+
+  void showBottomSheetBackground({required void Function()? rerenderFunction}) {
+    showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(builder: (context, setStatefull) {
+            return BackgroundBody(
+              currentColor: _currentColor,
+              onColorChanged: (color) {
+                setState(() {
+                  _currentColor = color;
+                });
+                setStatefull(() {});
+                rerenderFunction != null ? rerenderFunction() : null;
               },
             );
           });

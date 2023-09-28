@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:flutter/material.dart';
+
 const String pathPrefixIcon = "assets/icons/";
 const String pathPrefixImage = "assets/images/";
 const String myCustomFont = "FontsFree-Net-SFProDisplay-Regular";
@@ -98,3 +100,42 @@ const String POINT = "pt";
 
 const String LANDSCAPE = "landscape";
 const String PORTRAIT = "portrait";
+const List<Color> ALL_COLORS = [
+  Colors.amber,
+  Colors.amberAccent,
+  Colors.black,
+  Colors.blue,
+  Colors.blueAccent,
+  Colors.blueGrey,
+  Colors.brown,
+  Colors.cyan,
+  Colors.cyanAccent,
+  Colors.deepOrange,
+  Colors.deepOrangeAccent,
+  Colors.deepPurple,
+  Colors.deepPurpleAccent,
+  Colors.green,
+  Colors.greenAccent,
+  Colors.grey,
+  Colors.indigo,
+  Colors.indigoAccent,
+  Colors.lightBlue,
+  Colors.lightBlueAccent,
+  Colors.lightGreen,
+  Colors.lightGreenAccent,
+  Colors.lime,
+  Colors.limeAccent,
+  Colors.orange,
+  Colors.orangeAccent,
+  Colors.pink,
+  Colors.pinkAccent,
+  Colors.purple,
+  Colors.purpleAccent,
+  Colors.red,
+  Colors.redAccent,
+  Colors.teal,
+  Colors.tealAccent,
+  Colors.yellow,
+  Colors.yellowAccent,
+  Colors.white,
+];

@@ -9,7 +9,7 @@ import 'package:photo_to_pdf/widgets/w_thumb_slider.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 import 'package:photo_to_pdf/widgets/w_project_item.dart';
 
-class SelectedPhotosBody extends StatelessWidget {
+class SelectedPhotosBody extends StatefulWidget {
   final void Function(int, int) onReorder;
   final List datas;
   final double sliderCompressionLevelValue;
@@ -22,27 +22,66 @@ class SelectedPhotosBody extends StatelessWidget {
       required this.onChanged});
 
   @override
+  State<SelectedPhotosBody> createState() => _SelectedPhotosBodyState();
+}
+
+class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
+  late bool _isFocusProject;
+  @override
+  void initState() {
+    super.initState();
+    _isFocusProject = false;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     return Container(
       height: size.height * 0.95,
-      decoration:   BoxDecoration(
+      decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
-        borderRadius:   const BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(20.0),
           topRight: Radius.circular(20.0),
         ),
       ),
       child: Column(
         children: [
-          Container(
-            margin: const EdgeInsets.only(top: 20),
-            child: WTextContent(
-              value: "Selected Photos",
-              textSize: 14,
-              textLineHeight: 16.71,
-              textColor:  Theme.of(context).textTheme.bodyMedium!.color,
-            ),
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 10, bottom: 15),
+                child: WTextContent(
+                  value: "Selected Photos",
+                  textSize: 14,
+                  textLineHeight: 16.71,
+                  textColor: Theme.of(context).textTheme.bodyMedium!.color,
+                ),
+              ),
+              _isFocusProject
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const SizedBox(),
+                          WTextContent(
+                            value: "Done",
+                            textSize: 14,
+                            textLineHeight: 16.71,
+                            textColor: colorBlue,
+                            onTap: () {
+                              setState(() {
+                                _isFocusProject = false;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    )
+                  : const SizedBox(),
+            ],
           ),
           Expanded(
             child: Container(
@@ -56,15 +95,22 @@ class SelectedPhotosBody extends StatelessWidget {
                 crossAxisSpacing: 5,
                 mainAxisSpacing: 5,
                 crossAxisCount: 3,
-                onReorder: onReorder,
-                onDragStart: (dragIndex) {},
-                children: datas.map((e) {
-                  final index = datas.indexOf(e);
+                onReorder: widget.onReorder,
+                onDragStart: (dragIndex) {
+                  setState(() {
+                        _isFocusProject = true;
+                      });
+                },
+                children: widget.datas.map((e) {
+                  final index = widget.datas.indexOf(e);
                   return WProjectItemHomeBottom(
-                    key: ValueKey(datas[index]),
-                    src: datas[index],
-                    isFocusByLongPress: true,
+                    key: ValueKey(widget.datas[index]),
+                    src: widget.datas[index],
+                    isFocusByLongPress: _isFocusProject,
                     index: index,
+                    onLongPress: () {
+                      
+                    },
                   );
                 }).toList(),
               ),
@@ -134,12 +180,13 @@ class SelectedPhotosBody extends StatelessWidget {
                             textFontWeight: FontWeight.w600,
                             textSize: 14,
                             textLineHeight: 16.71,
-                            textColor:  Theme.of(context).textTheme.bodyMedium!.color,
+                            textColor:
+                                Theme.of(context).textTheme.bodyMedium!.color,
                           ),
                           WTextContent(
-                            value: sliderCompressionLevelValue == 1.0
+                            value: widget.sliderCompressionLevelValue == 1.0
                                 ? "Original"
-                                : "${(sliderCompressionLevelValue * 100).toStringAsFixed(0)}%",
+                                : "${(widget.sliderCompressionLevelValue * 100).toStringAsFixed(0)}%",
                             textSize: 14,
                             textLineHeight: 16.71,
                             textColor: const Color.fromRGBO(10, 132, 255, 1),
@@ -159,8 +206,8 @@ class SelectedPhotosBody extends StatelessWidget {
                             thumbHeight: 24),
                       ),
                       child: Slider(
-                        value: sliderCompressionLevelValue,
-                        onChanged: onChanged,
+                        value: widget.sliderCompressionLevelValue,
+                        onChanged: widget.onChanged,
                         min: 0,
                         max: 1,
                         thumbColor: colorWhite,
@@ -174,7 +221,7 @@ class SelectedPhotosBody extends StatelessWidget {
                   value: "Estimated Total Size: -- MB",
                   textSize: 14,
                   textLineHeight: 16.71,
-                  textColor:  Theme.of(context).textTheme.bodyMedium!.color,
+                  textColor: Theme.of(context).textTheme.bodyMedium!.color,
                 ),
               ],
             ),
@@ -183,6 +230,6 @@ class SelectedPhotosBody extends StatelessWidget {
         ],
       ),
     );
-    ;
+    
   }
 }

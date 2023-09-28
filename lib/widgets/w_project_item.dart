@@ -66,7 +66,8 @@ class WProjectItemHome extends ConsumerWidget {
                               child: Container(
                                 alignment: Alignment.topLeft,
                                 child: Image.asset(
-                                  pv.Provider.of<ThemeManager>(context).isDarkMode
+                                  pv.Provider.of<ThemeManager>(context)
+                                          .isDarkMode
                                       ? "${pathPrefixIcon}icon_remove_dark.png"
                                       : "${pathPrefixIcon}icon_remove_light.png",
                                   width: 50,
@@ -90,7 +91,8 @@ class WProjectItemHome extends ConsumerWidget {
                         textFontWeight: FontWeight.w600,
                         textLineHeight: 14.32,
                         textSize: 12,
-                        textColor: Theme.of(context).textTheme.bodyMedium!.color,
+                        textColor:
+                            Theme.of(context).textTheme.bodyMedium!.color,
                       ),
                     ],
                   )
@@ -141,8 +143,8 @@ class WProjectItemHomeBottom extends ConsumerWidget {
                   ),
                   isFocusByLongPress
                       ? Positioned(
-                          top: -20,
-                          left: -20,
+                          top: -13,
+                          left: -13,
                           child: GestureDetector(
                             onTap: () {
                               final listProject = ref
@@ -157,10 +159,10 @@ class WProjectItemHomeBottom extends ConsumerWidget {
                               alignment: Alignment.topLeft,
                               child: Image.asset(
                                 pv.Provider.of<ThemeManager>(context).isDarkMode
-                                      ? "${pathPrefixIcon}icon_remove_dark.png"
-                                      : "${pathPrefixIcon}icon_remove_light.png",
-                                width: 50,
-                                height: 50,
+                                    ? "${pathPrefixIcon}icon_remove_dark.png"
+                                    : "${pathPrefixIcon}icon_remove_light.png",
+                                width: 40,
+                                height: 40,
                               ),
                             ),
                           ))
@@ -250,7 +252,8 @@ class WProjectItemEditor extends ConsumerWidget {
                               child: Container(
                                 alignment: Alignment.topLeft,
                                 child: Image.asset(
-                                    pv.Provider.of<ThemeManager>(context).isDarkMode
+                                  pv.Provider.of<ThemeManager>(context)
+                                          .isDarkMode
                                       ? "${pathPrefixIcon}icon_remove_dark.png"
                                       : "${pathPrefixIcon}icon_remove_light.png",
                                   width: 50,

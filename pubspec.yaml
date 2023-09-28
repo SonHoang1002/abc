@@ -43,6 +43,9 @@ dependencies:
   font_awesome_flutter: ^10.5.0
   dropdown_button2: ^2.3.9
   image_picker: ^1.0.4
+  flutter_colorpicker: ^1.0.3
+  colornames: ^0.1.0
+  color_parser: ^0.0.3
 
 dev_dependencies:
   flutter_test:

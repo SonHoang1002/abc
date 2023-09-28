@@ -58,6 +58,7 @@ class MyThemes {
       splashColor: Colors.transparent,
       hoverColor: Colors.transparent,
       focusColor: Colors.transparent,
+      dialogBackgroundColor: Color.fromRGBO(34, 34, 34, 0.8),
       // ignore: deprecated_member_use
       backgroundColor: Colors.white.withOpacity(0.1));
 
@@ -81,6 +82,7 @@ class MyThemes {
       splashColor: Colors.transparent,
       hoverColor: Colors.transparent,
       focusColor: Colors.transparent,
+      dialogBackgroundColor: Color.fromRGBO(255, 255, 255, 0.8),
       // ignore: deprecated_member_use
       backgroundColor: Colors.black.withOpacity(0.1));
 }

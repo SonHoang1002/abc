@@ -11,8 +11,7 @@ class WDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: height,
-      // width: width,
-      color: color,
+      color: Theme.of(context).canvasColor,
       margin:margin,
     );
   }
