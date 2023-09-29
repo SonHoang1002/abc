@@ -72,6 +72,11 @@ dynamic SPACING_OPTIONS = {
   "unit": POINT
 };
 
+dynamic PLACEMENT_OPTIONS = {
+  // horizontal, vertical, top, left, right, bottom
+  "values": ["0.0", "0.0", "0.0", "0.0", "0.0", "0.0"],
+  "unit": POINT
+};
 List<dynamic> LIST_ADD_COVER = [
   {
     "key": "change_photo",
@@ -94,9 +99,10 @@ const String TITLE_PADDING = "Padding";
 const String TITLE_SPACING = "Spacing";
 const String TITLE_EDIT_PLACEMENT = "Editing Placement";
 
-const String INCH = "”";
-const String CENTIMET = "cm";
-const String POINT = "pt";
+const Map<String, String> INCH = {"title": "inch", "value": "”"};
+const Map<String, String> CENTIMET = {"title": "centimet", "value": "cm"};
+const Map<String, String> POINT = {"title": "point", "value": "pt"};
+const List<Map<String, String>> LIST_UNIT = [INCH, CENTIMET, POINT];
 
 const String LANDSCAPE = "landscape";
 const String PORTRAIT = "portrait";

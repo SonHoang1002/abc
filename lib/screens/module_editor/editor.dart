@@ -1,13 +1,13 @@
-import 'dart:math';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/models/cover_photo.dart';
 import 'package:photo_to_pdf/models/placement.dart';
+import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/providers/project_provider.dart';
 import 'package:photo_to_pdf/screens/module_editor/editor_padding_spacing.dart';
 import 'package:photo_to_pdf/screens/module_editor/widgets/body_add_cover.dart';
@@ -20,18 +20,18 @@ import 'package:photo_to_pdf/widgets/w_drag_zoom_image.dart';
 import 'package:photo_to_pdf/widgets/w_project_item.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
-import 'package:reorderable_grid_view/reorderable_grid_view.dart';
+import 'package:photo_to_pdf/widgets/w_unit_selections.dart';
 
 class Editor extends flutter_riverpod.ConsumerStatefulWidget {
-  const Editor({
-    super.key,
-  });
+  final Project project;
+  const Editor({super.key, required this.project});
 
   @override
   flutter_riverpod.ConsumerState<Editor> createState() => _EditorState();
 }
 
 class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
+  late Project _project;
   final TextEditingController _fileNameController =
       TextEditingController(text: "");
   final TextEditingController _pageSizeWidthController =
@@ -39,7 +39,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   final TextEditingController _pageSizeHeightController =
       TextEditingController(text: "");
 
-  late List _listProject;
+  // late List _listProject;
   late Size _size;
   late bool _pageSizeIsPortrait = true;
   int? _indexPageSizeSelectionWidget;
@@ -77,6 +77,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   final List<ValueNotifier<Matrix4>> _matrix4Notifiers = [];
   List<Placement> _listPlacement = [];
   Placement? _seletedPlacement;
+  late dynamic _placementOptions;
 
   final TextEditingController _placementTopController =
       TextEditingController(text: "0.0");
@@ -98,10 +99,14 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   late CoverPhoto _coverPhoto;
 
   // background variable
-  late Color _currentColor;
+  late Color _currentLayoutColor;
   @override
   void initState() {
     super.initState();
+    _project = widget.project;
+
+    _fileNameController.text =
+    widget.project.title == "Untitled" ? "" : widget.project.title;
 
     _pageConfig = {
       "mediaSrc": "${pathPrefixIcon}icon_letter.png",
@@ -116,14 +121,13 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     _photosConfig = {
       "mediaSrc": "${pathPrefixIcon}icon_frame.png",
       "title": "Selected Photos",
-      "content": "13 Photos"
+      "content": "${widget.project.listMedia.length} Photos"
     };
     _coverConfig = {
       "mediaSrc": "${pathPrefixIcon}icon_frame_1.png",
       "title": "Cover Photos",
       "content": "None"
     };
-    _listProject = ref.read(projectControllerProvider).listProject;
 
     _pageSizeWidthController.text =
         (_pageConfig['content']['width']).toString();
@@ -150,11 +154,12 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     _spacingOptions = SPACING_OPTIONS;
     _spacingHorizontalController.text = _spacingOptions['values'][0];
     _spacingVerticalController.text = _spacingOptions['values'][1];
+
     _sliderCompressionValue = 1;
-    _coverPhoto = CoverPhoto(
-        backPhoto: "${pathPrefixImage}test_image_1.png",
-        frontPhoto: "${pathPrefixImage}test_image_1.png");
-    _currentColor = colorWhite;
+    _coverPhoto = CoverPhoto(backPhoto: null, frontPhoto: null);
+    _currentLayoutColor = colorWhite;
+
+    _placementOptions = PLACEMENT_OPTIONS;
   }
 
   _tranferValuePageSize() {
@@ -201,11 +206,11 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   }
 
   String _renderPreviewPaddingOptions() {
-    return "${_paddingHorizontalController.text.trim()}${_paddingOptions['unit']} , ${_paddingVerticalController.text.trim()} ${_paddingOptions['unit']}";
+    return "${_paddingHorizontalController.text.trim()}${_paddingOptions['unit']["value"]} , ${_paddingVerticalController.text.trim()} ${_paddingOptions['unit']["value"]}";
   }
 
   String _renderPreviewSpacingOptions() {
-    return "${_spacingHorizontalController.text.trim()}${_spacingOptions['unit']} , ${_spacingVerticalController.text.trim()} ${_spacingOptions['unit']}";
+    return "${_spacingHorizontalController.text.trim()}${_spacingOptions['unit']["value"]} , ${_spacingVerticalController.text.trim()} ${_spacingOptions['unit']["value"]}";
   }
 
   void _onChangedEditPlacement(int index, String value) {
@@ -246,7 +251,18 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 // input
-                buildFileNameInput(context, _fileNameController),
+                buildFileNameInput(context, _project, _fileNameController,
+                    (value) {
+                  _project = Project(
+                      id: _project.id,
+                      title: value.trim(),
+                      listMedia: _project.listMedia);
+                  ref.read(projectControllerProvider.notifier).updateProject(
+                      Project(
+                          id: _project.id,
+                          listMedia: _project.listMedia,
+                          title: value.trim()));
+                }),
                 //
                 WSpacer(
                   height: 10,
@@ -259,23 +275,26 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                     borderRadius: BorderRadius.circular(10),
                     color: Theme.of(context).cardColor,
                   ),
-                  child: GridView.count(
+                  child: GridView.builder(
                     padding: const EdgeInsets.symmetric(
                         vertical: 15, horizontal: 15),
                     shrinkWrap: true,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                    crossAxisCount: 2,
-                    children: _listProject.map((e) {
-                      final index = _listProject.indexOf(e);
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      crossAxisCount: 2,
+                    ),
+                    itemCount: _project.listMedia.length,
+                    itemBuilder: (context, index) {
                       return WProjectItemEditor(
-                        key: ValueKey(_listProject[index]),
-                        src: _listProject[index],
+                        key: ValueKey(_project.id),
+                        project: _project,
                         isFocusByLongPress: false,
                         index: index,
                         title: "Page ${index + 1}",
                       );
-                    }).toList(),
+                    },
                   ),
                 )),
                 // page size and bottom buttons
@@ -291,7 +310,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             WTextContent(
-                              value: "${_listProject.length} Pages",
+                              value: "${_project.listMedia.length} Pages",
                               textColor:
                                   Theme.of(context).textTheme.bodyMedium!.color,
                               textLineHeight: 14.32,
@@ -530,7 +549,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                   title: "Background",
                   content: "",
                   width: _size.width * 0.3,
-                  contentWidgetColor: _currentColor,
+                  contentWidgetColor: _currentLayoutColor,
                   onTap: () {
                     showBottomSheetBackground(
                         rerenderFunction: rerenderFunction);
@@ -557,20 +576,23 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                         pushCustomMaterialPageRoute(
                             context,
                             EditorPaddingSpacing(
-                              title: TITLE_PADDING,
-                              controllers: [
-                                _paddingHorizontalController,
-                                _paddingVerticalController
-                              ],
-                              onChanged: (index, value) {
-                                if (index == 0) {
-                                  _paddingHorizontalController.text = value;
-                                }
-                                if (index == 1) {
-                                  _paddingVerticalController.text = value;
-                                }
-                              },
-                            ));
+                                unit: _paddingOptions['unit'],
+                                title: TITLE_PADDING,
+                                controllers: [
+                                  _paddingHorizontalController,
+                                  _paddingVerticalController
+                                ],
+                                onChanged: (index, value) {
+                                  if (index == 0) {
+                                    _paddingHorizontalController.text = value;
+                                  }
+                                  if (index == 1) {
+                                    _paddingVerticalController.text = value;
+                                  }
+                                },
+                                onUnitChange: (dynamic newUnit) {
+                                  print("newUnit Padding ${newUnit}");
+                                }));
                       },
                     )),
                     Flexible(
@@ -583,20 +605,23 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                           pushCustomMaterialPageRoute(
                               context,
                               EditorPaddingSpacing(
-                                title: TITLE_SPACING,
-                                controllers: [
-                                  _spacingHorizontalController,
-                                  _spacingVerticalController
-                                ],
-                                onChanged: (index, value) {
-                                  if (index == 0) {
-                                    _spacingHorizontalController.text = value;
-                                  }
-                                  if (index == 1) {
-                                    _spacingVerticalController.text = value;
-                                  }
-                                },
-                              ));
+                                  unit: _spacingOptions["unit"],
+                                  title: TITLE_SPACING,
+                                  controllers: [
+                                    _spacingHorizontalController,
+                                    _spacingVerticalController
+                                  ],
+                                  onChanged: (index, value) {
+                                    if (index == 0) {
+                                      _spacingHorizontalController.text = value;
+                                    }
+                                    if (index == 1) {
+                                      _spacingVerticalController.text = value;
+                                    }
+                                  },
+                                  onUnitChange: (dynamic newUnit) {
+                                    print("newUnit Spacing ${newUnit}");
+                                  }));
                         },
                       ),
                     ),
@@ -645,9 +670,6 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                   _listPlacement = placements;
                 });
                 rerenderFunction();
-                // _listPlacement.forEach((element) {
-                //   element.getInfor();
-                // });
               },
               onFocusPlacement: (placement, matrix4) {
                 setState(() {
@@ -696,7 +718,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                               alignment: Alignment.center,
                               offset: Offset(_size.width * 0.4 - 35,
                                   _size.width * 0.4 - 35),
-                              id: Random().nextInt(10000)));
+                              id: getRandomNumber()));
                           _seletedPlacement = _listPlacement.last;
                         });
                         rerenderFunction();
@@ -725,6 +747,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                               pushCustomMaterialPageRoute(
                                   context,
                                   EditorPaddingSpacing(
+                                    unit: _placementOptions['unit'],
                                     title: TITLE_EDIT_PLACEMENT,
                                     // width and height is 0 and 1 to comparable with EditorPaddingSpacing (2 controller)
                                     controllers: [
@@ -737,6 +760,9 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                     ],
                                     onChanged: (index, value) {
                                       _onChangedEditPlacement(index, value);
+                                    },
+                                    onUnitChange: (newUnit) {
+                                      
                                     },
                                   ));
                             },
@@ -856,7 +882,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                                 mediaSrc: e['mediaSrc'],
                                                 title: "Layout ${index + 1}",
                                                 isFocus: e['isFocus'],
-                                                backgroundColor: _currentColor,
+                                                backgroundColor: _currentLayoutColor,
                                                 indexLayoutItem: index,
                                                 onTap: () {
                                                   _resetLayoutSelections();
@@ -896,7 +922,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                                 title: "Layout ${index + 1}",
                                                 isFocus: e['isFocus'],
                                                 indexLayoutItem: index,
-                                                backgroundColor: _currentColor,
+                                                backgroundColor: _currentLayoutColor,
                                                 onTap: () {
                                                   setState(() {
                                                     _resetLayoutSelections();
@@ -918,7 +944,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                   _buildLayoutConfigs(() {
                     setStatefull(() {});
                   }, _segmentCurrentIndex == 0),
-                  buildBottomButton(context)
+                  buildBottomButton(context, () {})
                 ],
               ),
             );
@@ -934,9 +960,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         builder: (context) {
           return Padding(
             padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom >= 100
-                    ? MediaQuery.of(context).viewInsets.bottom - 100
-                    : 0.0),
+                bottom: MediaQuery.of(context).viewInsets.bottom),
             child: StatefulBuilder(builder: (context, setStatefull) {
               return Container(
                 height: _size.height * 0.55,
@@ -948,7 +972,6 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                   ),
                 ),
                 child: Stack(
-                  alignment: Alignment.topCenter,
                   children: [
                     Column(
                       children: [
@@ -1025,7 +1048,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                         }
                                       },
                                       suffixValue: _pageConfig['content']
-                                          ['unit'],
+                                          ['unit']["value"],
                                       isFocus:
                                           _indexPageSizeSelectionWidget == 1),
                                   WSpacer(
@@ -1057,7 +1080,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                         }
                                       },
                                       suffixValue: _pageConfig['content']
-                                          ['unit'],
+                                          ['unit']["value"],
                                       isFocus:
                                           _indexPageSizeSelectionWidget == 2),
                                   WSpacer(
@@ -1105,7 +1128,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                                 alignment: Alignment.center,
                                                 child: WTextContent(
                                                   value:
-                                                      "${_pageSizeWidthController.text.trim()}x${_pageSizeHeightController.text.trim()}${_pageConfig['content']['unit']}",
+                                                      "${_pageSizeWidthController.text.trim()}x${_pageSizeHeightController.text.trim()}${_pageConfig['content']['unit']["value"]}",
                                                   textSize: 16,
                                                   textLineHeight: 19.09,
                                                   textFontWeight:
@@ -1121,7 +1144,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                             alignment: Alignment.topCenter,
                                             child: WTextContent(
                                               value:
-                                                  "${_pageSizeWidthController.text.trim()}x${_pageSizeHeightController.text.trim()}${_pageConfig['content']['unit']}",
+                                                  "${_pageSizeWidthController.text.trim()}x${_pageSizeHeightController.text.trim()}${_pageConfig['content']['unit']["value"]}",
                                               textSize: 16,
                                               textLineHeight: 19.09,
                                               textFontWeight: FontWeight.w600,
@@ -1136,9 +1159,28 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                             )
                           ],
                         )),
-                        buildBottomButton(context)
+                        buildBottomButton(context, () {})
                       ],
                     ),
+                    MediaQuery.of(context).viewInsets.bottom > 0.0
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const SizedBox(),
+                              WUnitSelections(
+                                  unitValue: _pageConfig['content']["unit"],
+                                  onSelected: (value) {
+                                    setState(() {
+                                      _pageConfig['content'] = {
+                                        ...LIST_PAGE_SIZE[7],
+                                        "unit": value
+                                      };
+                                    });
+                                    setStatefull(() {});
+                                  })
+                            ],
+                          )
+                        : const SizedBox()
                   ],
                 ),
               );
@@ -1215,7 +1257,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   void showBottomSheetSelectedPhotos(
       {required BuildContext context,
       required Size size,
-      required List datas,
+      required List<Project> datas,
       required void Function(int, int) onReorderFunction,
       required double sliderCompressionLevelValue,
       required Function(double value) onSliderChanged}) {
@@ -1224,24 +1266,57 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         builder: (context) {
           return StatefulBuilder(builder: (context, setStatefull) {
             return SelectedPhotosBody(
-                onReorder: (oldIndex, newIndex) {
-                  onReorderFunction(oldIndex, newIndex);
-                  setStatefull(() {});
-                },
-                datas: datas,
-                sliderCompressionLevelValue: sliderCompressionLevelValue,
-                onChanged: (value) {
-                  setState(() {
-                    // use sliderCompressionLevelValue to announce for selected photos
-                    // body that have changable variable
-                    // if only use _sliderCompressionValue, don't change value
-                    // sliderCompressionLevelValue because pass data
-                    // through every child and don't listen changes
-                    sliderCompressionLevelValue = value;
-                    _sliderCompressionValue = value;
-                  });
-                  setStatefull(() {});
+              onReorder: (oldIndex, newIndex) {
+                onReorderFunction(oldIndex, newIndex);
+                setStatefull(() {});
+              },
+              reRenderFunction: () {
+                setStatefull(() {});
+              },
+              project: _project,
+              sliderCompressionLevelValue: sliderCompressionLevelValue,
+              onChanged: (value) {
+                setState(() {
+                  // use sliderCompressionLevelValue to announce for selected photos
+                  // body that have changable variable
+                  // if only use _sliderCompressionValue, don't change value
+                  // sliderCompressionLevelValue because pass data
+                  // through every child and don't listen changes
+                  sliderCompressionLevelValue = value;
+                  _sliderCompressionValue = value;
                 });
+                setStatefull(() {});
+              },
+              onAddMedia: (newProject) {
+                setState(() {
+                  _project = newProject;
+                  _photosConfig = {
+                    ..._photosConfig,
+                    "content": "${_project.listMedia.length} Photos"
+                  };
+                });
+                setStatefull(() {});
+                ref
+                    .read(projectControllerProvider.notifier)
+                    .updateProject(_project);
+              },
+              onRemoveItem: (srcMedia) {
+                setState(() {
+                  _project = _project.copyWith(
+                      listMedia: _project.listMedia
+                          .where((element) => element != srcMedia)
+                          .toList());
+                  _photosConfig = {
+                    ..._photosConfig,
+                    "content": "${_project.listMedia.length} Photos"
+                  };
+                });
+                setStatefull(() {});
+                ref
+                    .read(projectControllerProvider.notifier)
+                    .updateProject(_project);
+              },
+            );
           });
         },
         isScrollControlled: true,
@@ -1257,22 +1332,22 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         builder: (context) {
           return StatefulBuilder(builder: (context, setStatefull) {
             return AddCoverBody(
-              coverPhoto: _coverPhoto,
-              updatePhoto: (label, src) {
-                if (label == "backPhoto") {
-                  _coverPhoto = CoverPhoto(
-                      backPhoto: src, frontPhoto: _coverPhoto.frontPhoto);
+                coverPhoto: _coverPhoto,
+                onUpdatePhoto: (newCoverPhoto) {
+                  _coverPhoto = newCoverPhoto;
+                  if (_coverPhoto.backPhoto != null &&
+                      _coverPhoto.frontPhoto != null) {
+                    _coverConfig["content"] = "Edit";
+                  } else {
+                    _coverConfig["content"] = "None";
+                  }
                   setState(() {});
                   setStatefull(() {});
-                }
-                if (label == "frontPhoto") {
-                  _coverPhoto = CoverPhoto(
-                      backPhoto: _coverPhoto.backPhoto, frontPhoto: src);
-                  setState(() {});
+                  popNavigator(context);
+                },
+                reRenderFunction: () {
                   setStatefull(() {});
-                }
-              },
-            );
+                });
           });
         },
         isScrollControlled: true,
@@ -1285,10 +1360,10 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         builder: (context) {
           return StatefulBuilder(builder: (context, setStatefull) {
             return BackgroundBody(
-              currentColor: _currentColor,
+              currentColor: _currentLayoutColor,
               onColorChanged: (color) {
                 setState(() {
-                  _currentColor = color;
+                  _currentLayoutColor = color;
                 });
                 setStatefull(() {});
                 rerenderFunction != null ? rerenderFunction() : null;

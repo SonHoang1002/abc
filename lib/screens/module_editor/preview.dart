@@ -1,26 +1,23 @@
+import 'dart:io';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
-import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
+import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/screens/module_home/home.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 
-class Preview extends StatefulWidget {
-  const Preview({super.key});
+class Preview extends StatelessWidget {
+  final Project project;
+  const Preview({super.key, required this.project});
 
-  @override
-  State<Preview> createState() => _PreviewState();
-}
-
-class _PreviewState extends State<Preview> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     return Scaffold(
-      // backgroundColor: Color.fromRGBO(0, 0, 0, 0.1),,
       body: SafeArea(
         child: Stack(
           children: [
@@ -72,8 +69,12 @@ class _PreviewState extends State<Preview> {
                                           offset: const Offset(0, 1),
                                         ),
                                       ]),
-                                  child:
-                                      Image.asset(testImageList[currentIndex]),
+                                  child: project.listMedia[currentIndex] is File
+                                      ? Image.file(
+                                          project.listMedia[currentIndex])
+                                      : Image.asset(
+                                          project.listMedia[currentIndex]
+                                              ),
                                 ),
                                 WSpacer(
                                   width: 40,
@@ -83,7 +84,10 @@ class _PreviewState extends State<Preview> {
                                   textSize: 12,
                                   textFontWeight: FontWeight.w600,
                                   textLineHeight: 14.32,
-                                  textColor: Theme.of(context).textTheme.bodyMedium!.color,
+                                  textColor: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium!
+                                      .color,
                                 )
                               ],
                             ),
@@ -99,7 +103,7 @@ class _PreviewState extends State<Preview> {
                           onPageChanged: (index, reason) {},
                           scrollDirection: Axis.horizontal,
                         ),
-                        itemCount: testImageList.length,
+                        itemCount: project.listMedia.length,
                       ),
                     ],
                   ),
@@ -107,7 +111,7 @@ class _PreviewState extends State<Preview> {
                     message: "Close",
                     textColor: colorBlue,
                     height: 60,
-                    width: size.width * (311 / 390)*0.7,
+                    width: size.width * (311 / 390) * 0.7,
                     backgroundColor: colorWhite,
                     onPressed: () {
                       popNavigator(context);

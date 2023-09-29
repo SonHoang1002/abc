@@ -101,7 +101,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                 width: _size.width * 0.8,
                 height: _size.width * 0.9,
                 alignment: Alignment.center,
-                padding: EdgeInsets.only(left: 3),
+                padding: const EdgeInsets.only(left: 3),
                 child: Stack(
                   key: _placementFrame,
                   children: _listPlacement.map<Widget>(

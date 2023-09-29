@@ -1,12 +1,17 @@
 import 'dart:ffi';
+import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
+import 'package:image_picker/image_picker.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/helpers/pick_image.dart';
+import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
+import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/providers/project_provider.dart';
 import 'package:photo_to_pdf/screens/module_editor/editor.dart';
 import 'package:photo_to_pdf/screens/module_setting/setting.dart';
@@ -16,15 +21,21 @@ import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 
-final testImageList = [
-  "${pathPrefixImage}test_image_1.png",
-  "${pathPrefixImage}test_image_2.png",
-  "${pathPrefixImage}test_image_3.png",
-  "${pathPrefixImage}test_image_4.png",
+final testProjectList = [
+  Project(
+      id: getRandomNumber(), listMedia: ["${pathPrefixImage}test_image_1.png"]),
+  Project(
+      id: getRandomNumber(), listMedia: ["${pathPrefixImage}test_image_2.png"]),
+  Project(
+      id: getRandomNumber(), listMedia: ["${pathPrefixImage}test_image_3.png"]),
+  Project(
+      id: getRandomNumber(), listMedia: ["${pathPrefixImage}test_image_4.png"]),
 ];
 
 class HomePage extends flutter_riverpod.ConsumerStatefulWidget {
-  const HomePage({super.key,});
+  const HomePage({
+    super.key,
+  });
 
   @override
   flutter_riverpod.ConsumerState<HomePage> createState() => _HomePageState();
@@ -39,13 +50,14 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
   late bool _galleryIsEmpty;
   late bool _isFocusProjectList;
   late bool _isFocusProjectListBottom;
-  late List _listProject;
+  late List<Project> _listProject;
+  late Project _currentProject;
 
   @override
   void initState() {
     super.initState();
     Future.delayed(Duration.zero, () {
-      ref.read(projectControllerProvider.notifier).setProject(testImageList);
+      ref.read(projectControllerProvider.notifier).setProject(testProjectList);
     });
     _isFocusProjectList = false;
     _isFocusProjectListBottom = true;
@@ -67,7 +79,6 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                   textColor: Theme.of(context).textTheme.titleLarge!.color,
                 ),
                 shadowColor: transparent,
-                
                 actions: [
                   _isFocusProjectList
                       ? Container(
@@ -164,9 +175,13 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
             final index = _listProject.indexOf(e);
             return WProjectItemHome(
               key: ValueKey(_listProject[index]),
-              src: _listProject[index],
+              project: _listProject[index],
               isFocusByLongPress: _isFocusProjectList,
               index: index,
+              onTap: () {
+                pushCustomMaterialPageRoute(
+                    context, Editor(project: _listProject[index]));
+              },
             );
           }).toList(),
         );
@@ -250,6 +265,9 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
   Widget _buildButtonNaviPlus() {
     return ElevatedButton(
       onPressed: () {
+        setState(() {
+          _currentProject = Project(id: getRandomNumber(), listMedia: []);
+        });
         _buildBottomSheetCreatePdf();
       },
       style: ElevatedButton.styleFrom(
@@ -283,7 +301,6 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
   }
 
   _buildBottomSheetCreatePdf() {
-    final listProject = ref.watch(projectControllerProvider).listProject;
     showModalBottomSheet(
         context: context,
         builder: (context) {
@@ -313,7 +330,10 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                                 value: "Create PDF",
                                 textSize: 14,
                                 textLineHeight: 16.71,
-                                textColor: Theme.of(context).textTheme.titleLarge!.color,
+                                textColor: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge!
+                                    .color,
                               ),
                             ),
                             Row(
@@ -356,13 +376,12 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                           crossAxisCount: 3,
                           onReorder: (oldIndex, newIndex) {
                             setState(() {
-                              final tempListProject = listProject;
-                              final element =
-                                  tempListProject.removeAt(oldIndex);
-                              tempListProject.insert(newIndex, element);
-                              ref
-                                  .read(projectControllerProvider.notifier)
-                                  .setProject(tempListProject);
+                              final tempListMedia = _currentProject.listMedia;
+                              final element = tempListMedia.removeAt(oldIndex);
+                              tempListMedia.insert(newIndex, element);
+                              _currentProject = Project(
+                                  id: _currentProject.id,
+                                  listMedia: tempListMedia);
                             });
                             setStatefull(() {});
                           },
@@ -371,13 +390,26 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                               _isFocusProjectListBottom = true;
                             });
                           },
-                          children: listProject.map((e) {
-                            final index = listProject.indexOf(e);
+                          children: _currentProject.listMedia.map((e) {
+                            final index = _currentProject.listMedia.indexOf(e);
                             return WProjectItemHomeBottom(
-                              key: ValueKey(listProject[index]),
-                              src: listProject[index],
+                              key: ValueKey(_currentProject.listMedia[index]),
+                              project: _currentProject,
                               isFocusByLongPress: _isFocusProjectListBottom,
                               index: index,
+                              onRemove: (srcMedia) {
+                                setState(() {
+                                  _currentProject = _currentProject.copyWith(
+                                      listMedia: _currentProject.listMedia
+                                          .where(
+                                              (element) => element != srcMedia)
+                                          .toList());
+                                });
+                                setStatefull(() {});
+                                ref
+                                    .read(projectControllerProvider.notifier)
+                                    .updateProject(_currentProject);
+                              },
                             );
                           }).toList(),
                         ),
@@ -407,7 +439,18 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                                       "${pathPrefixIcon}icon_photos.png",
                                   backgroundColor:
                                       const Color.fromRGBO(255, 63, 51, 0.1),
-                                  onPressed: () {},
+                                  onPressed: () async {
+                                    final result = await pickImage(
+                                        ImageSource.gallery, true);
+                                    if (result.isNotEmpty) {
+                                      _currentProject = _currentProject
+                                          .copyWith(listMedia: [
+                                        ..._currentProject.listMedia,
+                                        ...result
+                                      ]);
+                                    }
+                                    setStatefull(() {});
+                                  },
                                 ),
                               ),
                               WSpacer(
@@ -423,7 +466,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                                   backgroundColor:
                                       const Color.fromRGBO(22, 115, 255, 0.08),
                                   mediaValue: "${pathPrefixIcon}icon_files.png",
-                                  onPressed: () {},
+                                  onPressed: () async {},
                                 ),
                               ),
                               WSpacer(
@@ -441,8 +484,19 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                             backgroundColor: colorBlue,
                             textColor: colorWhite,
                             onPressed: () {
+                              if (_currentProject.listMedia.isEmpty) {
+                                _currentProject = Project(
+                                    id: _currentProject.id,
+                                    listMedia: [
+                                      "${pathPrefixImage}blank_page.jpg"
+                                    ]);
+                              }
+                              ref
+                                  .read(projectControllerProvider.notifier)
+                                  .addProject(_currentProject);
                               popNavigator(context);
-                              pushNavigator(context, const Editor());
+                              pushNavigator(
+                                  context, Editor(project: _currentProject));
                             },
                           )
                         ],

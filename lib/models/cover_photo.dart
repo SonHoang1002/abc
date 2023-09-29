@@ -7,7 +7,9 @@ class CoverPhoto {
   CoverPhoto({this.backPhoto, this.frontPhoto});
 
   CoverPhoto copyWith({dynamic frontPhoto, dynamic backPhoto}) {
-    return CoverPhoto(frontPhoto: frontPhoto, backPhoto: backPhoto);
+    return CoverPhoto(
+        frontPhoto: frontPhoto ?? this.frontPhoto,
+        backPhoto: backPhoto ?? this.backPhoto);
   }
 
   void getInfor() {

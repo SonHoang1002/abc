@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/commons/themes.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
+import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/providers/project_provider.dart';
 import 'package:photo_to_pdf/screens/module_editor/preview.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
@@ -11,27 +14,27 @@ import 'package:photo_to_pdf/widgets/w_text_content.dart';
 import "package:provider/provider.dart" as pv;
 
 class WProjectItemHome extends ConsumerWidget {
-  final String src;
+  final Project project;
   final bool isFocusByLongPress;
   final int index;
-  final Function? onLongPress;
+  final Function? onRemove;
   final bool? isHaveTitle;
   final double? width;
+  final void Function()? onTap;
   const WProjectItemHome(
       {super.key,
-      required this.src,
+      required this.project,
       required this.isFocusByLongPress,
       required this.index,
-      this.onLongPress,
+      this.onRemove,
       this.isHaveTitle = true,
-      this.width = 160});
+      this.width = 160,
+      this.onTap});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
-      onTap: () {
-        pushCustomMaterialPageRoute(context, const Preview());
-      },
+      onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(3),
         child: Column(
@@ -41,18 +44,36 @@ class WProjectItemHome extends ConsumerWidget {
               height: 160,
               child: Center(
                 child: Stack(
+                  alignment: !isFocusByLongPress
+                      ? AlignmentDirectional.center
+                      : AlignmentDirectional.topStart,
                   children: [
-                    Container(
-                      padding:
-                          const EdgeInsets.only(top: 12, left: 12, right: 12),
-                      child: Image.asset(
-                        src,
+                    Positioned.fill(
+                      child: Container(
+                        decoration: const BoxDecoration(
+                            color: colorWhite,
+                            boxShadow: [
+                              BoxShadow(
+                                  blurRadius: 20,
+                                  spreadRadius: 0,
+                                  color: Color.fromRGBO(0, 0, 0, 0.1))
+                            ]),
                       ),
                     ),
+                    project.listMedia.isNotEmpty
+                        ? Container(
+                            padding: const EdgeInsets.all(9),
+                            child: project.listMedia[0] is File
+                                ? Image.file(project.listMedia[0])
+                                : Image.asset(
+                                    project.listMedia[0],
+                                  ),
+                          )
+                        : const SizedBox(),
                     isFocusByLongPress
                         ? Positioned(
-                            top: -10,
-                            left: -10,
+                            top: -12,
+                            left: -12,
                             child: GestureDetector(
                               onTap: () {
                                 final listProject = ref
@@ -87,7 +108,7 @@ class WProjectItemHome extends ConsumerWidget {
                         height: 10,
                       ),
                       WTextContent(
-                        value: "Project ${index + 1}",
+                        value: project.title,
                         textFontWeight: FontWeight.w600,
                         textLineHeight: 14.32,
                         textSize: 12,
@@ -105,17 +126,17 @@ class WProjectItemHome extends ConsumerWidget {
 }
 
 class WProjectItemHomeBottom extends ConsumerWidget {
-  final String src;
+  final Project project;
   final bool isFocusByLongPress;
   final int index;
-  final Function? onLongPress;
+  final Function(dynamic srcMedia) onRemove;
   final bool? isHaveTitle;
   const WProjectItemHomeBottom({
     super.key,
-    required this.src,
+    required this.project,
     required this.isFocusByLongPress,
     required this.index,
-    this.onLongPress,
+    required this.onRemove,
     this.isHaveTitle = true,
   });
 
@@ -135,10 +156,15 @@ class WProjectItemHomeBottom extends ConsumerWidget {
                     height: MediaQuery.sizeOf(context).width * 0.29,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.asset(
-                        src,
-                        fit: BoxFit.cover,
-                      ),
+                      child: project.listMedia[index] is File
+                          ? Image.file(
+                              project.listMedia[index],
+                              fit: BoxFit.cover,
+                            )
+                          : Image.asset(
+                              project.listMedia[index],
+                              fit: BoxFit.cover,
+                            ),
                     ),
                   ),
                   isFocusByLongPress
@@ -147,13 +173,7 @@ class WProjectItemHomeBottom extends ConsumerWidget {
                           left: -13,
                           child: GestureDetector(
                             onTap: () {
-                              final listProject = ref
-                                  .watch(projectControllerProvider)
-                                  .listProject;
-                              listProject.removeAt(index);
-                              ref
-                                  .read(projectControllerProvider.notifier)
-                                  .setProject(listProject);
+                              onRemove(project.listMedia[index]);
                             },
                             child: Container(
                               alignment: Alignment.topLeft,
@@ -194,25 +214,29 @@ class WProjectItemHomeBottom extends ConsumerWidget {
 }
 
 class WProjectItemEditor extends ConsumerWidget {
-  final String src;
+  final Project project;
   final bool isFocusByLongPress;
   final int index;
-  final Function? onLongPress;
+  final Function? onRemove;
   final String? title;
   const WProjectItemEditor({
     super.key,
-    required this.src,
+    required this.project,
     required this.isFocusByLongPress,
     required this.index,
     this.title,
-    this.onLongPress,
+    this.onRemove,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
       onTap: () {
-        pushCustomMaterialPageRoute(context, const Preview());
+        pushCustomMaterialPageRoute(
+            context,
+            Preview(
+              project: project,
+            ));
       },
       child: Container(
         padding: const EdgeInsets.all(3),
@@ -231,9 +255,13 @@ class WProjectItemEditor extends ConsumerWidget {
                       padding:
                           const EdgeInsets.only(top: 12, left: 12, right: 12),
                       constraints: const BoxConstraints(maxHeight: 110),
-                      child: Image.asset(
-                        src,
-                      ),
+                      child: project.listMedia[index] is File
+                          ? Image.file(
+                              project.listMedia[index],
+                              fit: BoxFit.cover,
+                            )
+                          : Image.asset(project.listMedia[index],
+                              fit: BoxFit.cover),
                     ),
                     isFocusByLongPress
                         ? Positioned(

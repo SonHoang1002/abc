@@ -5,16 +5,33 @@ import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
+import 'package:photo_to_pdf/widgets/w_unit_selections.dart';
+
+List<String> LABELS_PADDING_SPACING = ["Horizontal", "Vertical"];
+List<String> LABELS_EDIT_PLACEMENT = [
+  "Width",
+  "Height",
+  "Top",
+  "Left",
+  "Right",
+  "Bottom"
+];
 
 class EditorPaddingSpacing extends StatefulWidget {
+  final dynamic unit;
   final String title;
   final List<TextEditingController> controllers;
-  final Function(int index, String value) onChanged;
+  final void Function(int index, String value) onChanged;
+  final void Function(dynamic newUnit) onUnitChange;
+  final void Function()? reRenderFunction;
   const EditorPaddingSpacing(
       {super.key,
+      required this.unit,
       required this.title,
       required this.controllers,
-      required this.onChanged});
+      required this.onChanged,
+      required this.onUnitChange,
+      this.reRenderFunction});
 
   @override
   State<EditorPaddingSpacing> createState() => _EditorPaddingSpacingState();
@@ -24,16 +41,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
   String? _selectedLabel;
   late Size _size;
   late List<String> _labelInputs;
-
-  List<String> LABELS_PADDING_SPACING = ["Horizontal", "Vertical"];
-  List<String> LABELS_EDIT_PLACEMENT = [
-    "Width",
-    "Height",
-    "Top",
-    "Left",
-    "Right",
-    "Bottom"
-  ];
+  late dynamic _unit;
 
   @override
   void initState() {
@@ -46,6 +54,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
       _labelInputs = LABELS_PADDING_SPACING;
       _selectedLabel = _labelInputs[0];
     }
+    _unit = widget.unit;
   }
 
   @override
@@ -55,27 +64,40 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
       backgroundColor: transparent,
       resizeToAvoidBottomInset:
           // false,
-          [TITLE_PADDING, TITLE_SPACING].contains(widget.title) ? false : true,
-      body: Container(
-          // margin: const EdgeInsets.only(bottom: 40),
-          color: transparent,
-          child: Stack(
-            children: [
-              Positioned.fill(child: GestureDetector(
-                onTap: () {
-                  for (int i = 0; i < widget.controllers.length; i++) {
-                    if (widget.controllers[i].text.trim().isEmpty) {
-                      widget.onChanged(i, "0.0");
-                    }
-                  }
-                  popNavigator(context);
-                },
-              )),
-              [TITLE_EDIT_PLACEMENT].contains(widget.title)
-                  ? _buildEditPlacementBody()
-                  : _buildPaddingSpacingBody(title: widget.title, height: 140),
-            ],
+          true,
+      body: Stack(
+        children: [
+          Positioned.fill(child: GestureDetector(
+            onTap: () {
+              for (int i = 0; i < widget.controllers.length; i++) {
+                if (widget.controllers[i].text.trim().isEmpty) {
+                  widget.onChanged(i, "0.0");
+                }
+              }
+              popNavigator(context);
+            },
           )),
+          [TITLE_EDIT_PLACEMENT].contains(widget.title)
+              ? _buildEditPlacementBody()
+              : _buildPaddingSpacingBody(title: widget.title, height: 140),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const SizedBox(),
+              MediaQuery.of(context).viewInsets.bottom > 0
+                  ? WUnitSelections(
+                      unitValue: _unit,
+                      onSelected: (value) {
+                        widget.onUnitChange(value);
+                        setState(() {
+                          _unit = value;
+                        });
+                      })
+                  : const SizedBox(),
+            ],
+          ),
+        ],
+      ),
     );
   }
 

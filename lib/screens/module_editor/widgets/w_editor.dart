@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
+import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/screens/module_editor/widgets/body_add_cover.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/w_divider.dart';
@@ -111,11 +112,11 @@ Widget buildPageSizePreset(
               ),
             ),
             dropdownStyleData: DropdownStyleData(
-              maxHeight: 300,
+              maxHeight: MediaQuery.sizeOf(context).height*0.3,
               width: 185,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(14),
-                color: colorWhite,
+                color: Theme.of(context).canvasColor,
               ),
               offset: const Offset(5, -5),
               scrollbarTheme: ScrollbarThemeData(
@@ -223,7 +224,8 @@ Widget buildPageSizeOrientationItem(
 }
 
 Widget buildFileNameInput(
-    BuildContext context, TextEditingController controller) {
+    BuildContext context,Project project, TextEditingController controller,Function(String value) onChange) {
+
   TextStyle buildTextStyleInputFileName(Color textColor) {
     return TextStyle(
         color: textColor,
@@ -247,6 +249,7 @@ Widget buildFileNameInput(
       ),
       height: 47,
       child: CupertinoTextField(
+        onChanged: onChange,
         decoration: const BoxDecoration(),
         style: const TextStyle(color: colorBlue),
         controller: controller,
@@ -318,7 +321,7 @@ Widget buildSelection(
   );
 }
 
-Widget buildBottomButton(BuildContext context) {
+Widget buildBottomButton(BuildContext context,void Function() onApply) {
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
     child: Flex(
@@ -343,7 +346,7 @@ Widget buildBottomButton(BuildContext context) {
           textColor: colorWhite,
           height: 60,
           backgroundColor: const Color.fromRGBO(10, 132, 255, 1),
-          onPressed: () {},
+          onPressed: onApply,
         ))
       ],
     ),

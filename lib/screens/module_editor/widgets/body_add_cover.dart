@@ -10,14 +10,43 @@ import 'package:photo_to_pdf/screens/module_editor/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 
-class AddCoverBody extends StatelessWidget {
+class AddCoverBody extends StatefulWidget {
   final CoverPhoto coverPhoto;
-  final Function(String label, dynamic src)? updatePhoto;
-  AddCoverBody(
-      {super.key, required this.coverPhoto, required this.updatePhoto});
+  final Function(CoverPhoto newPhoto) onUpdatePhoto;
+  final Function() reRenderFunction;
+  const AddCoverBody(
+      {super.key,
+      required this.coverPhoto,
+      required this.onUpdatePhoto,
+      required this.reRenderFunction});
 
+  @override
+  State<AddCoverBody> createState() => _AddCoverBodyState();
+}
+
+class _AddCoverBodyState extends State<AddCoverBody> {
+  late CoverPhoto _coverPhoto;
   final GlobalKey _frontKey = GlobalKey();
   final GlobalKey _backKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    _coverPhoto = widget.coverPhoto;
+  }
+
+  void updatePhoto(String label, dynamic src) {
+    if (label == "backPhoto") {
+      _coverPhoto =
+          CoverPhoto(backPhoto: src, frontPhoto: _coverPhoto.frontPhoto);
+    }
+    if (label == "frontPhoto") {
+      _coverPhoto =
+          CoverPhoto(backPhoto: _coverPhoto.backPhoto, frontPhoto: src);
+    }
+    widget.reRenderFunction();
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
@@ -38,7 +67,7 @@ class AddCoverBody extends StatelessWidget {
               value: "Add Cover",
               textSize: 14,
               textLineHeight: 16.71,
-              textColor:  Theme.of(context).textTheme.bodyMedium!.color,
+              textColor: Theme.of(context).textTheme.bodyMedium!.color,
             ),
           ),
           Expanded(
@@ -52,7 +81,7 @@ class AddCoverBody extends StatelessWidget {
                           context: context,
                           label: "frontPhoto",
                           key: _frontKey,
-                          src: coverPhoto.frontPhoto,
+                          src: _coverPhoto.frontPhoto,
                           onSelectedCoverImage: updatePhoto)),
                   WSpacer(
                     width: 10,
@@ -62,13 +91,15 @@ class AddCoverBody extends StatelessWidget {
                           context: context,
                           label: "backPhoto",
                           key: _backKey,
-                          src: coverPhoto.backPhoto,
+                          src: _coverPhoto.backPhoto,
                           onSelectedCoverImage: updatePhoto))
                 ],
               ),
             ),
           ),
-          buildBottomButton(context)
+          buildBottomButton(context, () {
+            widget.onUpdatePhoto(_coverPhoto);
+          })
         ],
       ),
     );
@@ -93,20 +124,19 @@ class AddCoverBody extends StatelessWidget {
               return element['key'];
             }).toList();
             if (value['key'] == listKeyAddCover[0]) {
-              final result = await pickImage(ImageSource.gallery);
-              if (result != null) {
-                updatePhoto != null ? updatePhoto!(label, result) : null;
+              final result = await pickImage(ImageSource.gallery, false);
+              if (result.isNotEmpty) {
+                updatePhoto(label, result[0]);
               }
             } else if (value['key'] == listKeyAddCover[1]) {
-              updatePhoto != null ? updatePhoto!(label, null) : null;
+              updatePhoto(label, null);
             }
-            // final a = Theme.of(context).cardColor;
             popNavigator(context);
           }));
     } else {
-      final result = await pickImage(ImageSource.gallery);
-      if (result != null) {
-        updatePhoto != null ? updatePhoto!(label, result) : null;
+      final result = await pickImage(ImageSource.gallery, false);
+      if (result.isNotEmpty) {
+        updatePhoto(label, result[0]);
       }
     }
   }
@@ -117,7 +147,7 @@ class AddCoverBody extends StatelessWidget {
       required GlobalKey key,
       dynamic src,
       double? width,
-      Function(String label, String? src)? onSelectedCoverImage}) {
+      void Function(String label, String? src)? onSelectedCoverImage}) {
     return GestureDetector(
       onTap: () async {
         await _onTap(context, label, src, key);

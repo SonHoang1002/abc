@@ -245,7 +245,7 @@ void showBottomSheetPageSize(
                           )
                         ],
                       )),
-                      buildBottomButton(context)
+                      buildBottomButton(context,(){})
                     ],
                   ),
                 ],
