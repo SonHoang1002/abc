@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/helpers/extract_list.dart';
 import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/models/cover_photo.dart';
@@ -10,10 +11,10 @@ import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/providers/project_provider.dart';
 import 'package:photo_to_pdf/screens/module_editor/editor_padding_spacing.dart';
-import 'package:photo_to_pdf/screens/module_editor/widgets/body_add_cover.dart';
-import 'package:photo_to_pdf/screens/module_editor/widgets/body_background.dart';
-import 'package:photo_to_pdf/screens/module_editor/widgets/body_selected_photos.dart';
-import 'package:photo_to_pdf/screens/module_editor/widgets/w_editor.dart';
+import 'package:photo_to_pdf/screens/module_editor/bodies/body_add_cover.dart';
+import 'package:photo_to_pdf/screens/module_editor/bodies/body_background.dart';
+import 'package:photo_to_pdf/screens/module_editor/bodies/body_selected_photos.dart';
+import 'package:photo_to_pdf/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/w_divider.dart';
 import 'package:photo_to_pdf/widgets/w_drag_zoom_image.dart';
@@ -106,7 +107,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     _project = widget.project;
 
     _fileNameController.text =
-    widget.project.title == "Untitled" ? "" : widget.project.title;
+        widget.project.title == "Untitled" ? "" : widget.project.title;
 
     _pageConfig = {
       "mediaSrc": "${pathPrefixIcon}icon_letter.png",
@@ -270,33 +271,13 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                 // list image
                 Expanded(
                     child: Container(
-                  width: _size.width * 0.9,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Theme.of(context).cardColor,
-                  ),
-                  child: GridView.builder(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 15, horizontal: 15),
-                    shrinkWrap: true,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                      crossAxisCount: 2,
-                    ),
-                    itemCount: _project.listMedia.length,
-                    itemBuilder: (context, index) {
-                      return WProjectItemEditor(
-                        key: ValueKey(_project.id),
-                        project: _project,
-                        isFocusByLongPress: false,
-                        index: index,
-                        title: "Page ${index + 1}",
-                      );
-                    },
-                  ),
-                )),
+                        width: _size.width * 0.9,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Theme.of(context).cardColor,
+                        ),
+                        child: SingleChildScrollView(
+                            child: _buildPreviewProjectBody()))),
                 // page size and bottom buttons
                 SizedBox(
                   height: _size.height * 0.4,
@@ -382,23 +363,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                 showBottomSheetSelectedPhotos(
                                   context: context,
                                   size: _size,
-                                  datas: ref
-                                      .watch(projectControllerProvider)
-                                      .listProject,
-                                  onReorderFunction: (oldIndex, newIndex) {
-                                    setState(() {
-                                      final tempListProject = ref
-                                          .watch(projectControllerProvider)
-                                          .listProject;
-                                      final element =
-                                          tempListProject.removeAt(oldIndex);
-                                      tempListProject.insert(newIndex, element);
-                                      ref
-                                          .read(projectControllerProvider
-                                              .notifier)
-                                          .setProject(tempListProject);
-                                    });
-                                  },
+                                  project: _project,
                                   onSliderChanged: (value) {
                                     setState(() {
                                       _sliderCompressionValue = value;
@@ -427,40 +392,15 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                           ],
                         ),
                       ]),
-                      Container(
-                        margin: const EdgeInsets.only(
-                            bottom: 20, left: 10, right: 10),
-                        child: Flex(
-                          direction: Axis.horizontal,
-                          children: [
-                            Flexible(
-                              child: WButtonFilled(
-                                message: "Close",
-                                backgroundColor: Theme.of(context).cardColor,
-                                height: 55,
-                                textColor:
-                                    const Color.fromRGBO(10, 132, 255, 1),
-                                onPressed: () {
-                                  popNavigator(context);
-                                },
-                              ),
-                            ),
-                            WSpacer(
-                              width: 10,
-                            ),
-                            Flexible(
-                              child: WButtonFilled(
-                                message: "Save to...",
-                                height: 55,
-                                textColor: colorWhite,
-                                backgroundColor:
-                                    const Color.fromRGBO(10, 132, 255, 1),
-                                onPressed: () {},
-                              ),
-                            )
-                          ],
-                        ),
-                      )
+                      buildBottomButton(
+                          context: context,
+                          onApply: () {},
+                          onCancel: () {
+                            ref
+                                .read(projectControllerProvider.notifier)
+                                .updateProject(_project);
+                          },
+                          titleApply: "Save to...")
                     ],
                   ),
                 )
@@ -761,9 +701,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                     onChanged: (index, value) {
                                       _onChangedEditPlacement(index, value);
                                     },
-                                    onUnitChange: (newUnit) {
-                                      
-                                    },
+                                    onUnitChange: (newUnit) {},
                                   ));
                             },
                           ),
@@ -882,7 +820,8 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                                 mediaSrc: e['mediaSrc'],
                                                 title: "Layout ${index + 1}",
                                                 isFocus: e['isFocus'],
-                                                backgroundColor: _currentLayoutColor,
+                                                backgroundColor:
+                                                    _currentLayoutColor,
                                                 indexLayoutItem: index,
                                                 onTap: () {
                                                   _resetLayoutSelections();
@@ -922,7 +861,8 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                                 title: "Layout ${index + 1}",
                                                 isFocus: e['isFocus'],
                                                 indexLayoutItem: index,
-                                                backgroundColor: _currentLayoutColor,
+                                                backgroundColor:
+                                                    _currentLayoutColor,
                                                 onTap: () {
                                                   setState(() {
                                                     _resetLayoutSelections();
@@ -944,7 +884,39 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                   _buildLayoutConfigs(() {
                     setStatefull(() {});
                   }, _segmentCurrentIndex == 0),
-                  buildBottomButton(context, () {})
+                  buildBottomButton(
+                      context: context,
+                      onApply: () {
+                        // layout
+                        setState(() {
+                          _project = _project.copyWith(
+                              layoutIndex: _listLayoutStatus.indexWhere(
+                                  (element) => element['isFocus'] == true),
+                              backgroundColor: _currentLayoutColor,
+                              resizeAttribute: ResizeAttribute(
+                                title: _resizeModeSelectedValue['title'],
+                              ),
+                              spacingAttribute: SpacingAttribute(
+                                  horizontalSpacing: double.parse(
+                                    _spacingHorizontalController.text.trim(),
+                                  ),
+                                  verticalSpacing: double.parse(
+                                      _spacingVerticalController.text.trim())),
+                              paddingAttribute: PaddingAttribute(
+                                  horizontalPadding: double.parse(
+                                    _paddingHorizontalController.text.trim(),
+                                  ),
+                                  verticalPadding: double.parse(
+                                      _paddingVerticalController.text.trim())));
+                          // resize mode
+                          // alignment
+                          // background
+                          // padding
+                          // spacing
+                        });
+                        popNavigator(context);
+                      },
+                      onCancel: () {})
                 ],
               ),
             );
@@ -1159,7 +1131,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                             )
                           ],
                         )),
-                        buildBottomButton(context, () {})
+                        buildBottomButton(context: context, onApply: () {})
                       ],
                     ),
                     MediaQuery.of(context).viewInsets.bottom > 0.0
@@ -1257,8 +1229,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   void showBottomSheetSelectedPhotos(
       {required BuildContext context,
       required Size size,
-      required List<Project> datas,
-      required void Function(int, int) onReorderFunction,
+      required Project project,
       required double sliderCompressionLevelValue,
       required Function(double value) onSliderChanged}) {
     showModalBottomSheet(
@@ -1266,16 +1237,12 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         builder: (context) {
           return StatefulBuilder(builder: (context, setStatefull) {
             return SelectedPhotosBody(
-              onReorder: (oldIndex, newIndex) {
-                onReorderFunction(oldIndex, newIndex);
-                setStatefull(() {});
-              },
               reRenderFunction: () {
                 setStatefull(() {});
               },
               project: _project,
               sliderCompressionLevelValue: sliderCompressionLevelValue,
-              onChanged: (value) {
+              onChangedSlider: (value) {
                 setState(() {
                   // use sliderCompressionLevelValue to announce for selected photos
                   // body that have changable variable
@@ -1287,25 +1254,9 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                 });
                 setStatefull(() {});
               },
-              onAddMedia: (newProject) {
+              onApply: (newProject) {
                 setState(() {
                   _project = newProject;
-                  _photosConfig = {
-                    ..._photosConfig,
-                    "content": "${_project.listMedia.length} Photos"
-                  };
-                });
-                setStatefull(() {});
-                ref
-                    .read(projectControllerProvider.notifier)
-                    .updateProject(_project);
-              },
-              onRemoveItem: (srcMedia) {
-                setState(() {
-                  _project = _project.copyWith(
-                      listMedia: _project.listMedia
-                          .where((element) => element != srcMedia)
-                          .toList());
                   _photosConfig = {
                     ..._photosConfig,
                     "content": "${_project.listMedia.length} Photos"
@@ -1373,5 +1324,66 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         },
         isScrollControlled: true,
         backgroundColor: transparent);
+  }
+
+  Widget _buildPreviewProjectBody() {
+    if (_project.layoutIndex == 0) {
+      return Wrap(
+        alignment: WrapAlignment.center,
+        children: _project.listMedia.map((e) {
+          final index = _project.listMedia.indexOf(e);
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 10),
+            child: WProjectItemEditor(
+              key: ValueKey(_project.listMedia[index]),
+              project: _project,
+              isFocusByLongPress: false,
+              indexImage: index,
+              title: "Page ${index + 1}",
+            ),
+          );
+        }).toList(),
+      );
+    } else if (_project.layoutIndex == 1) {
+      List list = extractList(2, _project.listMedia);
+      return Wrap(
+        alignment: WrapAlignment.center,
+        children: list.map((e) {
+          final index = list.indexOf(e);
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 10),
+            child: WProjectItemEditor(
+              key: ValueKey(_project.listMedia[index]),
+              project: _project,
+              isFocusByLongPress: false,
+              indexImage: index,
+              layoutExtractList: list[index],
+              title: "Page ${index + 1}",
+            ),
+          );
+        }).toList(),
+      );
+    } else if ([2, 3].contains(_project.layoutIndex)) {
+      List list = extractList(3, _project.listMedia);
+      return Wrap(
+        alignment: WrapAlignment.center,
+        children: list.map((e) {
+          final index = list.indexOf(e);
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 10),
+            child: WProjectItemEditor(
+              key: ValueKey(_project.listMedia[index]),
+              project: _project,
+              isFocusByLongPress: false,
+              indexImage: index,
+              layoutExtractList: list[index],
+              title: "Page ${index + 1}",
+            ),
+          );
+        }).toList(),
+      );
+    } else {
+      return Container(height: 50, width: 200, color: colorRed);
+    }
   }
 }

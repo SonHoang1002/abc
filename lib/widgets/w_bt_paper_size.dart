@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
-import 'package:photo_to_pdf/screens/module_editor/widgets/w_editor.dart';
+import 'package:photo_to_pdf/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 
@@ -245,7 +245,7 @@ void showBottomSheetPageSize(
                           )
                         ],
                       )),
-                      buildBottomButton(context,(){})
+                      buildBottomButton(context:context,onApply: (){})
                     ],
                   ),
                 ],

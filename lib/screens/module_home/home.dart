@@ -1,14 +1,11 @@
-import 'dart:ffi';
-import 'dart:math';
-
-import 'package:flutter/cupertino.dart';
+import 'dart:io';
 import 'package:flutter/material.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
-import 'package:photo_to_pdf/helpers/pick_image.dart';
+import 'package:photo_to_pdf/helpers/extract_list.dart';
+import 'package:photo_to_pdf/helpers/pick_media.dart';
 import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/models/project.dart';
@@ -62,6 +59,16 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
     _isFocusProjectList = false;
     _isFocusProjectListBottom = true;
     _galleryIsEmpty = false;
+  }
+
+  int getLayoutImageNumber(int layoutIndex) {
+    if (layoutIndex == 0) {
+      return 1;
+    } else if (layoutIndex == 1) {
+      return 2;
+    } else {
+      return 3;
+    }
   }
 
   @override
@@ -178,6 +185,11 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
               project: _listProject[index],
               isFocusByLongPress: _isFocusProjectList,
               index: index,
+              layoutExtractList: _listProject[index].layoutIndex == 0
+                  ? null
+                  : extractList(
+                      getLayoutImageNumber(_listProject[index].layoutIndex),
+                      _listProject[index].listMedia)[0],
               onTap: () {
                 pushCustomMaterialPageRoute(
                     context, Editor(project: _listProject[index]));
@@ -466,7 +478,17 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                                   backgroundColor:
                                       const Color.fromRGBO(22, 115, 255, 0.08),
                                   mediaValue: "${pathPrefixIcon}icon_files.png",
-                                  onPressed: () async {},
+                                  onPressed: () async {
+                                    List<File> result = await pickFiles();
+                                    if (result.isNotEmpty) {
+                                      _currentProject = _currentProject
+                                          .copyWith(listMedia: [
+                                        ..._currentProject.listMedia,
+                                        ...result
+                                      ]);
+                                    }
+                                    setStatefull(() {});
+                                  },
                                 ),
                               ),
                               WSpacer(

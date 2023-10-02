@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 
 Future<List<File>> pickImage(ImageSource src, bool isMultiMedia) async {
@@ -17,4 +18,20 @@ Future<List<File>> pickImage(ImageSource src, bool isMultiMedia) async {
   } else {
     return listXFile.map((e) => File(e!.path)).toList();
   }
+}
+
+Future<List<File>> pickFiles() async {
+  List<File> listFiles = [];
+  FilePickerResult? result = await FilePicker.platform.pickFiles(
+    type: FileType.custom,
+    allowMultiple: true,
+    allowedExtensions: ['jpg', "png", "jpeg"],
+  );
+  if (result?.paths != null) {
+    result?.paths.forEach((element) {
+      listFiles.add(File(element!));
+    });
+  }
+
+  return listFiles;
 }

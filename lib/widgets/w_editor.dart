@@ -6,7 +6,7 @@ import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/models/project.dart';
-import 'package:photo_to_pdf/screens/module_editor/widgets/body_add_cover.dart';
+import 'package:photo_to_pdf/screens/module_editor/bodies/body_add_cover.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/w_divider.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
@@ -112,7 +112,7 @@ Widget buildPageSizePreset(
               ),
             ),
             dropdownStyleData: DropdownStyleData(
-              maxHeight: MediaQuery.sizeOf(context).height*0.3,
+              maxHeight: MediaQuery.sizeOf(context).height * 0.3,
               width: 185,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(14),
@@ -223,9 +223,8 @@ Widget buildPageSizeOrientationItem(
   );
 }
 
-Widget buildFileNameInput(
-    BuildContext context,Project project, TextEditingController controller,Function(String value) onChange) {
-
+Widget buildFileNameInput(BuildContext context, Project project,
+    TextEditingController controller, Function(String value) onChange) {
   TextStyle buildTextStyleInputFileName(Color textColor) {
     return TextStyle(
         color: textColor,
@@ -321,7 +320,11 @@ Widget buildSelection(
   );
 }
 
-Widget buildBottomButton(BuildContext context,void Function() onApply) {
+Widget buildBottomButton(
+    {required BuildContext context,
+    required void Function() onApply,
+    String? titleApply,
+    void Function()? onCancel}) {
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
     child: Flex(
@@ -334,6 +337,7 @@ Widget buildBottomButton(BuildContext context,void Function() onApply) {
           textColor: colorBlue,
           height: 60,
           onPressed: () {
+            onCancel != null ? onCancel() : null;
             popNavigator(context);
           },
         )),
@@ -342,7 +346,7 @@ Widget buildBottomButton(BuildContext context,void Function() onApply) {
         ),
         Flexible(
             child: WButtonFilled(
-          message: "Apply",
+          message: titleApply ?? "Apply",
           textColor: colorWhite,
           height: 60,
           backgroundColor: const Color.fromRGBO(10, 132, 255, 1),

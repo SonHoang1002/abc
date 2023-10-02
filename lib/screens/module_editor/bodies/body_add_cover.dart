@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
-import 'package:photo_to_pdf/helpers/pick_image.dart';
+import 'package:photo_to_pdf/helpers/pick_media.dart';
 import 'package:photo_to_pdf/models/cover_photo.dart';
-import 'package:photo_to_pdf/screens/module_editor/widgets/w_editor.dart';
+import 'package:photo_to_pdf/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 
@@ -97,9 +97,9 @@ class _AddCoverBodyState extends State<AddCoverBody> {
               ),
             ),
           ),
-          buildBottomButton(context, () {
+          buildBottomButton(context:context,onApply:  () {
             widget.onUpdatePhoto(_coverPhoto);
-          })
+          },)
         ],
       ),
     );

@@ -173,11 +173,6 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                                         width: _listPlacement[index].width,
                                       ),
                                     ),
-                                    Positioned.fill(
-                                        child: Center(
-                                      child: Text(
-                                          _listPlacement[index].id.toString()),
-                                    )),
                                     widget.seletedPlacement ==
                                             _listPlacement[index]
                                         ? Positioned.fill(

@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
-import 'package:photo_to_pdf/helpers/pick_image.dart';
+import 'package:photo_to_pdf/helpers/pick_media.dart';
 import 'package:photo_to_pdf/models/project.dart';
-import 'package:photo_to_pdf/providers/project_provider.dart';
-import 'package:photo_to_pdf/screens/module_editor/widgets/w_editor.dart';
+import 'package:photo_to_pdf/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
@@ -16,22 +13,19 @@ import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 import 'package:photo_to_pdf/widgets/w_project_item.dart';
 
 class SelectedPhotosBody extends StatefulWidget {
-  final void Function(int, int) onReorder;
   final Project project;
   final double sliderCompressionLevelValue;
-  final Function(double)? onChanged;
+  final Function(double)? onChangedSlider;
   final Function() reRenderFunction;
-  final Function(Project project) onAddMedia;
-  final Function(dynamic srcMedia) onRemoveItem;
-  const SelectedPhotosBody(
-      {super.key,
-      required this.onReorder,
-      required this.project,
-      required this.sliderCompressionLevelValue,
-      required this.onChanged,
-      required this.reRenderFunction,
-      required this.onAddMedia,
-      required this.onRemoveItem});
+  final Function(Project project) onApply;
+  const SelectedPhotosBody({
+    super.key,
+    required this.project,
+    required this.sliderCompressionLevelValue,
+    required this.onChangedSlider,
+    required this.reRenderFunction,
+    required this.onApply,
+  });
 
   @override
   State<SelectedPhotosBody> createState() => _SelectedPhotosBodyState();
@@ -45,6 +39,20 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
     super.initState();
     _isFocusProject = false;
     _project = widget.project;
+  }
+
+  _pickFiles() async {
+    final result = await pickImage(ImageSource.gallery, true);
+    _project = _project.copyWith(listMedia: [..._project.listMedia, ...result]);
+    setState(() {});
+    widget.reRenderFunction();
+  }
+
+  _pickImages() async {
+    final result = await pickImage(ImageSource.gallery, true);
+    _project = _project.copyWith(listMedia: [..._project.listMedia, ...result]);
+    setState(() {});
+    widget.reRenderFunction();
   }
 
   @override
@@ -109,7 +117,15 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
                 crossAxisSpacing: 5,
                 mainAxisSpacing: 5,
                 crossAxisCount: 3,
-                onReorder: widget.onReorder,
+                onReorder: (oldIndex, newIndex) {
+                  setState(() {
+                    final tempListProject = _project.listMedia;
+                    final element = tempListProject.removeAt(oldIndex);
+                    tempListProject.insert(newIndex, element);
+                    _project = _project.copyWith(listMedia: tempListProject);
+                  });
+                  widget.reRenderFunction();
+                },
                 onDragStart: (dragIndex) {
                   setState(() {
                     _isFocusProject = true;
@@ -129,7 +145,6 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
                                 .where((element) => element != value)
                                 .toList());
                       });
-                      widget.onRemoveItem(value);
                     },
                   );
                 }).toList(),
@@ -154,11 +169,7 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
                     height: 30,
                     backgroundColor: const Color.fromRGBO(22, 115, 255, 0.08),
                     onPressed: () async {
-                      final result = await pickImage(ImageSource.gallery, true);
-                      _project = _project.copyWith(
-                          listMedia: [..._project.listMedia, ...result]);
-                      setState(() {});
-                      widget.reRenderFunction();
+                      _pickImages();
                     },
                     padding: EdgeInsets.zero,
                   ),
@@ -176,7 +187,9 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
                     textSize: 12,
                     backgroundColor: const Color.fromRGBO(22, 115, 255, 0.08),
                     padding: EdgeInsets.zero,
-                    onPressed: () {},
+                    onPressed: () async {
+                      _pickFiles();
+                    },
                   ),
                 ),
               ],
@@ -233,7 +246,7 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
                       ),
                       child: Slider(
                         value: widget.sliderCompressionLevelValue,
-                        onChanged: widget.onChanged,
+                        onChanged: widget.onChangedSlider,
                         min: 0,
                         max: 1,
                         thumbColor: colorWhite,
@@ -252,8 +265,8 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
               ],
             ),
           ),
-          buildBottomButton(context, () {
-            widget.onAddMedia(_project);
+          buildBottomButton(context:context,onApply:  () {
+            widget.onApply(_project);
             popNavigator(context);
           })
         ],

@@ -47,6 +47,7 @@ dependencies:
   colornames: ^0.1.0
   color_parser: ^0.0.3
   flutter_keyboard_visibility: ^5.4.1
+  file_picker: ^5.5.0
 
 dev_dependencies:
   flutter_test:
