@@ -2,6 +2,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
+import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/models/cover_photo.dart';
+import 'package:photo_to_pdf/models/placement.dart';
 
 class Project {
   int id;
@@ -18,11 +21,14 @@ class Project {
   /// 3: 3 grid image ( 2 - 1 )
   ///
   final int layoutIndex;
+  final ResizeAttribute? resizeAttribute;
+  final AlignmentAttribute? alignmentAttribute;
   final Color backgroundColor;
   final PaddingAttribute? paddingAttribute;
   final SpacingAttribute? spacingAttribute;
-  final ResizeAttribute? resizeAttribute;
   final double compression;
+  final CoverPhoto? coverPhoto;
+  final PlacementAttribute? placementAttribute;
 
   Project(
       {required this.id,
@@ -30,11 +36,14 @@ class Project {
       required this.listMedia,
       this.paper,
       this.layoutIndex = 0,
+      this.resizeAttribute,
+      this.alignmentAttribute,
       this.backgroundColor = colorWhite,
       this.paddingAttribute,
       this.spacingAttribute,
-      this.resizeAttribute,
-      this.compression = 1.0});
+      this.compression = 1.0,
+      this.coverPhoto,
+      this.placementAttribute});
 
   void getInfor() {
     final id = "id: ${this.id},";
@@ -47,6 +56,10 @@ class Project {
     final resizeAttribute = "resizeAttribute: ${this.resizeAttribute},";
     final compression = "compression: ${this.compression},";
     final paper = "paper: ${this.paper},";
+    final alignmentAttribute =
+        "alignmentAttribute: ${this.alignmentAttribute},";
+    final coverPhoto = "coverPhoto: ${this.coverPhoto},";
+    final placementAttribute = "placement: ${this.placementAttribute},";
     print(id +
         title +
         listMedia +
@@ -56,7 +69,10 @@ class Project {
         spacingAttribute +
         resizeAttribute +
         compression +
-        paper);
+        paper +
+        alignmentAttribute +
+        coverPhoto +
+        placementAttribute);
   }
 
   Project copyWith(
@@ -68,7 +84,9 @@ class Project {
       PaddingAttribute? paddingAttribute,
       SpacingAttribute? spacingAttribute,
       ResizeAttribute? resizeAttribute,
-      double? compression}) {
+      double? compression,
+      CoverPhoto? coverPhoto,
+      PlacementAttribute? placementAttribute}) {
     return Project(
         id: id,
         title: title ?? this.title,
@@ -79,7 +97,9 @@ class Project {
         resizeAttribute: resizeAttribute ?? this.resizeAttribute,
         paddingAttribute: paddingAttribute ?? this.paddingAttribute,
         spacingAttribute: spacingAttribute ?? this.spacingAttribute,
-        compression: compression ?? this.compression);
+        compression: compression ?? this.compression,
+        coverPhoto: coverPhoto ?? this.coverPhoto,
+        placementAttribute: placementAttribute ?? this.placementAttribute);
   }
 }
 
@@ -129,6 +149,13 @@ class AlignmentAttribute {
       {this.alignmentMode = Alignment.center,
       this.title = "Center",
       this.mediaSrc = ""});
+  AlignmentAttribute copyWith(
+      {Alignment? alignmentMode, String? title, String? mediaSrc}) {
+    return AlignmentAttribute(
+        alignmentMode: alignmentMode ?? this.alignmentMode,
+        title: title ?? this.title,
+        mediaSrc: mediaSrc ?? this.mediaSrc);
+  }
 }
 
 class PaperAttribute {
@@ -146,12 +173,47 @@ class PaperAttribute {
         unit: unit ?? this.unit,
         title: title ?? this.title);
   }
+
+  String getInfor() {
+    return "title: ${this.title}, width:${this.width}, height:${this.height}, unit:${this.unit?.getInfor()}";
+  }
 }
 
 class Unit {
   final String title;
   final String value;
   Unit({this.title = "", this.value = ""});
+  String getInfor() {
+    return "Unit title: ${this.title},Unit value:${this.value}";
+  }
 }
 
-// {"title": "A3", "width": 29.7, "height": 42, "unit": CENTIMET},
+class PlacementAttribute {
+  double horizontal, vertical, top, left, right, bottom;
+  Unit? unit;
+  PlacementAttribute(
+      {this.horizontal = 0.0,
+      this.vertical = 0.0,
+      this.top = 0.0,
+      this.left = 0.0,
+      this.right = 0.0,
+      this.bottom = 0.0,
+      this.unit});
+  PlacementAttribute copyWith(
+      {double? horizontal,
+      double? vertical,
+      double? top,
+      double? left,
+      double? right,
+      double? bottom,
+      Unit? unit}) {
+    return PlacementAttribute(
+        horizontal: horizontal ?? this.horizontal,
+        vertical: vertical ?? this.vertical,
+        top: top ?? this.top,
+        left: left ?? this.left,
+        right: right ?? this.right,
+        bottom: bottom ?? this.bottom,
+        unit: unit ?? this.unit);
+  }
+}

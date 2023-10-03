@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/models/placement.dart';
+import 'package:photo_to_pdf/widgets/w_text_content.dart';
 
 class WDragZoomImage extends StatefulWidget {
   final Function reRenerFunction;
@@ -61,6 +62,11 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
     _size = MediaQuery.sizeOf(context);
   }
 
+  bool checkMinArea(int index) {
+    return _listPlacement[index].height > 30 &&
+        _listPlacement[index].width > 30;
+  }
+
   @override
   Widget build(BuildContext context) {
     _matrix4Notifiers = widget.matrix4Notifiers;
@@ -70,11 +76,6 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
 
   Widget _buildCustomArea() {
     return Padding(
-      // height: _size.height * 404 / 791 * 0.9,
-      // width: _size.width,
-      // decoration: BoxDecoration(
-      //     color: Theme.of(context).cardColor,
-      //     borderRadius: BorderRadius.circular(10)),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       child: Column(children: [
         Expanded(
@@ -102,6 +103,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                 height: _size.width * 0.9,
                 alignment: Alignment.center,
                 padding: const EdgeInsets.only(left: 3),
+                margin: const EdgeInsets.only(top: 5),
                 child: Stack(
                   key: _placementFrame,
                   children: _listPlacement.map<Widget>(
@@ -173,6 +175,22 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                                         width: _listPlacement[index].width,
                                       ),
                                     ),
+                                    Positioned.fill(
+                                        child: Center(
+                                      child: Container(
+                                        height: 25,
+                                        width: 25,
+                                        decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(12.5),
+                                            color: colorBlue),
+                                        child: Center(
+                                            child: WTextContent(
+                                          value: index.toString(),
+                                          textColor: colorWhite,
+                                        )),
+                                      ),
+                                    )),
                                     widget.seletedPlacement ==
                                             _listPlacement[index]
                                         ? Positioned.fill(
@@ -219,16 +237,21 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                 // dot top left
                 _buildDotDrag(
                   index,
-                  15,
+                  _listPlacement[index].width < 30 ? 5 : 15,
                   margin: const EdgeInsets.only(bottom: 10),
                   onPanUpdate: (details) {
                     _listPlacement[index].offset =
                         _listPlacement[index].offset + details.delta;
-                    widget.updatePlacement(
-                        widget.updatePlacement(_listPlacement));
+                    widget.updatePlacement(_listPlacement);
                     setState(() {
-                      _listPlacement[index].width -= details.delta.dx;
-                      _listPlacement[index].height -= details.delta.dy;
+                      if (checkMinArea(index) &&
+                          _listPlacement[index].width > details.delta.dx) {
+                        _listPlacement[index].width -= details.delta.dx;
+                      }
+                      if (checkMinArea(index) &&
+                          _listPlacement[index].height > details.delta.dy) {
+                        _listPlacement[index].height -= details.delta.dy;
+                      }
                     });
                   },
                   onPanStart: (details) {
@@ -240,15 +263,17 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                 // dot top center
                 _buildDotDrag(
                   index,
-                  12,
+                  _listPlacement[index].width < 30 ? 2 : 12,
                   margin: const EdgeInsets.only(bottom: 11),
                   onPanUpdate: (details) {
-                    _listPlacement[index].height -= details.delta.dy;
+                    if (checkMinArea(index) &&
+                        _listPlacement[index].height > details.delta.dy) {
+                      _listPlacement[index].height -= details.delta.dy;
+                    }
                     _listPlacement[index].offset = Offset(
                         _listPlacement[index].offset.dx,
-                        lastBottom - _listPlacement[index].height);
-                    widget.updatePlacement(
-                        widget.updatePlacement(_listPlacement));
+                        (lastBottom - _listPlacement[index].height).abs());
+                    widget.updatePlacement(_listPlacement);
                     setState(() {});
                   },
                   onPanStart: (details) {
@@ -262,14 +287,17 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                 // dot top right
                 _buildDotDrag(
                   index,
-                  15,
+                  _listPlacement[index].width < 30 ? 5 : 15,
                   margin: const EdgeInsets.only(bottom: 10),
                   onPanUpdate: (details) {
                     _listPlacement[index].offset = _listPlacement[index]
                         .offset
                         .translate(0, details.delta.dy);
                     _listPlacement[index].width += details.delta.dx;
-                    _listPlacement[index].height -= details.delta.dy;
+                    if (checkMinArea(index) &&
+                        _listPlacement[index].height > details.delta.dy) {
+                      _listPlacement[index].height -= details.delta.dy;
+                    }
                     setState(() {});
                   },
                   onPanStart: (p0) {
@@ -287,15 +315,17 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                 //dot center left
                 _buildDotDrag(
                   index,
-                  12,
+                  _listPlacement[index].width < 30 ? 2 : 12,
                   margin: const EdgeInsets.only(right: 11),
                   onPanUpdate: (details) {
                     _listPlacement[index].offset = _listPlacement[index]
                         .offset
                         .translate(details.delta.dx, 0);
-                    setState(() {
+                    if (checkMinArea(index) &&
+                        _listPlacement[index].width > details.delta.dx) {
                       _listPlacement[index].width -= details.delta.dx;
-                    });
+                    }
+                    setState(() {});
                     // widget.updatePlacement(index,_listPlacement[index].copyWith(offset: _listPlacement[index].offset+details.delta));
                   },
                   onPanStart: (details) {
@@ -307,7 +337,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                 // dot center right
                 _buildDotDrag(
                   index,
-                  12,
+                  _listPlacement[index].width < 30 ? 2 : 12,
                   margin: const EdgeInsets.only(left: 11),
                   onPanUpdate: (details) {
                     setState(() {
@@ -329,16 +359,18 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                 // dot bottom left
                 _buildDotDrag(
                   index,
-                  15,
+                  _listPlacement[index].width < 30 ? 5 : 15,
                   margin: const EdgeInsets.only(top: 11),
                   onPanUpdate: (details) {
                     _listPlacement[index].offset = _listPlacement[index]
                         .offset
                         .translate(details.delta.dx, 0);
-                    setState(() {
+                    if (checkMinArea(index) &&
+                        _listPlacement[index].width > details.delta.dx) {
                       _listPlacement[index].width -= details.delta.dx;
-                      _listPlacement[index].height += details.delta.dy;
-                    });
+                    }
+                    _listPlacement[index].height += details.delta.dy;
+                    setState(() {});
                   },
                   onPanStart: (details) {
                     setState(() {
@@ -349,7 +381,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                 // dot bottom center
                 _buildDotDrag(
                   index,
-                  12,
+                  _listPlacement[index].width < 30 ? 2 : 12,
                   margin: const EdgeInsets.only(top: 11),
                   onPanUpdate: (details) {
                     setState(() {
@@ -365,7 +397,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                 // dot bottom right
                 _buildDotDrag(
                   index,
-                  15,
+                  _listPlacement[index].width < 30 ? 5 : 15,
                   margin: const EdgeInsets.only(top: 11),
                   onPanUpdate: (details) {
                     setState(() {

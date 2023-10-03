@@ -10,6 +10,7 @@ import 'package:photo_to_pdf/models/cover_photo.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/providers/project_provider.dart';
+import 'package:photo_to_pdf/screens/module_editor/bodies/body_paper.dart';
 import 'package:photo_to_pdf/screens/module_editor/editor_padding_spacing.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_add_cover.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_background.dart';
@@ -35,17 +36,17 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   late Project _project;
   final TextEditingController _fileNameController =
       TextEditingController(text: "");
-  final TextEditingController _pageSizeWidthController =
+  final TextEditingController _paperSizeWidthController =
       TextEditingController(text: "");
-  final TextEditingController _pageSizeHeightController =
+  final TextEditingController _paperSizeHeightController =
       TextEditingController(text: "");
 
   // late List _listProject;
   late Size _size;
-  late bool _pageSizeIsPortrait = true;
+  late bool _paperSizeIsPortrait = true;
   int? _indexPageSizeSelectionWidget;
 
-  late dynamic _pageConfig;
+  late dynamic _paperConfig;
   late dynamic _layoutConfig;
   late dynamic _photosConfig;
   late dynamic _coverConfig;
@@ -57,7 +58,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   final GlobalKey _keyAlignment = GlobalKey();
 
   // layout alignment variables
-  late dynamic _resizeModeSelectedValue;
+  late ResizeAttribute _resizeModeSelectedValue;
   // layout alignment variables
   late List<dynamic> _listAlignment;
 
@@ -66,19 +67,19 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
       TextEditingController(text: "0.0");
   final TextEditingController _paddingVerticalController =
       TextEditingController(text: "0.0");
-  late dynamic _paddingOptions;
+  late PaddingAttribute _paddingOptions;
 
   //layout spacing variables
   final TextEditingController _spacingHorizontalController =
       TextEditingController(text: "0.0");
   final TextEditingController _spacingVerticalController =
       TextEditingController(text: "0.0");
-  late dynamic _spacingOptions;
+  late SpacingAttribute _spacingOptions;
   // layout custom variables
   final List<ValueNotifier<Matrix4>> _matrix4Notifiers = [];
   List<Placement> _listPlacement = [];
   Placement? _seletedPlacement;
-  late dynamic _placementOptions;
+  late PlacementAttribute _placementOptions;
 
   final TextEditingController _placementTopController =
       TextEditingController(text: "0.0");
@@ -105,99 +106,71 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   void initState() {
     super.initState();
     _project = widget.project;
-
+    print("_project.paper?.getInfor(): ${_project.paper?.getInfor()}");
     _fileNameController.text =
-        widget.project.title == "Untitled" ? "" : widget.project.title;
+        _project.title == "Untitled" ? "" : _project.title;
 
-    _pageConfig = {
+    _paperConfig = {
       "mediaSrc": "${pathPrefixIcon}icon_letter.png",
       "title": "Paper Size",
-      "content": LIST_PAGE_SIZE[5]
+      "content": _project.paper ?? LIST_PAGE_SIZE[5]
     };
+    _paperSizeWidthController.text = (_paperConfig['content'].width).toString();
+    _paperSizeHeightController.text =
+        (_paperConfig['content'].height).toString();
+
     _layoutConfig = {
       "mediaSrc": "${pathPrefixIcon}icon_layout.png",
       "title": "Layout",
-      "content": "Layout 1"
+      "content": "Layout ${_project.layoutIndex + 1}"
     };
     _photosConfig = {
       "mediaSrc": "${pathPrefixIcon}icon_frame.png",
       "title": "Selected Photos",
-      "content": "${widget.project.listMedia.length} Photos"
+      "content": "${_project.listMedia.length} Photos"
     };
     _coverConfig = {
       "mediaSrc": "${pathPrefixIcon}icon_frame_1.png",
       "title": "Cover Photos",
       "content": "None"
     };
-
-    _pageSizeWidthController.text =
-        (_pageConfig['content']['width']).toString();
-    _pageSizeHeightController.text =
-        (_pageConfig['content']['height']).toString();
-
-    _resizeModeSelectedValue = LIST_RESIZE_MODE[0];
-
+    _resizeModeSelectedValue = _project.resizeAttribute ?? LIST_RESIZE_MODE[0];
     _segmentCurrentIndex = 0;
     _listLayoutStatus = LIST_LAYOUT.map((e) {
       return {"mediaSrc": e, "isFocus": false};
     }).toList();
-    _listLayoutStatus[0]['isFocus'] = true;
+    _listLayoutStatus[_project.layoutIndex]['isFocus'] = true;
 
     _listAlignment = LIST_ALIGNMENT.map((e) {
-      return {"mediaSrc": e['mediaSrc'], "title": e['title'], "isFocus": false};
+      return {"mediaSrc": e.mediaSrc, "title": e.title, "isFocus": false};
     }).toList();
-    _listAlignment[2]['isFocus'] = true;
 
-    _paddingOptions = PADDING_OPTIONS;
-    _paddingHorizontalController.text = _paddingOptions['values'][0];
-    _paddingVerticalController.text = _paddingOptions['values'][1];
-
-    _spacingOptions = SPACING_OPTIONS;
-    _spacingHorizontalController.text = _spacingOptions['values'][0];
-    _spacingVerticalController.text = _spacingOptions['values'][1];
-
-    _sliderCompressionValue = 1;
-    _coverPhoto = CoverPhoto(backPhoto: null, frontPhoto: null);
-    _currentLayoutColor = colorWhite;
-
-    _placementOptions = PLACEMENT_OPTIONS;
-  }
-
-  _tranferValuePageSize() {
-    final config = _pageConfig["content"];
-    _pageConfig["content"] = {
-      "title": config['title'],
-      "width": config['height'],
-      "height": config['width'],
-      "unit": config['unit']
-    };
-    final width = _pageSizeWidthController.text;
-    final height = _pageSizeHeightController.text;
-    _pageSizeHeightController.text = width;
-    _pageSizeWidthController.text = height;
-  }
-
-  bool _overWHValue() {
-    return (double.parse(_pageSizeHeightController.text.trim()) > 50.0 ||
-        double.parse(_pageSizeWidthController.text.trim()) > 50.0);
-  }
-
-  double _renderPreviewHeight() {
-    if (_overWHValue()) {
-      return 0;
+    int indexOfAlignment = LIST_ALIGNMENT.indexWhere(
+        (element) => element.title == _project.alignmentAttribute?.title);
+    if (indexOfAlignment != -1) {
+      _listAlignment[indexOfAlignment]['isFocus'] = true;
+    } else {
+      _listAlignment[2]['isFocus'] = true;
     }
-    return (_pageSizeIsPortrait ? 220 : 170) *
-        double.parse(_pageSizeHeightController.text.trim()) /
-        double.parse(_pageSizeWidthController.text.trim());
-  }
 
-  double _renderPreviewWidth() {
-    if (_overWHValue()) {
-      return 0;
-    }
-    return (_pageSizeIsPortrait ? 170 : 220) *
-        double.parse(_pageSizeWidthController.text.trim()) /
-        double.parse(_pageSizeHeightController.text.trim());
+    _paddingOptions = _project.paddingAttribute ?? PADDING_OPTIONS;
+    _paddingHorizontalController.text =
+        _paddingOptions.horizontalPadding.toString();
+    _paddingVerticalController.text =
+        _paddingOptions.verticalPadding.toString();
+
+    _spacingOptions = _project.spacingAttribute ?? SPACING_OPTIONS;
+    _spacingHorizontalController.text =
+        _spacingOptions.horizontalSpacing.toString();
+    _spacingVerticalController.text =
+        _spacingOptions.verticalSpacing.toString();
+
+    _sliderCompressionValue = _project.compression;
+    _coverPhoto =
+        _project.coverPhoto ?? CoverPhoto(backPhoto: null, frontPhoto: null);
+    _currentLayoutColor = _project.backgroundColor;
+
+    _placementOptions = _project.placementAttribute ?? PLACEMENT_OPTIONS;
   }
 
   void _resetLayoutSelections() {
@@ -207,11 +180,11 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   }
 
   String _renderPreviewPaddingOptions() {
-    return "${_paddingHorizontalController.text.trim()}${_paddingOptions['unit']["value"]} , ${_paddingVerticalController.text.trim()} ${_paddingOptions['unit']["value"]}";
+    return "${_paddingHorizontalController.text.trim()} ${_paddingOptions.unit?.value} , ${_paddingVerticalController.text.trim()} ${_paddingOptions.unit?.value}";
   }
 
   String _renderPreviewSpacingOptions() {
-    return "${_spacingHorizontalController.text.trim()}${_spacingOptions['unit']["value"]} , ${_spacingVerticalController.text.trim()} ${_spacingOptions['unit']["value"]}";
+    return "${_spacingHorizontalController.text.trim()} ${_spacingOptions.unit?.value} , ${_spacingVerticalController.text.trim()} ${_spacingOptions.unit?.value}";
   }
 
   void _onChangedEditPlacement(int index, String value) {
@@ -277,6 +250,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                           color: Theme.of(context).cardColor,
                         ),
                         child: SingleChildScrollView(
+                            padding: const EdgeInsets.only(top: 15),
                             child: _buildPreviewProjectBody()))),
                 // page size and bottom buttons
                 SizedBox(
@@ -327,11 +301,11 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                           children: [
                             buildSelection(
                               context,
-                              _pageConfig['mediaSrc'],
-                              _pageConfig['title'],
-                              _pageConfig['content']['title'],
+                              _paperConfig['mediaSrc'],
+                              _paperConfig['title'],
+                              _paperConfig['content'].title,
                               onTap: () {
-                                _showBottomSheetPageSize();
+                                _showBottomSheetPaperSize();
                               },
                             ),
                             WSpacer(
@@ -360,7 +334,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                               _photosConfig['title'],
                               _photosConfig['content'],
                               onTap: () {
-                                showBottomSheetSelectedPhotos(
+                                _showBottomSheetSelectedPhotos(
                                   context: context,
                                   size: _size,
                                   project: _project,
@@ -383,7 +357,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                               _coverConfig['title'],
                               _coverConfig['content'],
                               onTap: () {
-                                showBottomSheetCoveredPhotos(
+                                _showBottomSheetCoveredPhotos(
                                   context: context,
                                   size: _size,
                                 );
@@ -396,9 +370,12 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                           context: context,
                           onApply: () {},
                           onCancel: () {
+                            // print(
+                            //     "_project.paper?.getInfor(): ${_project.paper?.getInfor()}");
                             ref
                                 .read(projectControllerProvider.notifier)
                                 .updateProject(_project);
+                            popNavigator(context);
                           },
                           titleApply: "Save to...")
                     ],
@@ -425,7 +402,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                     context: context,
                     key: _keyResizeMode,
                     title: "Resize Mode",
-                    content: _resizeModeSelectedValue['title'],
+                    content: _resizeModeSelectedValue.title,
                     width: _size.width * 0.3,
                     onTap: () {
                       final renderBoxResize = _keyResizeMode.currentContext
@@ -472,8 +449,8 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                               setState(() {
                                 _listAlignment = LIST_ALIGNMENT.map((e) {
                                   return {
-                                    "mediaSrc": e['mediaSrc'],
-                                    "title": e['title'],
+                                    "mediaSrc": e.mediaSrc,
+                                    "title": e.title,
                                     "isFocus": false
                                   };
                                 }).toList();
@@ -491,7 +468,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                   width: _size.width * 0.3,
                   contentWidgetColor: _currentLayoutColor,
                   onTap: () {
-                    showBottomSheetBackground(
+                    _showBottomSheetBackground(
                         rerenderFunction: rerenderFunction);
                   },
                 ),
@@ -513,10 +490,10 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                       content: _renderPreviewPaddingOptions(),
                       width: _size.width * 0.46,
                       onTap: () {
-                        pushCustomMaterialPageRoute(
+                        pushCustomVerticalMaterialPageRoute(
                             context,
                             EditorPaddingSpacing(
-                                unit: _paddingOptions['unit'],
+                                unit: _paddingOptions.unit!,
                                 title: TITLE_PADDING,
                                 controllers: [
                                   _paddingHorizontalController,
@@ -530,8 +507,12 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                     _paddingVerticalController.text = value;
                                   }
                                 },
-                                onUnitChange: (dynamic newUnit) {
-                                  print("newUnit Padding ${newUnit}");
+                                onUnitDone: (Unit newUnit) {
+                                  setState(() {
+                                    _paddingOptions =
+                                        _paddingOptions.copyWith(unit: newUnit);
+                                  });
+                                  rerenderFunction();
                                 }));
                       },
                     )),
@@ -542,10 +523,10 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                         content: _renderPreviewSpacingOptions(),
                         width: _size.width * 0.46,
                         onTap: () {
-                          pushCustomMaterialPageRoute(
+                          pushCustomVerticalMaterialPageRoute(
                               context,
                               EditorPaddingSpacing(
-                                  unit: _spacingOptions["unit"],
+                                  unit: _spacingOptions.unit!,
                                   title: TITLE_SPACING,
                                   controllers: [
                                     _spacingHorizontalController,
@@ -559,8 +540,12 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                       _spacingVerticalController.text = value;
                                     }
                                   },
-                                  onUnitChange: (dynamic newUnit) {
-                                    print("newUnit Spacing ${newUnit}");
+                                  onUnitDone: (Unit newUnit) {
+                                    setState(() {
+                                      _spacingOptions = _spacingOptions
+                                          .copyWith(unit: newUnit);
+                                    });
+                                    rerenderFunction();
                                   }));
                         },
                       ),
@@ -620,9 +605,9 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                   );
                   if (index != -1) {
                     _matrix4Notifiers.removeAt(index);
-                    _matrix4Notifiers.insert(0, matrix4);
+                    _matrix4Notifiers.add(matrix4);
                     _listPlacement.removeAt(index);
-                    _listPlacement.insert(0, placement);
+                    _listPlacement.add(placement);
                   }
                 });
                 rerenderFunction();
@@ -684,10 +669,10 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                 const Color.fromRGBO(22, 115, 255, 0.08),
                             padding: EdgeInsets.zero,
                             onPressed: () {
-                              pushCustomMaterialPageRoute(
+                              pushCustomVerticalMaterialPageRoute(
                                   context,
                                   EditorPaddingSpacing(
-                                    unit: _placementOptions['unit'],
+                                    unit: _placementOptions.unit!,
                                     title: TITLE_EDIT_PLACEMENT,
                                     // width and height is 0 and 1 to comparable with EditorPaddingSpacing (2 controller)
                                     controllers: [
@@ -701,7 +686,13 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                     onChanged: (index, value) {
                                       _onChangedEditPlacement(index, value);
                                     },
-                                    onUnitChange: (newUnit) {},
+                                    onUnitDone: (newUnit) {
+                                      setState(() {
+                                        _placementOptions = _placementOptions
+                                            .copyWith(unit: newUnit);
+                                      });
+                                      rerenderFunction();
+                                    },
                                   ));
                             },
                           ),
@@ -750,7 +741,9 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         context: context,
         builder: (context) {
           return StatefulBuilder(builder: (context, setStatefull) {
-            return Container(
+            return 
+            
+            Container(
               height: _size.height * 0.95,
               decoration: BoxDecoration(
                 color: Theme.of(context).scaffoldBackgroundColor,
@@ -887,6 +880,10 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                   buildBottomButton(
                       context: context,
                       onApply: () {
+                        if (_segmentCurrentIndex == 0) {
+                          _layoutConfig['content'] =
+                              "Layout ${_listLayoutStatus.indexWhere((element) => element['isFocus']) + 1}";
+                        }
                         // layout
                         setState(() {
                           _project = _project.copyWith(
@@ -894,7 +891,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                   (element) => element['isFocus'] == true),
                               backgroundColor: _currentLayoutColor,
                               resizeAttribute: ResizeAttribute(
-                                title: _resizeModeSelectedValue['title'],
+                                title: _resizeModeSelectedValue.title,
                               ),
                               spacingAttribute: SpacingAttribute(
                                   horizontalSpacing: double.parse(
@@ -916,7 +913,9 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                         });
                         popNavigator(context);
                       },
-                      onCancel: () {})
+                      onCancel: () {
+                        print("hello");
+                      })
                 ],
               ),
             );
@@ -926,7 +925,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         backgroundColor: transparent);
   }
 
-  void _showBottomSheetPageSize() {
+  void _showBottomSheetPaperSize() {
     showModalBottomSheet(
         context: context,
         builder: (context) {
@@ -934,228 +933,25 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
             padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom),
             child: StatefulBuilder(builder: (context, setStatefull) {
-              return Container(
-                height: _size.height * 0.55,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20.0),
-                    topRight: Radius.circular(20.0),
-                  ),
-                ),
-                child: Stack(
-                  children: [
-                    Column(
-                      children: [
-                        Container(
-                          margin: const EdgeInsets.only(top: 20),
-                          child: WTextContent(
-                            value: "Paper Size",
-                            textSize: 16,
-                            textLineHeight: 19.09,
-                            textFontWeight: FontWeight.w600,
-                            textColor:
-                                Theme.of(context).textTheme.bodyMedium!.color,
-                          ),
-                        ),
-                        Expanded(
-                            child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // page size selections
-                            Container(
-                              padding: const EdgeInsets.only(left: 10, top: 20),
-                              child: Column(
-                                children: [
-                                  // preset
-                                  buildPageSizePreset(
-                                    context: context,
-                                    item: _pageConfig,
-                                    onTap: () {
-                                      setState(() {
-                                        _indexPageSizeSelectionWidget = 0;
-                                      });
-                                      setStatefull(() {});
-                                    },
-                                    isFocus: _indexPageSizeSelectionWidget == 0,
-                                    onSelected: (value) {
-                                      setState(() {
-                                        _pageConfig['content'] = value;
-                                        _pageSizeWidthController.text =
-                                            (_pageConfig['content']['width'])
-                                                .toString();
-                                        _pageSizeHeightController.text =
-                                            (_pageConfig['content']['height'])
-                                                .toString();
-                                      });
-                                      setStatefull(() {});
-                                    },
-                                  ),
-                                  WSpacer(
-                                    height: 10,
-                                  ),
-                                  // width
-                                  buildCupertinoInput(
-                                      context: context,
-                                      controller: _pageSizeWidthController,
-                                      title: "Width",
-                                      onTap: () {
-                                        setState(() {
-                                          _indexPageSizeSelectionWidget = 1;
-                                        });
-                                        setStatefull(() {});
-                                      },
-                                      onChanged: (value) {
-                                        if (_pageSizeWidthController.text
-                                                .trim() !=
-                                            _pageConfig['content']['width']) {
-                                          setState(() {
-                                            _pageConfig['content'] =
-                                                LIST_PAGE_SIZE[7];
-                                          });
-                                          setStatefull(() {});
-                                        }
-                                        if (value.trim().isEmpty) {
-                                          _pageSizeWidthController.text = "1";
-                                        }
-                                      },
-                                      suffixValue: _pageConfig['content']
-                                          ['unit']["value"],
-                                      isFocus:
-                                          _indexPageSizeSelectionWidget == 1),
-                                  WSpacer(
-                                    height: 10,
-                                  ),
-                                  // height
-                                  buildCupertinoInput(
-                                      context: context,
-                                      controller: _pageSizeHeightController,
-                                      title: "Height",
-                                      onTap: () {
-                                        setState(() {
-                                          _indexPageSizeSelectionWidget = 2;
-                                        });
-                                        setStatefull(() {});
-                                      },
-                                      onChanged: (value) {
-                                        if (_pageSizeHeightController.text
-                                                .trim() !=
-                                            _pageConfig['content']['height']) {
-                                          setState(() {
-                                            _pageConfig['content'] =
-                                                LIST_PAGE_SIZE[7];
-                                          });
-                                          setStatefull(() {});
-                                        }
-                                        if (value.trim().isEmpty) {
-                                          _pageSizeHeightController.text = "1";
-                                        }
-                                      },
-                                      suffixValue: _pageConfig['content']
-                                          ['unit']["value"],
-                                      isFocus:
-                                          _indexPageSizeSelectionWidget == 2),
-                                  WSpacer(
-                                    height: 10,
-                                  ),
-                                  // orientation
-                                  _overWHValue()
-                                      ? const SizedBox()
-                                      : _buildOrientation(() {
-                                          setStatefull(() {});
-                                        })
-                                ],
-                              ),
-                            ),
-                            // page size preview
-                            Expanded(
-                              child: Container(
-                                padding: const EdgeInsets.only(
-                                    right: 20, left: 20, top: 20),
-                                alignment: Alignment.topCenter,
-                                child: Stack(
-                                  alignment: Alignment.topCenter,
-                                  children: [
-                                    AnimatedContainer(
-                                      alignment: Alignment.topCenter,
-                                      duration:
-                                          const Duration(milliseconds: 400),
-                                      constraints: const BoxConstraints(
-                                          maxHeight: 150, maxWidth: 150),
-                                      height: _renderPreviewHeight(),
-                                      width: _renderPreviewWidth(),
-                                      decoration: BoxDecoration(
-                                          color: colorWhite,
-                                          border: _overWHValue()
-                                              ? null
-                                              : Border.all(
-                                                  color: const Color.fromRGBO(
-                                                      0, 0, 0, 0.1),
-                                                  width: 2)),
-                                      padding: const EdgeInsets.all(10),
-                                    ),
-                                    !_overWHValue()
-                                        ? Positioned.fill(
-                                            child: Container(
-                                                alignment: Alignment.center,
-                                                child: WTextContent(
-                                                  value:
-                                                      "${_pageSizeWidthController.text.trim()}x${_pageSizeHeightController.text.trim()}${_pageConfig['content']['unit']["value"]}",
-                                                  textSize: 16,
-                                                  textLineHeight: 19.09,
-                                                  textFontWeight:
-                                                      FontWeight.w600,
-                                                  textColor:
-                                                      const Color.fromRGBO(
-                                                          0, 0, 0, 0.5),
-                                                  textOverflow:
-                                                      TextOverflow.ellipsis,
-                                                )),
-                                          )
-                                        : Container(
-                                            alignment: Alignment.topCenter,
-                                            child: WTextContent(
-                                              value:
-                                                  "${_pageSizeWidthController.text.trim()}x${_pageSizeHeightController.text.trim()}${_pageConfig['content']['unit']["value"]}",
-                                              textSize: 16,
-                                              textLineHeight: 19.09,
-                                              textFontWeight: FontWeight.w600,
-                                              textColor: const Color.fromRGBO(
-                                                  0, 0, 0, 0.5),
-                                              textOverflow:
-                                                  TextOverflow.ellipsis,
-                                            ))
-                                  ],
-                                ),
-                              ),
-                            )
-                          ],
-                        )),
-                        buildBottomButton(context: context, onApply: () {})
-                      ],
-                    ),
-                    MediaQuery.of(context).viewInsets.bottom > 0.0
-                        ? Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const SizedBox(),
-                              WUnitSelections(
-                                  unitValue: _pageConfig['content']["unit"],
-                                  onSelected: (value) {
-                                    setState(() {
-                                      _pageConfig['content'] = {
-                                        ...LIST_PAGE_SIZE[7],
-                                        "unit": value
-                                      };
-                                    });
-                                    setStatefull(() {});
-                                  })
-                            ],
-                          )
-                        : const SizedBox()
+              return PaperBody(
+                  reRenderFunction: () {
+                    setStatefull(() {});
+                  },
+                  indexPageSizeSelectionWidget: _indexPageSizeSelectionWidget,
+                  paperConfig: _paperConfig,
+                  values: [
+                    _paperSizeWidthController.text.trim(),
+                    _paperSizeHeightController.text.trim()
                   ],
-                ),
-              );
+                  pageSizeIsPortrait: _paperSizeIsPortrait,
+                  onDone: (newPaper,pageSizeIsPortrait) {
+                    _project = _project.copyWith(paper: newPaper);
+                    _paperSizeHeightController.text =
+                        newPaper.height.toString();
+                    _paperSizeWidthController.text = newPaper.width.toString();
+                    _paperSizeIsPortrait = pageSizeIsPortrait;
+                    setState(() {});
+                  });
             }),
           );
         },
@@ -1163,70 +959,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         backgroundColor: transparent);
   }
 
-  Widget _buildOrientation(
-    Function() rerenderFunc,
-  ) {
-    return Flexible(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        height: 70,
-        width: 200,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(15),
-          color: Theme.of(context).cardColor,
-        ),
-        child: Row(children: [
-          Container(
-            constraints: const BoxConstraints(minWidth: 50, maxWidth: 70),
-            padding: const EdgeInsets.only(left: 5),
-            child: WTextContent(
-              value: "Orientation",
-              textSize: 14,
-              textLineHeight: 16.71,
-              textColor: Theme.of(context).textTheme.bodyMedium!.color,
-              textFontWeight: FontWeight.w600,
-            ),
-          ),
-          WSpacer(
-            width: 10,
-          ),
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                buildPageSizeOrientationItem(
-                    mediaSrc: "${pathPrefixIcon}icon_portrait.png",
-                    isSelected: _pageSizeIsPortrait,
-                    onTap: () {
-                      setState(() {
-                        if (_pageSizeIsPortrait == false) {
-                          _tranferValuePageSize();
-                        }
-                        _pageSizeIsPortrait = true;
-                      });
-                      rerenderFunc();
-                    }),
-                buildPageSizeOrientationItem(
-                    mediaSrc: "${pathPrefixIcon}icon_landscape.png",
-                    isSelected: !_pageSizeIsPortrait,
-                    onTap: () {
-                      setState(() {
-                        if (_pageSizeIsPortrait == true) {
-                          _tranferValuePageSize();
-                        }
-                        _pageSizeIsPortrait = false;
-                      });
-                      rerenderFunc();
-                    }),
-              ],
-            ),
-          )
-        ]),
-      ),
-    );
-  }
-
-  void showBottomSheetSelectedPhotos(
+  void _showBottomSheetSelectedPhotos(
       {required BuildContext context,
       required Size size,
       required Project project,
@@ -1274,7 +1007,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         backgroundColor: transparent);
   }
 
-  void showBottomSheetCoveredPhotos({
+  void _showBottomSheetCoveredPhotos({
     required BuildContext context,
     required Size size,
   }) {
@@ -1305,7 +1038,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         backgroundColor: transparent);
   }
 
-  void showBottomSheetBackground({required void Function()? rerenderFunction}) {
+  void _showBottomSheetBackground({required void Function()? rerenderFunction}) {
     showModalBottomSheet(
         context: context,
         builder: (context) {
@@ -1327,63 +1060,84 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   }
 
   Widget _buildPreviewProjectBody() {
-    if (_project.layoutIndex == 0) {
+    if (_project.listMedia.isEmpty) {
+      final blankProject = Project(
+          id: getRandomNumber(),
+          listMedia: ["${pathPrefixImage}blank_page.jpg"]);
       return Wrap(
         alignment: WrapAlignment.center,
-        children: _project.listMedia.map((e) {
-          final index = _project.listMedia.indexOf(e);
-          return Container(
+        children: [
+          Container(
             margin: const EdgeInsets.symmetric(horizontal: 10),
             child: WProjectItemEditor(
-              key: ValueKey(_project.listMedia[index]),
-              project: _project,
+              key: ValueKey(blankProject.id),
+              project: blankProject,
               isFocusByLongPress: false,
-              indexImage: index,
-              title: "Page ${index + 1}",
+              indexImage: 0,
+              title: "Page ${1}",
             ),
-          );
-        }).toList(),
-      );
-    } else if (_project.layoutIndex == 1) {
-      List list = extractList(2, _project.listMedia);
-      return Wrap(
-        alignment: WrapAlignment.center,
-        children: list.map((e) {
-          final index = list.indexOf(e);
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 10),
-            child: WProjectItemEditor(
-              key: ValueKey(_project.listMedia[index]),
-              project: _project,
-              isFocusByLongPress: false,
-              indexImage: index,
-              layoutExtractList: list[index],
-              title: "Page ${index + 1}",
-            ),
-          );
-        }).toList(),
-      );
-    } else if ([2, 3].contains(_project.layoutIndex)) {
-      List list = extractList(3, _project.listMedia);
-      return Wrap(
-        alignment: WrapAlignment.center,
-        children: list.map((e) {
-          final index = list.indexOf(e);
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 10),
-            child: WProjectItemEditor(
-              key: ValueKey(_project.listMedia[index]),
-              project: _project,
-              isFocusByLongPress: false,
-              indexImage: index,
-              layoutExtractList: list[index],
-              title: "Page ${index + 1}",
-            ),
-          );
-        }).toList(),
+          )
+        ],
       );
     } else {
-      return Container(height: 50, width: 200, color: colorRed);
+      if (_project.layoutIndex == 0) {
+        return Wrap(
+          alignment: WrapAlignment.center,
+          children: _project.listMedia.map((e) {
+            final index = _project.listMedia.indexOf(e);
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 10),
+              child: WProjectItemEditor(
+                key: ValueKey(_project.listMedia[index]),
+                project: _project,
+                isFocusByLongPress: false,
+                indexImage: index,
+                title: "Page ${index + 1}",
+              ),
+            );
+          }).toList(),
+        );
+      } else if (_project.layoutIndex == 1) {
+        List list = extractList(2, _project.listMedia);
+        return Wrap(
+          alignment: WrapAlignment.center,
+          children: list.map((e) {
+            final index = list.indexOf(e);
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 10),
+              child: WProjectItemEditor(
+                key: ValueKey(_project.listMedia[index]),
+                project: _project,
+                isFocusByLongPress: false,
+                indexImage: index,
+                layoutExtractList: list[index],
+                title: "Page ${index + 1}",
+              ),
+            );
+          }).toList(),
+        );
+      } else if ([2, 3].contains(_project.layoutIndex)) {
+        List list = extractList(3, _project.listMedia);
+        return Wrap(
+          alignment: WrapAlignment.center,
+          children: list.map((e) {
+            final index = list.indexOf(e);
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 10),
+              child: WProjectItemEditor(
+                key: ValueKey(_project.listMedia[index]),
+                project: _project,
+                isFocusByLongPress: false,
+                indexImage: index,
+                layoutExtractList: list[index],
+                title: "Page ${index + 1}",
+              ),
+            );
+          }).toList(),
+        );
+      } else {
+        return Container(height: 50, width: 200, color: colorRed);
+      }
     }
   }
 }

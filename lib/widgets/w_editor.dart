@@ -51,7 +51,7 @@ Widget buildPageSizePreset(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     WTextContent(
-                      value: item['content']["title"],
+                      value: item['content'].title,
                       textSize: 14,
                       textLineHeight: 16.71,
                       textColor: const Color.fromRGBO(10, 132, 255, 1),
@@ -70,7 +70,7 @@ Widget buildPageSizePreset(
                     children: [
                       const SizedBox(),
                       WTextContent(
-                        value: item['title'],
+                        value: item.title,
                         textColor: const Color.fromRGBO(10, 132, 255, 1),
                         textSize: 14,
                         textLineHeight: 19.09,
@@ -149,7 +149,11 @@ Widget buildCupertinoInput(
             width: 2)),
     height: 47,
     child: CupertinoTextField(
-      onTap: onTap,
+      onTap: () {
+        controller.selection = TextSelection(
+            baseOffset: 0, extentOffset: controller.text.trim().length);
+        onTap();
+      },
       onChanged: onChanged,
       decoration: const BoxDecoration(),
       style: const TextStyle(
@@ -183,7 +187,7 @@ Widget buildCupertinoInput(
                 height: 16.71 / 14,
                 fontSize: 14)),
       ),
-      placeholder: "Untitled",
+      placeholder:  "Untitled",
       placeholderStyle: const TextStyle(
           color: colorBlue,
           fontFamily: myCustomFont,
@@ -338,7 +342,6 @@ Widget buildBottomButton(
           height: 60,
           onPressed: () {
             onCancel != null ? onCancel() : null;
-            popNavigator(context);
           },
         )),
         WSpacer(
@@ -685,8 +688,8 @@ Widget buildDialogResizeMode(
   return Column(children: [
     _buildDialogInformationItem(
       context,
-      LIST_RESIZE_MODE[0]['mediaSrc'],
-      LIST_RESIZE_MODE[0]['title'],
+      LIST_RESIZE_MODE[0].mediaSrc,
+      LIST_RESIZE_MODE[0].title,
       () => onSelected(
         LIST_RESIZE_MODE[0],
       ),
@@ -701,8 +704,8 @@ Widget buildDialogResizeMode(
     ),
     _buildDialogInformationItem(
         context,
-        LIST_RESIZE_MODE[1]['mediaSrc'],
-        LIST_RESIZE_MODE[1]['title'],
+        LIST_RESIZE_MODE[1].mediaSrc,
+        LIST_RESIZE_MODE[1].title,
         () => onSelected(
               LIST_RESIZE_MODE[1],
             ),
@@ -714,8 +717,8 @@ Widget buildDialogResizeMode(
     ),
     _buildDialogInformationItem(
       context,
-      LIST_RESIZE_MODE[2]['mediaSrc'],
-      LIST_RESIZE_MODE[2]['title'],
+      LIST_RESIZE_MODE[2].mediaSrc,
+      LIST_RESIZE_MODE[2].title,
       () => onSelected(
         LIST_RESIZE_MODE[2],
       ),

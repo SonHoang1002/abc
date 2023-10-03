@@ -74,7 +74,7 @@ pushCustomVerticalMaterialPageRoute(BuildContext context, Widget newScreen,
   Navigator.push(
     context,
     MaterialPageRouteBuilder(
-      opaque: opaque,
+      opaque: false,
       pageBuilder: (context, animation, secondaryAnimation) => newScreen,
       transitionDuration: const Duration(milliseconds: 200),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -88,7 +88,7 @@ pushCustomVerticalMaterialPageRoute(BuildContext context, Widget newScreen,
           child: child,
         );
       },
-      barrierColor:transparent
+      barrierColor: const Color.fromRGBO(0, 0, 0, 0.5)
     ),
   );
 }

@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
+import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 
 class WUnitSelections extends StatelessWidget {
-  final dynamic unitValue;
-  final void Function(dynamic value) onSelected;
+  final Unit unitValue;
+  final void Function(Unit value) onSelected;
+  final void Function(Unit value) onDone;
   const WUnitSelections(
-      {super.key, required this.unitValue, required this.onSelected});
+      {super.key, required this.unitValue, required this.onSelected,required this.onDone});
 
   @override
   Widget build(BuildContext context) {
@@ -22,8 +24,11 @@ class WUnitSelections extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: LIST_UNIT
-                .map<Widget>((e) =>
-                    _buildUnitItem(context: context, unit: e["title"].toString(), isFocus: unitValue== e['value'],onTap: (){
+                .map<Widget>((e) => _buildUnitItem(
+                    context: context,
+                    unit: e.title,
+                    isFocus: unitValue.value == e.value,
+                    onTap: () {
                       onSelected(e);
                     }))
                 .toList(),
@@ -33,7 +38,9 @@ class WUnitSelections extends StatelessWidget {
             unit: "Done",
             isFocus: true,
             onTap: () {
+             onDone(unitValue);
               FocusManager.instance.primaryFocus!.unfocus();
+              popNavigator(context);
             },
           )
         ],

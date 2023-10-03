@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
+import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 import 'package:photo_to_pdf/widgets/w_unit_selections.dart';
@@ -18,11 +19,11 @@ List<String> LABELS_EDIT_PLACEMENT = [
 ];
 
 class EditorPaddingSpacing extends StatefulWidget {
-  final dynamic unit;
+  final Unit unit;
   final String title;
   final List<TextEditingController> controllers;
   final void Function(int index, String value) onChanged;
-  final void Function(dynamic newUnit) onUnitChange;
+  final void Function(Unit newUnit) onUnitDone;
   final void Function()? reRenderFunction;
   const EditorPaddingSpacing(
       {super.key,
@@ -30,7 +31,7 @@ class EditorPaddingSpacing extends StatefulWidget {
       required this.title,
       required this.controllers,
       required this.onChanged,
-      required this.onUnitChange,
+      required this.onUnitDone,
       this.reRenderFunction});
 
   @override
@@ -41,7 +42,8 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
   String? _selectedLabel;
   late Size _size;
   late List<String> _labelInputs;
-  late dynamic _unit;
+  late Unit _unit;
+  // late List<bool> listFocus;
 
   @override
   void initState() {
@@ -49,12 +51,14 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
 
     if ([TITLE_EDIT_PLACEMENT].contains(widget.title)) {
       _labelInputs = LABELS_EDIT_PLACEMENT;
-      // _selectedLabel = _labelInputs[2];
+      _selectedLabel = _labelInputs[2];
     } else {
       _labelInputs = LABELS_PADDING_SPACING;
       _selectedLabel = _labelInputs[0];
     }
     _unit = widget.unit;
+    widget.controllers[0].selection = TextSelection(
+        baseOffset: 0, extentOffset: widget.controllers[0].value.text.length);
   }
 
   @override
@@ -88,11 +92,14 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                   ? WUnitSelections(
                       unitValue: _unit,
                       onSelected: (value) {
-                        widget.onUnitChange(value);
                         setState(() {
                           _unit = value;
                         });
-                      })
+                      },
+                      onDone: (value) {
+                        widget.onUnitDone(value);
+                      },
+                    )
                   : const SizedBox(),
             ],
           ),
@@ -134,6 +141,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                         widget.onChanged(2, value);
                       },
                       _selectedLabel == _labelInputs[2],
+                      _unit.title,
                       onTap: () {
                         setState(() {
                           _selectedLabel = _labelInputs[2];
@@ -155,6 +163,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                               widget.onChanged(3, value);
                             },
                             _selectedLabel == _labelInputs[3],
+                            _unit.title,
                             onTap: () {
                               setState(() {
                                 _selectedLabel = _labelInputs[3];
@@ -180,6 +189,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                               widget.onChanged(4, value);
                             },
                             _selectedLabel == _labelInputs[4],
+                            _unit.title,
                             onTap: () {
                               setState(() {
                                 _selectedLabel = _labelInputs[4];
@@ -198,6 +208,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                         widget.onChanged(5, value);
                       },
                       _selectedLabel == _labelInputs[5],
+                      _unit.title,
                       onTap: () {
                         setState(() {
                           _selectedLabel = _labelInputs[5];
@@ -252,11 +263,13 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                             widget.onChanged(0, value);
                           },
                           _selectedLabel == _labelInputs[0],
+                          _unit.title,
                           onTap: () {
                             setState(() {
                               _selectedLabel = _labelInputs[0];
                             });
                           },
+                          isHaveSuffix: true,
                           autoFocus:
                               [TITLE_EDIT_PLACEMENT].contains(widget.title)
                                   ? false
@@ -289,11 +302,13 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                             widget.onChanged(1, value);
                           },
                           _selectedLabel == _labelInputs[1],
+                          _unit.title,
                           onTap: () {
                             setState(() {
                               _selectedLabel = _labelInputs[1];
                             });
                           },
+                          isHaveSuffix: true,
                           autoFocus: false),
                     ),
                     WSpacer(
@@ -318,14 +333,17 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
   }
 
   Widget _buildInput(TextEditingController controller,
-      void Function(String)? onChanged, bool isFocus,
+      void Function(String)? onChanged, bool isFocus, String suffixValue,
       {void Function()? onTap, bool? autoFocus, bool? isHaveSuffix}) {
     return Container(
         height: 35,
-        // width: width,
         alignment: Alignment.center,
         child: CupertinoTextField(
-          onTap: onTap,
+          onTap: () {
+            onTap != null ? onTap() : null;
+            controller.selection = TextSelection(
+                baseOffset: 0, extentOffset: controller.value.text.length);
+          },
           onChanged: onChanged,
           autofocus: autoFocus ?? false,
           textAlign: TextAlign.center,
@@ -342,8 +360,8 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
               ? Container(
                   alignment: Alignment.centerLeft,
                   margin: const EdgeInsets.only(right: 10),
-                  child: const Text("cm",
-                      style: TextStyle(
+                  child: Text(suffixValue,
+                      style: const TextStyle(
                           color: Color.fromRGBO(0, 0, 0, 0.5),
                           fontFamily: myCustomFont,
                           fontWeight: FontWeight.w700,

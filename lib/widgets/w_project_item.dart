@@ -5,6 +5,7 @@ import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/commons/themes.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
+import 'package:photo_to_pdf/helpers/render_boxfit.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/providers/project_provider.dart';
 import 'package:photo_to_pdf/screens/module_editor/preview.dart';
@@ -149,6 +150,22 @@ class WProjectItemEditor extends ConsumerWidget {
       this.onRemove,
       this.layoutExtractList});
 
+  EdgeInsets _getPaddingAtribute() {
+    return EdgeInsets.only(
+        top: 5 + (project.paddingAttribute?.verticalPadding ?? 0.0),
+        left: 5 + (project.paddingAttribute?.horizontalPadding ?? 0.0),
+        right: 5 + (project.paddingAttribute?.horizontalPadding ?? 0.0),
+        bottom: 5 + (project.paddingAttribute?.verticalPadding ?? 0.0));
+  }
+
+  double _getSpacingHorizontalValue() {
+    return 3 + (project.spacingAttribute?.horizontalSpacing ?? 0.0) * 5;
+  }
+
+  double _getSpacingVerticalValue() {
+    return 3 + (project.spacingAttribute?.verticalSpacing ?? 0.0) * 5;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
@@ -180,36 +197,25 @@ class WProjectItemEditor extends ConsumerWidget {
                 child: Stack(
                   children: [
                     Container(
-                      padding: const EdgeInsets.only(
-                          top: 12, left: 12, right: 12, bottom: 12),
-                      alignment: Alignment.center,
+                      padding: _getPaddingAtribute(),
+                      alignment: project.alignmentAttribute?.alignmentMode,
                       child: _buildLayoutMedia(
-                          indexImage, project, layoutExtractList),
+                          indexImage, project, layoutExtractList,
+                          spacingHorizontal: _getSpacingHorizontalValue(),
+                          spacingVertical: _getSpacingVerticalValue()),
                     ),
                     isFocusByLongPress
                         ? Positioned(
                             top: -10,
                             left: -10,
-                            child: GestureDetector(
-                              onTap: () {
-                                // final listProject = ref
-                                //     .watch(projectControllerProvider)
-                                //     .listProject;
-                                // listProject.removeAt(index);
-                                // ref
-                                //     .read(projectControllerProvider.notifier)
-                                //     .setProject(listProject);
-                              },
-                              child: Container(
-                                alignment: Alignment.topLeft,
-                                child: Image.asset(
-                                  pv.Provider.of<ThemeManager>(context)
-                                          .isDarkMode
-                                      ? "${pathPrefixIcon}icon_remove_dark.png"
-                                      : "${pathPrefixIcon}icon_remove_light.png",
-                                  width: 50,
-                                  height: 50,
-                                ),
+                            child: Container(
+                              alignment: Alignment.topLeft,
+                              child: Image.asset(
+                                pv.Provider.of<ThemeManager>(context).isDarkMode
+                                    ? "${pathPrefixIcon}icon_remove_dark.png"
+                                    : "${pathPrefixIcon}icon_remove_light.png",
+                                width: 50,
+                                height: 50,
                               ),
                             ))
                         : const SizedBox(),
@@ -234,15 +240,103 @@ class WProjectItemEditor extends ConsumerWidget {
   }
 }
 
-Widget _buildImageWidget(dynamic imageData,
-    {BoxFit? fit = BoxFit.cover, double? width, double? height}) {
+Widget _buildLayoutMedia(
+    int indexImage, Project project, List<dynamic>? layoutExtractList,
+    {double spacingVertical = 3, double spacingHorizontal = 3}) {
+  if (project.layoutIndex == 0 && layoutExtractList == null) {
+    return _buildImageWidget(project, project.listMedia[indexImage]);
+  } else if (layoutExtractList != null && layoutExtractList.isNotEmpty) {
+    if (project.layoutIndex == 1) {
+      return Column(
+        children: [
+          Flexible(
+              child: _buildImageWidget(
+            project,
+            layoutExtractList[0],
+            height: 150,
+            width: 150,
+          )),
+          WSpacer(
+            height: spacingVertical,
+          ),
+          Flexible(
+              child: _buildImageWidget(
+            project,
+            layoutExtractList[1],
+            height: 150,
+            width: 150,
+          )),
+        ],
+      );
+    } else if (project.layoutIndex == 2) {
+      return Flex(
+        direction: Axis.vertical,
+        children: [
+          Flexible(
+              child: _buildImageWidget(
+            project,
+            layoutExtractList[0],
+            width: 150,
+          )),
+          WSpacer(height: spacingVertical),
+          Flex(
+            direction: Axis.horizontal,
+            children: [
+              Flexible(
+                  child: _buildImageWidget(
+                project,
+                layoutExtractList[1],
+              )),
+              WSpacer(
+                width: spacingHorizontal,
+              ),
+              Flexible(
+                child: _buildImageWidget(project, layoutExtractList[2]),
+              ),
+            ],
+          )
+        ],
+      );
+    } else {
+      return Flex(
+        direction: Axis.vertical,
+        children: [
+          Flex(
+            direction: Axis.horizontal,
+            children: [
+              Flexible(child: _buildImageWidget(project, layoutExtractList[0])),
+              WSpacer(width: spacingHorizontal),
+              Flexible(
+                child: _buildImageWidget(project, layoutExtractList[1]),
+              ),
+            ],
+          ),
+          WSpacer(height: spacingVertical),
+          Flexible(
+              child: _buildImageWidget(
+            project,
+            layoutExtractList[2],
+            width: 150,
+          )),
+        ],
+      );
+    }
+  } else {
+    return const SizedBox();
+  }
+}
+
+Widget _buildImageWidget(Project project, dynamic imageData,
+    {double? width, double? height}) {
+  final fit = renderImageBoxfit(project.resizeAttribute);
   if (imageData == null) {
-    return Image.asset(
-      "${pathPrefixImage}blank_page.jpg",
-      fit: fit,
-      height: height,
-      width: width,
-    );
+    return Container();
+    // Image.asset(
+    //   "${pathPrefixImage}blank_page.jpg",
+    //   fit: fit,
+    //   height: height,
+    //   width: width,
+    // );
   } else {
     if (imageData is File) {
       return Image.file(
@@ -259,92 +353,6 @@ Widget _buildImageWidget(dynamic imageData,
         width: width,
       );
     }
-  }
-}
-
-Widget _buildLayoutMedia(
-    int indexImage, Project project, List<dynamic>? layoutExtractList) {
-  if (project.layoutIndex == 0 && layoutExtractList == null) {
-    return _buildImageWidget(project.listMedia[indexImage]);
-  } else if (layoutExtractList != null && layoutExtractList.isNotEmpty) {
-    if (project.layoutIndex == 1) {
-      return Column(
-        children: [
-          Flexible(
-              child: _buildImageWidget(
-            layoutExtractList[0],
-            height: 150,
-            width: 150,
-          )),
-          WSpacer(
-            height: 5,
-          ),
-          Flexible(
-              child: _buildImageWidget(
-            layoutExtractList[1],
-            height: 150,
-            width: 150,
-          )),
-        ],
-      );
-    } else if (project.layoutIndex == 2) {
-      return Flex(
-        direction: Axis.vertical,
-        children: [
-          Flexible(
-              child: _buildImageWidget(
-            layoutExtractList![0],
-            width: 150,
-          )),
-          WSpacer(
-            height: 5,
-          ),
-          Flex(
-            direction: Axis.horizontal,
-            children: [
-              Flexible(
-                  child: _buildImageWidget(
-                layoutExtractList[1],
-              )),
-              WSpacer(
-                width: 5,
-              ),
-              Flexible(
-                child: _buildImageWidget(layoutExtractList[2]),
-              ),
-            ],
-          )
-        ],
-      );
-    } else {
-      return Flex(
-        direction: Axis.vertical,
-        children: [
-          Flex(
-            direction: Axis.horizontal,
-            children: [
-              Flexible(child: _buildImageWidget(layoutExtractList![0])),
-              WSpacer(
-                width: 5,
-              ),
-              Flexible(
-                child: _buildImageWidget(layoutExtractList![1]),
-              ),
-            ],
-          ),
-          WSpacer(
-            height: 5,
-          ),
-          Flexible(
-              child: _buildImageWidget(
-            layoutExtractList![2],
-            width: 150,
-          )),
-        ],
-      );
-    }
-  } else {
-    return SizedBox();
   }
 }
 

@@ -506,13 +506,13 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                             backgroundColor: colorBlue,
                             textColor: colorWhite,
                             onPressed: () {
-                              if (_currentProject.listMedia.isEmpty) {
-                                _currentProject = Project(
-                                    id: _currentProject.id,
-                                    listMedia: [
-                                      "${pathPrefixImage}blank_page.jpg"
-                                    ]);
-                              }
+                              // if (_currentProject.listMedia.isEmpty) {
+                              //   _currentProject = Project(
+                              //       id: _currentProject.id,
+                              //       listMedia: [
+                              //         "${pathPrefixImage}blank_page.jpg"
+                              //       ]);
+                              // }
                               ref
                                   .read(projectControllerProvider.notifier)
                                   .addProject(_currentProject);
