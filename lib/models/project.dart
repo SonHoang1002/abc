@@ -28,7 +28,7 @@ class Project {
   final SpacingAttribute? spacingAttribute;
   final double compression;
   final CoverPhoto? coverPhoto;
-  final PlacementAttribute? placementAttribute;
+  final List<Placement>? placements;
 
   Project(
       {required this.id,
@@ -43,7 +43,7 @@ class Project {
       this.spacingAttribute,
       this.compression = 1.0,
       this.coverPhoto,
-      this.placementAttribute});
+      this.placements});
 
   void getInfor() {
     final id = "id: ${this.id},";
@@ -59,7 +59,7 @@ class Project {
     final alignmentAttribute =
         "alignmentAttribute: ${this.alignmentAttribute},";
     final coverPhoto = "coverPhoto: ${this.coverPhoto},";
-    final placementAttribute = "placement: ${this.placementAttribute},";
+    final placementAttribute = "placements: ${this.placements},";
     print(id +
         title +
         listMedia +
@@ -84,9 +84,10 @@ class Project {
       PaddingAttribute? paddingAttribute,
       SpacingAttribute? spacingAttribute,
       ResizeAttribute? resizeAttribute,
+      AlignmentAttribute? alignmentAttribute,
       double? compression,
       CoverPhoto? coverPhoto,
-      PlacementAttribute? placementAttribute}) {
+      List<Placement>? placements}) {
     return Project(
         id: id,
         title: title ?? this.title,
@@ -99,7 +100,8 @@ class Project {
         spacingAttribute: spacingAttribute ?? this.spacingAttribute,
         compression: compression ?? this.compression,
         coverPhoto: coverPhoto ?? this.coverPhoto,
-        placementAttribute: placementAttribute ?? this.placementAttribute);
+        alignmentAttribute: alignmentAttribute ?? this.alignmentAttribute,
+        placements: placements ?? this.placements);
   }
 }
 
@@ -117,6 +119,10 @@ class PaddingAttribute {
         horizontalPadding: horizontalPadding ?? this.horizontalPadding,
         unit: unit ?? this.unit);
   }
+
+  String getInfor() {
+    return "PaddingAttribute verticalPadding: ${this.verticalPadding}, PaddingAttribute verticalPadding: ${this.verticalPadding}, PaddingAttribute unit: ${this.unit?.getInfor()} ";
+  }
 }
 
 class SpacingAttribute {
@@ -132,6 +138,10 @@ class SpacingAttribute {
         verticalSpacing: verticalSpacing ?? this.verticalSpacing,
         horizontalSpacing: horizontalSpacing ?? this.horizontalSpacing,
         unit: unit ?? this.unit);
+  }
+
+  String getInfor() {
+    return "SpacingAttribute verticalSpacing: ${this.verticalSpacing}, SpacingAttribute horizontalSpacing: ${this.horizontalSpacing}, SpacingAttribute unit: ${this.unit?.getInfor()} ";
   }
 }
 
@@ -156,6 +166,10 @@ class AlignmentAttribute {
         title: title ?? this.title,
         mediaSrc: mediaSrc ?? this.mediaSrc);
   }
+
+  String getInfor() {
+    return "AlignmentAttribute alignmentMode: ${this.alignmentMode}, AlignmentAttribute title:${this.title}, AlignmentAttribute mediaSrc:${this.mediaSrc}";
+  }
 }
 
 class PaperAttribute {
@@ -175,7 +189,7 @@ class PaperAttribute {
   }
 
   String getInfor() {
-    return "title: ${this.title}, width:${this.width}, height:${this.height}, unit:${this.unit?.getInfor()}";
+    return "PaperAttribute title: ${this.title}, PaperAttribute width:${this.width}, PaperAttribute height:${this.height}, PaperAttribute unit:${this.unit?.getInfor()}";
   }
 }
 
@@ -184,36 +198,6 @@ class Unit {
   final String value;
   Unit({this.title = "", this.value = ""});
   String getInfor() {
-    return "Unit title: ${this.title},Unit value:${this.value}";
-  }
-}
-
-class PlacementAttribute {
-  double horizontal, vertical, top, left, right, bottom;
-  Unit? unit;
-  PlacementAttribute(
-      {this.horizontal = 0.0,
-      this.vertical = 0.0,
-      this.top = 0.0,
-      this.left = 0.0,
-      this.right = 0.0,
-      this.bottom = 0.0,
-      this.unit});
-  PlacementAttribute copyWith(
-      {double? horizontal,
-      double? vertical,
-      double? top,
-      double? left,
-      double? right,
-      double? bottom,
-      Unit? unit}) {
-    return PlacementAttribute(
-        horizontal: horizontal ?? this.horizontal,
-        vertical: vertical ?? this.vertical,
-        top: top ?? this.top,
-        left: left ?? this.left,
-        right: right ?? this.right,
-        bottom: bottom ?? this.bottom,
-        unit: unit ?? this.unit);
+    return "Unit title: ${this.title}, Unit value: ${this.value}";
   }
 }

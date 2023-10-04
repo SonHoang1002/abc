@@ -6,11 +6,12 @@ import 'package:photo_to_pdf/helpers/pick_media.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
+import 'package:photo_to_pdf/widgets/project_items/w_project_item_bottom.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 import 'package:photo_to_pdf/widgets/w_thumb_slider.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
-import 'package:photo_to_pdf/widgets/w_project_item.dart';
+import 'package:photo_to_pdf/widgets/project_items/w_project_item_main.dart';
 
 class SelectedPhotosBody extends StatefulWidget {
   final Project project;

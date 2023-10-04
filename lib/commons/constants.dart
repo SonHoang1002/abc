@@ -1,5 +1,5 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/models/project.dart';
 
@@ -85,7 +85,8 @@ PaddingAttribute PADDING_OPTIONS = PaddingAttribute(
 SpacingAttribute SPACING_OPTIONS = SpacingAttribute(
     horizontalSpacing: 1.0, verticalSpacing: 1.0, unit: CENTIMET);
 
-final  PLACEMENT_OPTIONS = PlacementAttribute(
+// ignore: non_constant_identifier_names
+final PLACEMENT_ATTRIBUTE = PlacementAttribute(
     horizontal: 0.0,
     vertical: 0.0,
     top: 0.0,
@@ -120,7 +121,6 @@ final Unit INCH = Unit(title: "inch", value: "”");
 final Unit CENTIMET = Unit(title: "centimet", value: "cm");
 final Unit POINT = Unit(title: "point", value: "point");
 final List<Unit> LIST_UNIT = [INCH, CENTIMET, POINT];
-
 const String LANDSCAPE = "landscape";
 const String PORTRAIT = "portrait";
 const List<Color> ALL_COLORS = [
@@ -162,3 +162,9 @@ const List<Color> ALL_COLORS = [
   Colors.yellowAccent,
   Colors.white,
 ];
+
+/// Ratio of changeable placement board: width, height
+const List<double> LIST_RATIO_PLACEMENT_BOARD = [0.6,0.8];
+
+/// Ratio of changeable project item: width, height
+const List<double> LIST_RATIO_PROJECT_ITEM = [0.3,0.4];

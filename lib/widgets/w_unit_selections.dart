@@ -10,7 +10,10 @@ class WUnitSelections extends StatelessWidget {
   final void Function(Unit value) onSelected;
   final void Function(Unit value) onDone;
   const WUnitSelections(
-      {super.key, required this.unitValue, required this.onSelected,required this.onDone});
+      {super.key,
+      required this.unitValue,
+      required this.onSelected,
+      required this.onDone});
 
   @override
   Widget build(BuildContext context) {
@@ -38,9 +41,8 @@ class WUnitSelections extends StatelessWidget {
             unit: "Done",
             isFocus: true,
             onTap: () {
-             onDone(unitValue);
+              onDone(unitValue);
               FocusManager.instance.primaryFocus!.unfocus();
-              popNavigator(context);
             },
           )
         ],

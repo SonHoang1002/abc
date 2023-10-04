@@ -12,8 +12,10 @@ import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/providers/project_provider.dart';
 import 'package:photo_to_pdf/screens/module_editor/editor.dart';
 import 'package:photo_to_pdf/screens/module_setting/setting.dart';
+import 'package:photo_to_pdf/widgets/project_items/w_project_item_home.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
-import 'package:photo_to_pdf/widgets/w_project_item.dart';
+import 'package:photo_to_pdf/widgets/project_items/w_project_item_main.dart';
+import 'package:photo_to_pdf/widgets/project_items/w_project_item_bottom.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
@@ -185,7 +187,9 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
               project: _listProject[index],
               isFocusByLongPress: _isFocusProjectList,
               index: index,
-              layoutExtractList: _listProject[index].layoutIndex == 0
+              layoutExtractList: _listProject[index].layoutIndex == 0 ||
+                      (_listProject[index].layoutIndex != 0 &&
+                          _listProject[index].listMedia.isEmpty)
                   ? null
                   : extractList(
                       getLayoutImageNumber(_listProject[index].layoutIndex),

@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 
 class TestDrag extends StatefulWidget {
@@ -29,15 +30,17 @@ class _TestDragState extends State<TestDrag> {
     _matrix4Notifiers.add(ValueNotifier(Matrix4.identity()));
     _matrix4Notifiers.add(ValueNotifier(Matrix4.identity()));
     _listPlacement.add(Placement(
+        id: getRandomNumber(),
         width: 70,
         height: 70,
-        alignment: Alignment.center,
-        offset: const Offset(0, 0)));
+        offset: const Offset(0, 0),
+        placementAttribute: PLACEMENT_ATTRIBUTE));
     _listPlacement.add(Placement(
+        id: getRandomNumber(),
         width: 70,
         height: 70,
-        alignment: Alignment.center,
-        offset: const Offset(0, 0)));
+        offset: const Offset(0, 0),
+        placementAttribute: PLACEMENT_ATTRIBUTE));
   }
 
   @override
@@ -188,11 +191,7 @@ class _TestDragState extends State<TestDrag> {
                       _listPlacement[index].height -= details.delta.dy;
                     });
                   },
-                  onPanStart: (details) {
-                    setState(() {
-                      _listPlacement[index].alignment = Alignment.center;
-                    });
-                  },
+                  onPanStart: (details) {},
                 ),
                 // dot top center
                 _buildDotDrag(
@@ -209,9 +208,6 @@ class _TestDragState extends State<TestDrag> {
                   onPanStart: (details) {
                     lastBottom = _listPlacement[index].height +
                         _listPlacement[index].offset.dy;
-                    setState(() {
-                      _listPlacement[index].alignment = Alignment.bottomCenter;
-                    });
                   },
                 ),
                 // dot top right
@@ -227,11 +223,7 @@ class _TestDragState extends State<TestDrag> {
                     _listPlacement[index].height -= details.delta.dy;
                     setState(() {});
                   },
-                  onPanStart: (p0) {
-                    setState(() {
-                      _listPlacement[index].alignment = Alignment.center;
-                    });
-                  },
+                  onPanStart: (p0) {},
                 )
               ],
             ),
@@ -252,11 +244,7 @@ class _TestDragState extends State<TestDrag> {
                       _listPlacement[index].width -= details.delta.dx;
                     });
                   },
-                  onPanStart: (details) {
-                    setState(() {
-                      _listPlacement[index].alignment = Alignment.centerRight;
-                    });
-                  },
+                  onPanStart: (details) {},
                 ),
                 // dot center right
                 _buildDotDrag(
@@ -268,11 +256,7 @@ class _TestDragState extends State<TestDrag> {
                       _listPlacement[index].width += details.delta.dx;
                     });
                   },
-                  onPanStart: (details) {
-                    setState(() {
-                      _listPlacement[index].alignment = Alignment.centerLeft;
-                    });
-                  },
+                  onPanStart: (details) {},
                 )
               ],
             ),
@@ -294,11 +278,7 @@ class _TestDragState extends State<TestDrag> {
                       _listPlacement[index].height += details.delta.dy;
                     });
                   },
-                  onPanStart: (details) {
-                    setState(() {
-                      _listPlacement[index].alignment = Alignment.center;
-                    });
-                  },
+                  onPanStart: (details) {},
                 ),
                 // dot bottom center
                 _buildDotDrag(
@@ -310,11 +290,7 @@ class _TestDragState extends State<TestDrag> {
                       _listPlacement[index].height += details.delta.dy;
                     });
                   },
-                  onPanStart: (details) {
-                    setState(() {
-                      _listPlacement[index].alignment = Alignment.topCenter;
-                    });
-                  },
+                  onPanStart: (details) {},
                 ),
                 // dot bottom right
                 _buildDotDrag(
@@ -327,11 +303,7 @@ class _TestDragState extends State<TestDrag> {
                       _listPlacement[index].height += details.delta.dy;
                     });
                   },
-                  onPanStart: (details) {
-                    setState(() {
-                      _listPlacement[index].alignment = Alignment.center;
-                    });
-                  },
+                  onPanStart: (details) {},
                 )
               ],
             ),

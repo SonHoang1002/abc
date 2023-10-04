@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
+import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
@@ -19,20 +20,26 @@ List<String> LABELS_EDIT_PLACEMENT = [
 ];
 
 class EditorPaddingSpacing extends StatefulWidget {
+  final Placement? placement;
+  final SpacingAttribute? spacingAttribute;
+  final PaddingAttribute? paddingAttribute;
   final Unit unit;
   final String title;
-  final List<TextEditingController> controllers;
+  final List<String> inputValues;
   final void Function(int index, String value) onChanged;
-  final void Function(Unit newUnit) onUnitDone;
+  final void Function(dynamic newData) onDone;
   final void Function()? reRenderFunction;
   const EditorPaddingSpacing(
       {super.key,
       required this.unit,
       required this.title,
-      required this.controllers,
+      required this.inputValues,
       required this.onChanged,
-      required this.onUnitDone,
-      this.reRenderFunction});
+      required this.onDone,
+      this.reRenderFunction,
+      this.spacingAttribute,
+      this.paddingAttribute,
+      this.placement});
 
   @override
   State<EditorPaddingSpacing> createState() => _EditorPaddingSpacingState();
@@ -43,12 +50,13 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
   late Size _size;
   late List<String> _labelInputs;
   late Unit _unit;
-  // late List<bool> listFocus;
-
+  Placement? _placement;
+  SpacingAttribute? _spacingAttribute;
+  PaddingAttribute? _paddingAttribute;
+   List<TextEditingController> controllers = [];
   @override
   void initState() {
     super.initState();
-
     if ([TITLE_EDIT_PLACEMENT].contains(widget.title)) {
       _labelInputs = LABELS_EDIT_PLACEMENT;
       _selectedLabel = _labelInputs[2];
@@ -56,9 +64,18 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
       _labelInputs = LABELS_PADDING_SPACING;
       _selectedLabel = _labelInputs[0];
     }
-    _unit = widget.unit;
-    widget.controllers[0].selection = TextSelection(
-        baseOffset: 0, extentOffset: widget.controllers[0].value.text.length);
+    _placement = widget.placement;
+    _spacingAttribute = widget.spacingAttribute;
+    _paddingAttribute = widget.paddingAttribute;
+    _unit = (_paddingAttribute?.unit) ??
+        (_spacingAttribute?.unit) ??
+        (_placement?.placementAttribute?.unit) ??
+        widget.unit;
+    widget.inputValues.forEach((element) {
+      controllers.add(TextEditingController(text: element));
+    });
+    controllers[0].selection = TextSelection(
+        baseOffset: 0, extentOffset: controllers[0].value.text.length);
   }
 
   @override
@@ -66,15 +83,13 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
     _size = MediaQuery.sizeOf(context);
     return Scaffold(
       backgroundColor: transparent,
-      resizeToAvoidBottomInset:
-          // false,
-          true,
+      resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
           Positioned.fill(child: GestureDetector(
             onTap: () {
-              for (int i = 0; i < widget.controllers.length; i++) {
-                if (widget.controllers[i].text.trim().isEmpty) {
+              for (int i = 0; i < controllers.length; i++) {
+                if (controllers[i].text.trim().isEmpty) {
                   widget.onChanged(i, "0.0");
                 }
               }
@@ -96,8 +111,53 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                           _unit = value;
                         });
                       },
-                      onDone: (value) {
-                        widget.onUnitDone(value);
+                      onDone: (newUnit) {
+                        if (_placement != null) {
+                          _placement = _placement?.copyWith(
+                              placementAttribute: PlacementAttribute(
+                                  horizontal: parseStringToDouble(
+                                      controllers[0].text.trim()),
+                                  vertical: parseStringToDouble(
+                                    controllers[1].text.trim(),
+                                  ),
+                                  top: parseStringToDouble(
+                                    controllers[2].text.trim(),
+                                  ),
+                                  left: parseStringToDouble(
+                                    controllers[3].text.trim(),
+                                  ),
+                                  right: parseStringToDouble(
+                                    controllers[4].text.trim(),
+                                  ),
+                                  bottom: parseStringToDouble(
+                                    controllers[5].text.trim(),
+                                  ),
+                                  unit: newUnit));
+                          widget.onDone(_placement);
+                        } else if (_paddingAttribute != null) {
+                          _paddingAttribute = _paddingAttribute?.copyWith(
+                            horizontalPadding: parseStringToDouble(
+                              controllers[0].text.trim(),
+                            ),
+                            verticalPadding: parseStringToDouble(
+                              controllers[1].text.trim(),
+                            ),
+                            unit: newUnit,
+                          );
+                          widget.onDone(_paddingAttribute);
+                        } else if (_spacingAttribute != null) {
+                          _spacingAttribute = _spacingAttribute?.copyWith(
+                            horizontalSpacing: parseStringToDouble(
+                              controllers[0].text.trim(),
+                            ),
+                            verticalSpacing: parseStringToDouble(
+                              controllers[1].text.trim(),
+                            ),
+                            unit: newUnit,
+                          );
+                          widget.onDone(_spacingAttribute);
+                        }
+                        popNavigator(context);
                       },
                     )
                   : const SizedBox(),
@@ -106,6 +166,10 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
         ],
       ),
     );
+  }
+
+  double parseStringToDouble(String value) {
+    return double.parse(value);
   }
 
   Widget _buildEditPlacementBody() {
@@ -136,7 +200,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                 SizedBox(
                   width: _size.width * 0.27,
                   child: _buildInput(
-                      widget.controllers[2],
+                      controllers[2],
                       (value) {
                         widget.onChanged(2, value);
                       },
@@ -158,7 +222,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                       SizedBox(
                         width: _size.width * 0.27,
                         child: _buildInput(
-                            widget.controllers[3],
+                            controllers[3],
                             (value) {
                               widget.onChanged(3, value);
                             },
@@ -184,7 +248,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                       SizedBox(
                         width: _size.width * 0.27,
                         child: _buildInput(
-                            widget.controllers[4],
+                            controllers[4],
                             (value) {
                               widget.onChanged(4, value);
                             },
@@ -203,7 +267,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                 SizedBox(
                   width: _size.width * 0.27,
                   child: _buildInput(
-                      widget.controllers[5],
+                      controllers[5],
                       (value) {
                         widget.onChanged(5, value);
                       },
@@ -258,7 +322,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                     SizedBox(
                       width: _size.width * 0.45,
                       child: _buildInput(
-                          widget.controllers[0],
+                          controllers[0],
                           (value) {
                             widget.onChanged(0, value);
                           },
@@ -297,7 +361,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                     SizedBox(
                       width: _size.width * 0.45,
                       child: _buildInput(
-                          widget.controllers[1],
+                          controllers[1],
                           (value) {
                             widget.onChanged(1, value);
                           },

@@ -6,7 +6,6 @@ import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/models/project.dart';
-import 'package:photo_to_pdf/screens/module_editor/bodies/body_add_cover.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/w_divider.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
@@ -137,7 +136,8 @@ Widget buildCupertinoInput(
     required String suffixValue,
     required Function() onTap,
     required bool isFocus,
-    required Function(String value)? onChanged}) {
+    required Function(String value)? onChanged,
+    String? placeholder}) {
   return Container(
     width: 200 / 390 * MediaQuery.sizeOf(context).width,
     decoration: BoxDecoration(
@@ -187,7 +187,7 @@ Widget buildCupertinoInput(
                 height: 16.71 / 14,
                 fontSize: 14)),
       ),
-      placeholder:  "Untitled",
+      placeholder: placeholder ?? "Untitled",
       placeholderStyle: const TextStyle(
           color: colorBlue,
           fontFamily: myCustomFont,
@@ -744,30 +744,30 @@ Widget buildDialogAlignment(BuildContext context, List<dynamic> datas,
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _buildDialogAlignmentItem(
-              context, datas[0]["mediaSrc"], datas[0]["title"], () {
+          _buildDialogAlignmentItem(context, datas[0]["alignment"].mediaSrc,
+              datas[0]["alignment"].title, () {
             onSelected!(0, datas[0]);
           }, datas[0]["isFocus"]),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _buildDialogAlignmentItem(
-                  context, datas[1]["mediaSrc"], datas[1]["title"], () {
+              _buildDialogAlignmentItem(context, datas[1]["alignment"].mediaSrc,
+                  datas[1]["alignment"].title, () {
                 onSelected!(1, datas[1]);
               }, datas[1]["isFocus"]),
-              _buildDialogAlignmentItem(
-                  context, datas[2]["mediaSrc"], datas[2]["title"], () {
+              _buildDialogAlignmentItem(context, datas[2]["alignment"].mediaSrc,
+                  datas[2]["alignment"].title, () {
                 onSelected!(2, datas[2]);
               }, datas[2]["isFocus"]),
-              _buildDialogAlignmentItem(
-                  context, datas[3]["mediaSrc"], datas[3]["title"], () {
+              _buildDialogAlignmentItem(context, datas[3]["alignment"].mediaSrc,
+                  datas[3]["alignment"].title, () {
                 onSelected!(3, datas[3]);
               }, datas[3]["isFocus"]),
             ],
           ),
-          _buildDialogAlignmentItem(
-              context, datas[4]["mediaSrc"], datas[4]["title"], () {
+          _buildDialogAlignmentItem(context, datas[4]["alignment"].mediaSrc,
+              datas[4]["alignment"].title, () {
             onSelected!(4, datas[4]);
           }, datas[4]["isFocus"]),
         ]),

@@ -6,25 +6,27 @@ import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/helpers/pick_media.dart';
 import 'package:photo_to_pdf/models/cover_photo.dart';
+import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 
-class AddCoverBody extends StatefulWidget {
-  final CoverPhoto coverPhoto;
+class CoverBody extends StatefulWidget {
+  final Project project;
   final Function(CoverPhoto newPhoto) onUpdatePhoto;
   final Function() reRenderFunction;
-  const AddCoverBody(
+  const CoverBody(
       {super.key,
-      required this.coverPhoto,
+      required this.project,
       required this.onUpdatePhoto,
       required this.reRenderFunction});
 
   @override
-  State<AddCoverBody> createState() => _AddCoverBodyState();
+  State<CoverBody> createState() => _CoverBodyState();
 }
 
-class _AddCoverBodyState extends State<AddCoverBody> {
+class _CoverBodyState extends State<CoverBody> {
+  late Project _project;
   late CoverPhoto _coverPhoto;
   final GlobalKey _frontKey = GlobalKey();
   final GlobalKey _backKey = GlobalKey();
@@ -32,7 +34,9 @@ class _AddCoverBodyState extends State<AddCoverBody> {
   @override
   void initState() {
     super.initState();
-    _coverPhoto = widget.coverPhoto;
+    _project = widget.project;
+    _coverPhoto =
+        _project.coverPhoto ?? CoverPhoto(backPhoto: null, frontPhoto: null);
   }
 
   void updatePhoto(String label, dynamic src) {
@@ -97,9 +101,12 @@ class _AddCoverBodyState extends State<AddCoverBody> {
               ),
             ),
           ),
-          buildBottomButton(context:context,onApply:  () {
-            widget.onUpdatePhoto(_coverPhoto);
-          },)
+          buildBottomButton(
+            context: context,
+            onApply: () {
+              widget.onUpdatePhoto(_coverPhoto);
+            },
+          )
         ],
       ),
     );

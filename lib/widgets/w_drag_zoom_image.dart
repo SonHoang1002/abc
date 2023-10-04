@@ -1,9 +1,7 @@
-import 'dart:developer';
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 
@@ -36,17 +34,11 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
   double lastBottom = 0.0;
   Size containerSize = Size.zero;
   final GlobalKey _placementFrame = GlobalKey();
-
+  GlobalKey dot1Key = GlobalKey();
   @override
   void initState() {
     super.initState();
 
-    _matrix4Notifiers.add(ValueNotifier(Matrix4.identity()));
-    _listPlacement.add(Placement(
-        width: 70,
-        height: 70,
-        alignment: Alignment.center,
-        offset: const Offset(0, 0)));
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       setState(() {
         containerSize =
@@ -75,145 +67,147 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
   }
 
   Widget _buildCustomArea() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-      child: Column(children: [
-        Expanded(
-            child: Stack(
-          children: [
-            Container(
-              alignment: Alignment.center,
-              child: Container(
-                width: _size.width * 0.75,
-                height: _size.width * 0.85,
-                decoration: BoxDecoration(color: Colors.white, boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    spreadRadius: 0.5,
-                    blurRadius: 5,
-                    offset: const Offset(0, 1),
-                  ),
-                ]),
-              ),
+    return Stack(
+      alignment: Alignment.center,
+        children: [
+      Container(
+        alignment: Alignment.center,
+        child: Container(
+          width: _size.width * LIST_RATIO_PLACEMENT_BOARD[0],
+          height: _size.width * LIST_RATIO_PLACEMENT_BOARD[1],
+          decoration: BoxDecoration(color: Colors.white, boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              spreadRadius: 0.5,
+              blurRadius: 5,
+              offset: const Offset(0, 1),
             ),
-            Container(
-              alignment: Alignment.center,
-              child: Container(
-                width: _size.width * 0.8,
-                height: _size.width * 0.9,
-                alignment: Alignment.center,
-                padding: const EdgeInsets.only(left: 3),
-                margin: const EdgeInsets.only(top: 5),
-                child: Stack(
-                  key: _placementFrame,
-                  children: _listPlacement.map<Widget>(
-                    (e) {
-                      final index = _listPlacement.indexOf(e);
-                      return GestureDetector(
-                        onPanUpdate: (details) {
-                          _listPlacement[index].offset = _listPlacement[index]
-                              .offset
-                              .translate(details.delta.dx, details.delta.dy);
-                          //left
-                          if (_listPlacement[index].offset.dx <= 0) {
-                            _listPlacement[index].offset =
-                                Offset(0, _listPlacement[index].offset.dy);
-                          }
-                          //top
-                          if (_listPlacement[index].offset.dy <= 0) {
-                            _listPlacement[index].offset =
-                                Offset(_listPlacement[index].offset.dx, 0);
-                          }
-                          //right
-                          if (_listPlacement[index].offset.dx +
-                                  _listPlacement[index].width >=
-                              _size.width * 0.75) {
-                            _listPlacement[index].offset = Offset(
-                                _size.width * 0.75 -
-                                    _listPlacement[index].width,
-                                _listPlacement[index].offset.dy);
-                          }
-                          //bottom
-                          if (_listPlacement[index].offset.dy +
-                                  _listPlacement[index].height >=
-                              _size.width * 0.85) {
-                            _listPlacement[index].offset = Offset(
-                                _listPlacement[index].offset.dx,
-                                _size.width * 0.85 -
-                                    _listPlacement[index].height);
-                          }
-                          widget.updatePlacement(_listPlacement);
-                          setState(() {});
-                        },
-                        onTap: () {
-                          widget.onFocusPlacement != null
-                              ? widget.onFocusPlacement!(_listPlacement[index],
-                                  _matrix4Notifiers[index])
-                              : null;
-                        },
-                        onPanStart: (details) {
-                          widget.onFocusPlacement != null
-                              ? widget.onFocusPlacement!(_listPlacement[index],
-                                  _matrix4Notifiers[index])
-                              : null;
-                        },
-                        child: AnimatedBuilder(
-                          animation: _matrix4Notifiers[index],
-                          builder: (context, child) {
-                            return Stack(
-                              children: [
-                                Positioned(
-                                  top: _listPlacement[index].offset.dy,
-                                  left: _listPlacement[index].offset.dx,
-                                  child: Stack(children: [
-                                    Container(
-                                      margin: const EdgeInsets.all(7),
-                                      child: Image.asset(
-                                        "${pathPrefixImage}image_demo.png",
-                                        fit: BoxFit.cover,
-                                        height: _listPlacement[index].height,
-                                        width: _listPlacement[index].width,
-                                      ),
-                                    ),
-                                    Positioned.fill(
-                                        child: Center(
-                                      child: Container(
-                                        height: 25,
-                                        width: 25,
-                                        decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(12.5),
-                                            color: colorBlue),
-                                        child: Center(
-                                            child: WTextContent(
-                                          value: index.toString(),
-                                          textColor: colorWhite,
-                                        )),
-                                      ),
-                                    )),
-                                    widget.seletedPlacement ==
-                                            _listPlacement[index]
-                                        ? Positioned.fill(
-                                            child:
-                                                _buildPanGestureWidget(index))
-                                        : const SizedBox()
-                                  ]),
-                                ),
-                              ],
-                            );
-                          },
+          ]),
+        ),
+      ),
+      Container(
+        alignment: Alignment.center,
+        width: _size.width * LIST_RATIO_PLACEMENT_BOARD[0]+15,
+        height: _size.width * LIST_RATIO_PLACEMENT_BOARD[1]+15,
+        child: Stack(
+          key: _placementFrame,
+          children: _listPlacement.map<Widget>(
+            (e) {
+              final index = _listPlacement.indexOf(e);
+              return GestureDetector(
+                onPanUpdate: (details) {
+                  _listPlacement[index].offset = _listPlacement[index]
+                      .offset
+                      .translate(details.delta.dx, details.delta.dy);
+                  //left
+                  if (_listPlacement[index].offset.dx <= 0) {
+                    _listPlacement[index].offset =
+                        Offset(0, _listPlacement[index].offset.dy);
+                  }
+                  //top
+                  if (_listPlacement[index].offset.dy <= 0) {
+                    _listPlacement[index].offset =
+                        Offset(_listPlacement[index].offset.dx, 0);
+                  }
+                  //right
+                  if (_listPlacement[index].offset.dx +
+                          _listPlacement[index].width >=
+                      _size.width * LIST_RATIO_PLACEMENT_BOARD[0]) {
+                    _listPlacement[index].offset = Offset(
+                        _size.width * LIST_RATIO_PLACEMENT_BOARD[0] -
+                            _listPlacement[index].width,
+                        _listPlacement[index].offset.dy);
+                  }
+                  //bottom
+                  if (_listPlacement[index].offset.dy +
+                          _listPlacement[index].height >=
+                      _size.width * LIST_RATIO_PLACEMENT_BOARD[1]) {
+                    _listPlacement[index].offset = Offset(
+                        _listPlacement[index].offset.dx,
+                        _size.width * LIST_RATIO_PLACEMENT_BOARD[1] -
+                            _listPlacement[index].height);
+                  }
+                  widget.updatePlacement(_listPlacement);
+                  setState(() {});
+                },
+                onTap: () {
+                  widget.onFocusPlacement != null
+                      ? widget.onFocusPlacement!(
+                          _listPlacement[index],
+                          _matrix4Notifiers[index])
+                      : null;
+                },
+                onPanStart: (details) {
+                  widget.onFocusPlacement != null
+                      ? widget.onFocusPlacement!(
+                          _listPlacement[index],
+                          _matrix4Notifiers[index])
+                      : null;
+                },
+                child: AnimatedBuilder(
+                  animation: _matrix4Notifiers[index],
+                  builder: (context, child) {
+                    return Stack(
+                      children: [
+                        Positioned(
+                          top: _listPlacement[index].offset.dy,
+                          left: _listPlacement[index].offset.dx,
+                          child: Stack(children: [
+                            Container(
+                              margin: const EdgeInsets.all(7),
+                              child: Image.asset(
+                                "${pathPrefixImage}image_demo.png",
+                                fit: BoxFit.cover,
+                                height: _listPlacement[index].height,
+                                width: _listPlacement[index].width,
+                              ),
+                            ),
+                            Positioned.fill(
+                                child: Center(
+                              child: Container(
+                                height: 25,
+                                width: 25,
+                                decoration: BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.circular(12.5),
+                                    color: colorBlue),
+                                child: Center(
+                                    child: WTextContent(
+                                  value: index.toString(),
+                                  textColor: colorWhite,
+                                )),
+                              ),
+                            )),
+                            widget.seletedPlacement ==
+                                    _listPlacement[index]
+                                ? Positioned.fill(
+                                    child:
+                                        _buildPanGestureWidget(index))
+                                : const SizedBox()
+                          ]),
                         ),
-                      );
-                    },
-                  ).toList(),
+                      ],
+                    );
+                  },
                 ),
-              ),
-            )
-          ],
-        )),
-        const SizedBox(height: 10),
-      ]),
-    );
+              );
+            },
+          ).toList(),
+        ),
+      )
+        ],
+      );
+  }
+
+  double limitLeft(int index) {
+    return ((_size.width * (1 - LIST_RATIO_PLACEMENT_BOARD[0]) / 2) -
+        (_listPlacement[index].width < 30 ? 5 : 15) / 2);
+  }
+
+  double limitRight(int index) {
+    return ((_size.width * LIST_RATIO_PLACEMENT_BOARD[0] +
+            _size.width * (1 - LIST_RATIO_PLACEMENT_BOARD[0]) / 2) +
+        (_listPlacement[index].width < 30 ? 5 : 15) / 2);
   }
 
   Widget _buildPanGestureWidget(int index) {
@@ -240,25 +234,38 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                   _listPlacement[index].width < 30 ? 5 : 15,
                   margin: const EdgeInsets.only(bottom: 10),
                   onPanUpdate: (details) {
+                    final box =
+                        dot1Key.currentContext?.findRenderObject() as RenderBox;
+
                     _listPlacement[index].offset =
                         _listPlacement[index].offset + details.delta;
+
+                    // if (box.localToGlobal(const Offset(0, 0)).dx >
+                    //     limitLeft(index)) {
+                    //   _listPlacement[index].offset = Offset(
+                    //       _listPlacement[index].offset.dx,
+                    //       (_listPlacement[index].offset + details.delta).dy);
+                    // } else {
+                    //   _listPlacement[index].offset =
+                    //       _listPlacement[index].offset + details.delta;
+                    // }
+                    if (checkMinArea(index) &&
+                        _listPlacement[index].width > details.delta.dx) {
+                      // if (box.localToGlobal(const Offset(0, 0)).dx >
+                      //     limitLeft(index)) {
+                      _listPlacement[index].width -= details.delta.dx;
+                      // }
+                    }
+
+                    if (checkMinArea(index) &&
+                        _listPlacement[index].height > details.delta.dy) {
+                      _listPlacement[index].height -= details.delta.dy;
+                    }
                     widget.updatePlacement(_listPlacement);
-                    setState(() {
-                      if (checkMinArea(index) &&
-                          _listPlacement[index].width > details.delta.dx) {
-                        _listPlacement[index].width -= details.delta.dx;
-                      }
-                      if (checkMinArea(index) &&
-                          _listPlacement[index].height > details.delta.dy) {
-                        _listPlacement[index].height -= details.delta.dy;
-                      }
-                    });
+                    setState(() {});
                   },
-                  onPanStart: (details) {
-                    setState(() {
-                      _listPlacement[index].alignment = Alignment.center;
-                    });
-                  },
+                  key: dot1Key,
+                  onPanStart: (details) {},
                 ),
                 // dot top center
                 _buildDotDrag(
@@ -279,9 +286,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                   onPanStart: (details) {
                     lastBottom = _listPlacement[index].height +
                         _listPlacement[index].offset.dy;
-                    setState(() {
-                      _listPlacement[index].alignment = Alignment.bottomCenter;
-                    });
+                    setState(() {});
                   },
                 ),
                 // dot top right
@@ -300,11 +305,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                     }
                     setState(() {});
                   },
-                  onPanStart: (p0) {
-                    setState(() {
-                      _listPlacement[index].alignment = Alignment.center;
-                    });
-                  },
+                  onPanStart: (p0) {},
                 )
               ],
             ),
@@ -328,11 +329,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                     setState(() {});
                     // widget.updatePlacement(index,_listPlacement[index].copyWith(offset: _listPlacement[index].offset+details.delta));
                   },
-                  onPanStart: (details) {
-                    setState(() {
-                      _listPlacement[index].alignment = Alignment.centerRight;
-                    });
-                  },
+                  onPanStart: (details) {},
                 ),
                 // dot center right
                 _buildDotDrag(
@@ -344,11 +341,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                       _listPlacement[index].width += details.delta.dx;
                     });
                   },
-                  onPanStart: (details) {
-                    setState(() {
-                      _listPlacement[index].alignment = Alignment.centerLeft;
-                    });
-                  },
+                  onPanStart: (details) {},
                 )
               ],
             ),
@@ -372,11 +365,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                     _listPlacement[index].height += details.delta.dy;
                     setState(() {});
                   },
-                  onPanStart: (details) {
-                    setState(() {
-                      _listPlacement[index].alignment = Alignment.center;
-                    });
-                  },
+                  onPanStart: (details) {},
                 ),
                 // dot bottom center
                 _buildDotDrag(
@@ -388,11 +377,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                       _listPlacement[index].height += details.delta.dy;
                     });
                   },
-                  onPanStart: (details) {
-                    setState(() {
-                      _listPlacement[index].alignment = Alignment.topCenter;
-                    });
-                  },
+                  onPanStart: (details) {},
                 ),
                 // dot bottom right
                 _buildDotDrag(
@@ -405,11 +390,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                       _listPlacement[index].height += details.delta.dy;
                     });
                   },
-                  onPanStart: (details) {
-                    setState(() {
-                      _listPlacement[index].alignment = Alignment.center;
-                    });
-                  },
+                  onPanStart: (details) {},
                 )
               ],
             ),
@@ -423,8 +404,10 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
       {Function(DragUpdateDetails details)? onPanUpdate,
       void Function(DragStartDetails)? onPanStart,
       Function()? onTap,
-      EdgeInsets? margin}) {
+      EdgeInsets? margin,
+      Key? key}) {
     return GestureDetector(
+      key: key,
       onPanUpdate: (details) {
         onPanUpdate!(details);
         widget.updatePlacement(_listPlacement);

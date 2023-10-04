@@ -9,26 +9,29 @@ import 'package:photo_to_pdf/widgets/w_text_content.dart';
 import 'package:photo_to_pdf/widgets/w_unit_selections.dart';
 
 class PaperBody extends StatefulWidget {
+  final Project project;
   final Function() reRenderFunction;
   final int? indexPageSizeSelectionWidget;
   final dynamic paperConfig;
-  final List<String> values;
+  // final List<String> values;
   final bool pageSizeIsPortrait;
-  final Function(PaperAttribute paperAttribute, bool pageSizeIsPortrait) onDone;
+  final Function(PaperAttribute paperAttribute, bool pageSizeIsPortrait) onApply;
   const PaperBody(
       {super.key,
+      required this.project,
       required this.reRenderFunction,
       required this.indexPageSizeSelectionWidget,
       required this.paperConfig,
-      required this.values,
+      // required this.values,
       required this.pageSizeIsPortrait,
-      required this.onDone});
+      required this.onApply});
 
   @override
   State<PaperBody> createState() => _PaperBodyState();
 }
 
 class _PaperBodyState extends State<PaperBody> {
+  late Project _project;
   int? _indexPageSizeSelectionWidget;
   dynamic _paperConfig;
   final TextEditingController _paperSizeWidthController =
@@ -38,10 +41,14 @@ class _PaperBodyState extends State<PaperBody> {
   late bool _pageSizeIsPortrait = true;
   @override
   void initState() {
+    _project = widget.project;
+    if (_project.paper == null) {
+      _project = _project.copyWith(paper: LIST_PAGE_SIZE[5]);
+    }
     _indexPageSizeSelectionWidget = widget.indexPageSizeSelectionWidget;
     _paperConfig = widget.paperConfig;
-    _paperSizeWidthController.text = widget.values[0];
-    _paperSizeHeightController.text = widget.values[1];
+    _paperSizeWidthController.text = (_project.paper?.width).toString();
+    _paperSizeHeightController.text = (_project.paper?.height).toString();
     _pageSizeIsPortrait = widget.pageSizeIsPortrait;
     super.initState();
   }
@@ -111,6 +118,7 @@ class _PaperBodyState extends State<PaperBody> {
                             context: context,
                             controller: _paperSizeWidthController,
                             title: "Width",
+                            placeholder: "",
                             onTap: () {
                               setState(() {
                                 _indexPageSizeSelectionWidget = 1;
@@ -120,7 +128,7 @@ class _PaperBodyState extends State<PaperBody> {
                             onChanged: (value) {
                               _paperSizeWidthController.text = value;
                               if (_paperSizeWidthController.text.trim() !=
-                                  _paperConfig['content'].height) {
+                                  _paperConfig['content'].width) {
                                 setState(() {
                                   _paperConfig['content'] = LIST_PAGE_SIZE[7];
                                 });
@@ -137,6 +145,7 @@ class _PaperBodyState extends State<PaperBody> {
                             context: context,
                             controller: _paperSizeHeightController,
                             title: "Height",
+                            placeholder: "",
                             onTap: () {
                               setState(() {
                                 _indexPageSizeSelectionWidget = 2;
@@ -145,8 +154,8 @@ class _PaperBodyState extends State<PaperBody> {
                             },
                             onChanged: (value) {
                               _paperSizeHeightController.text = value;
-                              if (_paperSizeWidthController.text.trim() !=
-                                  _paperConfig['content'].width) {
+                              if (_paperSizeHeightController.text.trim() !=
+                                  _paperConfig['content'].height) {
                                 _paperConfig['content'] = LIST_PAGE_SIZE[7];
                               }
                               setState(() {});
@@ -157,11 +166,11 @@ class _PaperBodyState extends State<PaperBody> {
                           height: 10,
                         ),
                         // orientation
-                        _overWHValue()
-                            ? const SizedBox()
-                            : _buildOrientation(() {
-                                widget.reRenderFunction();
-                              })
+                        // _overWHValue() ||
+
+                        _buildOrientation(() {
+                          widget.reRenderFunction();
+                        })
                       ],
                     ),
                   ),
@@ -196,8 +205,7 @@ class _PaperBodyState extends State<PaperBody> {
                                   child: Container(
                                       alignment: Alignment.center,
                                       child: WTextContent(
-                                        value:
-                                            "${_paperSizeWidthController.text.trim()}x${_paperSizeHeightController.text.trim()} ${_paperConfig['content'].unit.value}",
+                                        value: _renderPreviewContent(),
                                         textSize: 16,
                                         textLineHeight: 19.09,
                                         textFontWeight: FontWeight.w600,
@@ -209,8 +217,7 @@ class _PaperBodyState extends State<PaperBody> {
                               : Container(
                                   alignment: Alignment.topCenter,
                                   child: WTextContent(
-                                    value:
-                                        "${_paperSizeWidthController.text.trim()}x${_paperSizeHeightController.text.trim()}${_paperConfig['content'].unit.value}",
+                                    value: _renderPreviewContent(),
                                     textSize: 16,
                                     textLineHeight: 19.09,
                                     textFontWeight: FontWeight.w600,
@@ -227,29 +234,26 @@ class _PaperBodyState extends State<PaperBody> {
               buildBottomButton(
                   context: context,
                   onApply: () {
-                    var height;
-                    var width;
-                    if (_paperSizeWidthController.text.trim().isEmpty) {
-                      height = 0.0;
+                    final widthValue = _paperSizeWidthController.text.trim();
+                    final heightValue = _paperSizeHeightController.text.trim();
+                    if (widthValue.isEmpty ||
+                        double.parse(widthValue) == 0.0 ||
+                        heightValue.isEmpty ||
+                        double.parse(heightValue) == 0.0) {
+                      widget.onApply(
+                          widget.paperConfig['content'], _pageSizeIsPortrait);
                     } else {
-                      height =
-                          double.parse(_paperSizeWidthController.text.trim());
+                      widget.onApply(
+                          PaperAttribute(
+                              title: _paperConfig['content'].title,
+                              width: double.parse(widthValue),
+                              height: double.parse(heightValue),
+                              unit: _paperConfig['content'].unit),
+                          _pageSizeIsPortrait);
                     }
-                    if (_paperSizeHeightController.text.trim().isEmpty) {
-                      width = 0.0;
-                    } else {
-                      width =
-                          double.parse(_paperSizeHeightController.text.trim());
-                    }
-                    widget.onDone(
-                        PaperAttribute(
-                            title: _paperConfig['content'].title,
-                            width: width,
-                            height: height,
-                            unit: _paperConfig['content'].unit),
-                        _pageSizeIsPortrait);
+                  },onCancel: () {
                     popNavigator(context);
-                  })
+                  },)
             ],
           ),
           MediaQuery.of(context).viewInsets.bottom > 0.0
@@ -266,7 +270,24 @@ class _PaperBodyState extends State<PaperBody> {
                         });
                         widget.reRenderFunction();
                       },
-                      onDone: (value) {},
+                      onDone: (value) {
+                        FocusManager.instance.primaryFocus!.unfocus();
+                        final widthValue =
+                            _paperSizeWidthController.text.trim();
+                        final heightValue =
+                            _paperSizeHeightController.text.trim();
+                        if (widthValue.isEmpty ||
+                            double.parse(widthValue) == 0.0) {
+                          _paperSizeWidthController.text = "1.0";
+                        }
+                        if (heightValue.isEmpty ||
+                            double.parse(heightValue) == 0.0) {
+                          _paperSizeHeightController.text = "1.0";
+                        }
+
+                        setState(() {});
+                        widget.reRenderFunction();
+                      },
                     )
                   ],
                 )
@@ -277,8 +298,20 @@ class _PaperBodyState extends State<PaperBody> {
   }
 
   bool _overWHValue() {
-    return (double.parse(_paperSizeHeightController.text.trim()) > 50.0 ||
-        double.parse(_paperSizeWidthController.text.trim()) > 50.0);
+    if (_paperSizeWidthController.text.trim().isEmpty ||
+        _paperSizeHeightController.text.trim().isEmpty) {
+      return true;
+    }
+    return ((double.parse(_paperSizeHeightController.text.trim()) > 50.0) ||
+        (double.parse(_paperSizeWidthController.text.trim()) > 50.0));
+  }
+
+  String _renderPreviewContent() {
+    if (_paperSizeWidthController.text.trim().isEmpty ||
+        _paperSizeHeightController.text.trim().isEmpty) {
+      return "--";
+    }
+    return "${_paperSizeWidthController.text.trim()}x${_paperSizeHeightController.text.trim()} ${_paperConfig['content'].unit.value}";
   }
 
   double _renderPreviewHeight() {
@@ -316,63 +349,65 @@ class _PaperBodyState extends State<PaperBody> {
   Widget _buildOrientation(
     Function() rerenderFunc,
   ) {
-    return Flexible(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        height: 70,
-        width: 200,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(15),
-          color: Theme.of(context).cardColor,
-        ),
-        child: Row(children: [
-          Container(
-            constraints: const BoxConstraints(minWidth: 50, maxWidth: 70),
-            padding: const EdgeInsets.only(left: 5),
-            child: WTextContent(
-              value: "Orientation",
-              textSize: 14,
-              textLineHeight: 16.71,
-              textColor: Theme.of(context).textTheme.bodyMedium!.color,
-              textFontWeight: FontWeight.w600,
-            ),
-          ),
-          WSpacer(
-            width: 10,
-          ),
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                buildPageSizeOrientationItem(
-                    mediaSrc: "${pathPrefixIcon}icon_portrait.png",
-                    isSelected: _pageSizeIsPortrait,
-                    onTap: () {
-                      setState(() {
-                        if (_pageSizeIsPortrait == false) {
-                          _tranferValuePageSize();
-                        }
-                        _pageSizeIsPortrait = true;
-                      });
-                      rerenderFunc();
-                    }),
-                buildPageSizeOrientationItem(
-                    mediaSrc: "${pathPrefixIcon}icon_landscape.png",
-                    isSelected: !_pageSizeIsPortrait,
-                    onTap: () {
-                      setState(() {
-                        if (_pageSizeIsPortrait == true) {
-                          _tranferValuePageSize();
-                        }
-                        _pageSizeIsPortrait = false;
-                      });
-                      rerenderFunc();
-                    }),
-              ],
+    return _paperConfig['content'].title != "Custom" && !_overWHValue()
+        ? Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              height: 70,
+              width: 200,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                color: Theme.of(context).cardColor,
+              ),
+              child: Row(children: [
+                Container(
+                  constraints: const BoxConstraints(minWidth: 50, maxWidth: 70),
+                  padding: const EdgeInsets.only(left: 5),
+                  child: WTextContent(
+                    value: "Orientation",
+                    textSize: 14,
+                    textLineHeight: 16.71,
+                    textColor: Theme.of(context).textTheme.bodyMedium!.color,
+                    textFontWeight: FontWeight.w600,
+                  ),
+                ),
+                WSpacer(
+                  width: 10,
+                ),
+                Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      buildPageSizeOrientationItem(
+                          mediaSrc: "${pathPrefixIcon}icon_portrait.png",
+                          isSelected: _pageSizeIsPortrait,
+                          onTap: () {
+                            setState(() {
+                              if (_pageSizeIsPortrait == false) {
+                                _tranferValuePageSize();
+                              }
+                              _pageSizeIsPortrait = true;
+                            });
+                            rerenderFunc();
+                          }),
+                      buildPageSizeOrientationItem(
+                          mediaSrc: "${pathPrefixIcon}icon_landscape.png",
+                          isSelected: !_pageSizeIsPortrait,
+                          onTap: () {
+                            setState(() {
+                              if (_pageSizeIsPortrait == true) {
+                                _tranferValuePageSize();
+                              }
+                              _pageSizeIsPortrait = false;
+                            });
+                            rerenderFunc();
+                          }),
+                    ],
+                  ),
+                )
+              ]),
             ),
           )
-        ]),
-      ),
-    );
+        : SizedBox();
   }
 }
