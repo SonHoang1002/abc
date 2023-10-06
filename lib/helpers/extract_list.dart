@@ -22,6 +22,6 @@ List extractList(int number, List list) {
     }
     result.add(sublist);
   }
-
+print("result result ${result}");
   return result;
 }

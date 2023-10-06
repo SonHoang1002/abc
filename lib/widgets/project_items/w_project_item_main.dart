@@ -7,6 +7,7 @@ import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/helpers/render_boxfit.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/screens/module_editor/preview.dart';
+import 'package:photo_to_pdf/widgets/project_items/w_project_ratio.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 import "package:provider/provider.dart" as pv;
@@ -15,7 +16,7 @@ class WProjectItemEditor extends ConsumerWidget {
   final Project project;
   final bool isFocusByLongPress;
 
-  /// index og image on project
+  /// index of image on project
   final int indexImage;
   final Function? onRemove;
   final String? title;
@@ -56,6 +57,7 @@ class WProjectItemEditor extends ConsumerWidget {
             context,
             Preview(
               project: project,
+              indexPage: indexImage,
             ));
       },
       child: Container(
@@ -83,8 +85,8 @@ class WProjectItemEditor extends ConsumerWidget {
                     Container(
                       padding: _getPaddingAtribute(),
                       alignment: project.alignmentAttribute?.alignmentMode,
-                      child: buildLayoutMedia(
-                          indexImage, project, layoutExtractList,
+                      child: buildLayoutMedia(indexImage, project,
+                          layoutExtractList, LIST_RATIO_PROJECT_ITEM,
                           spacingHorizontal: _getSpacingHorizontalValue(),
                           spacingVertical: _getSpacingVerticalValue()),
                     ),
@@ -121,188 +123,5 @@ class WProjectItemEditor extends ConsumerWidget {
         ),
       ),
     );
-  }
-}
-
-Widget buildLayoutMedia(
-    int indexImage, Project project, List<dynamic>? layoutExtractList,
-    {double spacingVertical = 3, double spacingHorizontal = 3}) {
-  if (project.placements != null && project.placements!.isNotEmpty) {
-    return PlacementLayoutMedia(
-      indexImage: indexImage,
-      project: project,
-      layoutExtractList: layoutExtractList,
-    );
-  } else {
-    if (project.layoutIndex == 0 && layoutExtractList == null) {
-      return _buildImageWidget(project, project.listMedia[indexImage]);
-    } else if (layoutExtractList != null && layoutExtractList.isNotEmpty) {
-      if (project.layoutIndex == 1) {
-        return Column(
-          children: [
-            Flexible(
-                child: _buildImageWidget(
-              project,
-              layoutExtractList[0],
-              height: 150,
-              width: 150,
-            )),
-            WSpacer(
-              height: spacingVertical,
-            ),
-            Flexible(
-                child: _buildImageWidget(
-              project,
-              layoutExtractList[1],
-              height: 150,
-              width: 150,
-            )),
-          ],
-        );
-      } else if (project.layoutIndex == 2) {
-        return Flex(
-          direction: Axis.vertical,
-          children: [
-            Flexible(
-                child: _buildImageWidget(
-              project,
-              layoutExtractList[0],
-              width: 150,
-            )),
-            WSpacer(height: spacingVertical),
-            Flex(
-              direction: Axis.horizontal,
-              children: [
-                Flexible(
-                    child: _buildImageWidget(
-                  project,
-                  layoutExtractList[1],
-                )),
-                WSpacer(
-                  width: spacingHorizontal,
-                ),
-                Flexible(
-                  child: _buildImageWidget(project, layoutExtractList[2]),
-                ),
-              ],
-            )
-          ],
-        );
-      } else {
-        return Flex(
-          direction: Axis.vertical,
-          children: [
-            Flex(
-              direction: Axis.horizontal,
-              children: [
-                Flexible(
-                    child: _buildImageWidget(project, layoutExtractList[0])),
-                WSpacer(width: spacingHorizontal),
-                Flexible(
-                  child: _buildImageWidget(project, layoutExtractList[1]),
-                ),
-              ],
-            ),
-            WSpacer(height: spacingVertical),
-            Flexible(
-                child: _buildImageWidget(
-              project,
-              layoutExtractList[2],
-              width: 150,
-            )),
-          ],
-        );
-      }
-    } else {
-      return const SizedBox();
-    }
-  }
-}
-
-Widget _buildImageWidget(Project project, dynamic imageData,
-    {double? width, double? height}) {
-  final fit = renderImageBoxfit(project.resizeAttribute);
-  if (imageData == null) {
-    return Container();
-    // Image.asset(
-    //   "${pathPrefixImage}blank_page.jpg",
-    //   fit: fit,
-    //   height: height,
-    //   width: width,
-    // );
-  } else {
-    if (imageData is File) {
-      return Image.file(
-        imageData,
-        fit: fit,
-        height: height,
-        width: width,
-      );
-    } else {
-      return Image.asset(
-        imageData,
-        fit: fit,
-        height: height,
-        width: width,
-      );
-    }
-  }
-}
-
-class PlacementLayoutMedia extends StatelessWidget {
-  final int indexImage;
-  final Project project;
-  final List<dynamic>? layoutExtractList;
-  const PlacementLayoutMedia(
-      {super.key,
-      required this.project,
-      required this.indexImage,
-      required this.layoutExtractList});
-
-  double getDrawBoardWithPreviewBoardHeight() {
-    return LIST_RATIO_PROJECT_ITEM[0] / LIST_RATIO_PLACEMENT_BOARD[0];
-  }
-
-  double getDrawBoardWithPreviewBoardWidth() {
-    return LIST_RATIO_PROJECT_ITEM[1] / LIST_RATIO_PLACEMENT_BOARD[1];
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: layoutExtractList!.map((e) {
-        final index = layoutExtractList!.indexOf(e);
-        return Positioned(
-          top: getPositionWithTop(index),
-          left: getPositionWithLeft(index),
-          child: _buildImageWidget(
-            project,
-            layoutExtractList![index],
-            height: getRealHeight(index),
-            width: getRealWidth(index),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  double getRealHeight(int extractIndex) {
-    return getDrawBoardWithPreviewBoardHeight() *
-        (project.placements![extractIndex].height);
-  }
-
-  double getRealWidth(int extractIndex) {
-    return getDrawBoardWithPreviewBoardWidth() *
-        (project.placements![extractIndex].width);
-  }
-
-  double getPositionWithTop(int extractIndex) {
-    return (project.placements![extractIndex].offset.dy) *
-        getDrawBoardWithPreviewBoardHeight();
-  }
-
-  double getPositionWithLeft(int extractIndex) {
-    return (project.placements![extractIndex].offset.dx) *
-        getDrawBoardWithPreviewBoardWidth();
   }
 }

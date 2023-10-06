@@ -160,9 +160,9 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
         );
       } else {
         return ReorderableGridView.count(
-          padding: const EdgeInsets.only(top: 10),
+          padding: const EdgeInsets.only(top: 10, bottom: 120, right: 20),
           shrinkWrap: true,
-          crossAxisSpacing: 10,
+          crossAxisSpacing: 5,
           mainAxisSpacing: 10,
           crossAxisCount: 2,
           onReorder: (oldIndex, newIndex) {
@@ -182,22 +182,27 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
           },
           children: _listProject.map((e) {
             final index = _listProject.indexOf(e);
-            return WProjectItemHome(
+            return Container(
               key: ValueKey(_listProject[index]),
-              project: _listProject[index],
-              isFocusByLongPress: _isFocusProjectList,
-              index: index,
-              layoutExtractList: _listProject[index].layoutIndex == 0 ||
-                      (_listProject[index].layoutIndex != 0 &&
-                          _listProject[index].listMedia.isEmpty)
-                  ? null
-                  : extractList(
-                      getLayoutImageNumber(_listProject[index].layoutIndex),
-                      _listProject[index].listMedia)[0],
-              onTap: () {
-                pushCustomMaterialPageRoute(
-                    context, Editor(project: _listProject[index]));
-              },
+              // padding: EdgeInsets.all(30),
+              child: WProjectItemHome(
+                key: ValueKey(_listProject[index]),
+                project: _listProject[index],
+                isFocusByLongPress: _isFocusProjectList,
+                index: index,
+                layoutExtractList: _listProject[index].useAvailableLayout &&
+                            _listProject[index].layoutIndex == 0 ||
+                        (_listProject[index].layoutIndex != 0 &&
+                            _listProject[index].listMedia.isEmpty)
+                    ? null
+                    : extractList(
+                        getLayoutImageNumber(_listProject[index].layoutIndex),
+                        _listProject[index].listMedia)[0],
+                onTap: () {
+                  pushCustomMaterialPageRoute(
+                      context, Editor(project: _listProject[index]));
+                },
+              ),
             );
           }).toList(),
         );

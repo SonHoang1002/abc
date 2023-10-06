@@ -219,17 +219,18 @@ class _LayoutBodyState extends State<LayoutBody> {
           onApply: () {
             if (_segmentCurrentIndex == 0) {
               _project = _project.copyWith(
-                layoutIndex: _listLayoutStatus
-                    .indexWhere((element) => element['isFocus'] == true),
-                resizeAttribute: _resizeModeSelectedValue,
-                alignmentAttribute: _listAlignment
-                    .where((element) => element['isFocus'] == true)
-                    .toList()
-                    .first['alignment'],
-                backgroundColor: _currentLayoutColor,
-                paddingAttribute: _paddingOptions,
-                spacingAttribute: _spacingOptions,
-              );
+                  layoutIndex: _listLayoutStatus
+                      .indexWhere((element) => element['isFocus'] == true),
+                  resizeAttribute: _resizeModeSelectedValue,
+                  alignmentAttribute: _listAlignment
+                      .where((element) => element['isFocus'] == true)
+                      .toList()
+                      .first['alignment'],
+                  backgroundColor: _currentLayoutColor,
+                  paddingAttribute: _paddingOptions,
+                  spacingAttribute: _spacingOptions,
+                  placements: _listPlacement,
+                  useAvailableLayout: true);
             } else if (_segmentCurrentIndex == 1) {
               _project = _project.copyWith(
                   layoutIndex: null,
@@ -239,7 +240,8 @@ class _LayoutBodyState extends State<LayoutBody> {
                       .toList()
                       .first['alignment'],
                   backgroundColor: _currentLayoutColor,
-                  placements: _listPlacement);
+                  placements: _listPlacement,
+                  useAvailableLayout: false);
             }
             widget.onApply(_project);
             // layout
@@ -367,7 +369,14 @@ class _LayoutBodyState extends State<LayoutBody> {
                                   _paddingOptions.horizontalPadding.toString(),
                                   _paddingOptions.verticalPadding.toString()
                                 ],
-                                onChanged: (index, value) {},
+                                onChanged: (index, value) {
+                                  // if (index == 0) {
+                                  //   _paddingHorizontalController.text = value;
+                                  // }
+                                  // if (index == 1) {
+                                  //   _paddingVerticalController.text = value;
+                                  // }
+                                },
                                 onDone: (newPaddingAttribute) {
                                   setState(() {
                                     _paddingOptions = newPaddingAttribute;
@@ -394,7 +403,14 @@ class _LayoutBodyState extends State<LayoutBody> {
                                         .toString(),
                                     _spacingOptions.verticalSpacing.toString(),
                                   ],
-                                  onChanged: (index, value) {},
+                                  onChanged: (index, value) {
+                                    // if (index == 0) {
+                                    //   _spacingHorizontalController.text = value;
+                                    // }
+                                    // if (index == 1) {
+                                    //   _spacingVerticalController.text = value;
+                                    // }
+                                  },
                                   onDone: (newSpacingAttribute) {
                                     setState(() {
                                       _spacingOptions = newSpacingAttribute;

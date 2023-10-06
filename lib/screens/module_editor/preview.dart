@@ -3,16 +3,53 @@ import 'dart:io';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
+import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/helpers/extract_list.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
+import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/models/project.dart';
-import 'package:photo_to_pdf/screens/module_home/home.dart';
+import 'package:photo_to_pdf/widgets/project_items/w_project_ratio.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:photo_to_pdf/commons/themes.dart';
+import 'package:photo_to_pdf/helpers/render_boxfit.dart';
+import "package:provider/provider.dart" as pv;
 
-class Preview extends StatelessWidget {
+class Preview extends StatefulWidget {
   final Project project;
-  const Preview({super.key, required this.project});
+  final int indexPage;
+  const Preview({
+    super.key,
+    required this.project,
+    required this.indexPage,
+  });
+
+  @override
+  State<Preview> createState() => _PreviewState();
+}
+
+class _PreviewState extends State<Preview> {
+  late Project _project;
+  late List _layoutExtractList;
+  @override
+  void initState() {
+    super.initState();
+    _project = widget.project;
+    if (_project.useAvailableLayout == true) {
+      if (_project.layoutIndex == 0) {
+        _layoutExtractList = _project.listMedia;
+      } else if (_project.layoutIndex == 0) {
+        _layoutExtractList = extractList(2, _project.listMedia);
+      } else if ([2, 3].contains(_project.layoutIndex)) {
+        _layoutExtractList = extractList(3, _project.listMedia);
+      }
+    } else {
+      _layoutExtractList =
+          extractList(_project.placements!.length, _project.listMedia);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,104 +61,235 @@ class Preview extends StatelessWidget {
             Container(
               color: const Color.fromRGBO(0, 0, 0, 0.1),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10),
-                    child: WTextContent(
-                      value: "Preview",
-                      textSize: 16,
-                      textLineHeight: 19.09,
-                      textColor:
-                          Theme.of(context).textTheme.displayLarge!.color,
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Padding(
+                  padding:
+                      EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+                  child: WTextContent(
+                    value: "Preview",
+                    textSize: 16,
+                    textLineHeight: 19.09,
+                    textColor: Theme.of(context).textTheme.displayLarge!.color,
+                  ),
+                ),
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      height: size.height * (589 / 844)*0.95,
+                      decoration: BoxDecoration(
+                          color: Theme.of(context).cardColor,
+                          borderRadius: BorderRadius.circular(10)),
                     ),
-                  ),
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Container(
-                        height: size.height * (589 / 844),
-                        decoration: BoxDecoration(
-                            color: Theme.of(context).cardColor,
-                            borderRadius: BorderRadius.circular(10)),
-                      ),
-                      CarouselSlider.builder(
-                        itemBuilder: (context, currentIndex, afterIndex) {
-                          return Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  height: size.height * 0.5,
-                                  width: size.width * (281 / 390),
-                                  padding: const EdgeInsets.all(20),
-                                  decoration: BoxDecoration(
-                                      color: const Color.fromRGBO(
-                                          255, 255, 255, 1),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.2),
-                                          spreadRadius: 0.5,
-                                          blurRadius: 5,
-                                          offset: const Offset(0, 1),
-                                        ),
-                                      ]),
-                                  child: project.listMedia[currentIndex] is File
-                                      ? Image.file(
-                                          project.listMedia[currentIndex])
-                                      : Image.asset(
-                                          project.listMedia[currentIndex]
-                                              ),
-                                ),
-                                WSpacer(
-                                  width: 40,
-                                ),
-                                WTextContent(
-                                  value: "Page ${currentIndex + 1}",
-                                  textSize: 12,
-                                  textFontWeight: FontWeight.w600,
-                                  textLineHeight: 14.32,
-                                  textColor: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium!
-                                      .color,
-                                )
-                              ],
+                    CarouselSlider.builder(
+                      itemCount: _layoutExtractList.length,
+                      itemBuilder: (context, currentIndex, afterIndex) {
+                        return Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            _buildPreviewItem(indexExtract: currentIndex),
+                            WSpacer(
+                              width: 40,
                             ),
-                          );
-                        },
-                        options: CarouselOptions(
-                          height: size.height * 0.8,
-                          aspectRatio: size.height / size.width + 1,
-                          initialPage: 0,
-                          scrollPhysics: const BouncingScrollPhysics(),
-                          enableInfiniteScroll: false,
-                          autoPlayCurve: Curves.fastOutSlowIn,
-                          onPageChanged: (index, reason) {},
-                          scrollDirection: Axis.horizontal,
-                        ),
-                        itemCount: project.listMedia.length,
+                            WTextContent(
+                              value: "Page ${currentIndex + 1}",
+                              textSize: 12,
+                              textFontWeight: FontWeight.w600,
+                              textLineHeight: 14.32,
+                              textColor:
+                                  Theme.of(context).textTheme.bodyMedium!.color,
+                            )
+                          ],
+                        );
+                      },
+                      options: CarouselOptions(
+                        height: size.height * 0.8,
+                        aspectRatio: size.height / size.width + 1,
+                        initialPage: 0,
+                        scrollPhysics: const BouncingScrollPhysics(),
+                        enableInfiniteScroll: false,
+                        autoPlayCurve: Curves.fastOutSlowIn,
+                        onPageChanged: (index, reason) {},
+                        scrollDirection: Axis.horizontal,
                       ),
-                    ],
-                  ),
-                  WButtonFilled(
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 70,)
+              ],
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const SizedBox(),
+                Container(
+                  margin: const EdgeInsets.only(
+                      bottom: 30),
+                  child: WButtonFilled(
                     message: "Close",
                     textColor: colorBlue,
                     height: 60,
-                    width: size.width * (311 / 390) * 0.7,
+                    width: size.width * (311 / 390) * 0.6,
                     backgroundColor: colorWhite,
                     onPressed: () {
                       popNavigator(context);
                     },
-                  )
+                  ),
+                ),
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPreviewItem({
+    required int indexExtract,
+  }) {
+    if (_project.useAvailableLayout != true &&
+        _project.placements != null &&
+        _project.placements!.isNotEmpty) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 10),
+        child: WProjectItemPreview(
+          project: _project,
+          indexImage: indexExtract,
+          layoutExtractList: _layoutExtractList[indexExtract],
+          title: "",
+        ),
+      );
+    } else {
+      if (_project.listMedia.isEmpty) {
+        final blankProject = Project(
+            id: getRandomNumber(),
+            listMedia: ["${pathPrefixImage}blank_page.jpg"]);
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 10),
+          child: WProjectItemPreview(
+            project: blankProject,
+            indexImage: 0,
+            title: "",
+          ),
+        );
+      } else {
+        if (_project.layoutIndex == 0) {
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 10),
+            child: WProjectItemPreview(
+              project: _project,
+              indexImage: indexExtract,
+              title: "",
+            ),
+          );
+        } else if (_project.layoutIndex == 1) {
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 10),
+            child: WProjectItemPreview(
+              project: _project,
+              indexImage: indexExtract,
+              layoutExtractList: _layoutExtractList[indexExtract],
+              title: "",
+            ),
+          );
+        } else if ([2, 3].contains(_project.layoutIndex)) {
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 10),
+            child: WProjectItemPreview(
+              project: _project,
+              indexImage: indexExtract,
+              layoutExtractList: _layoutExtractList[indexExtract],
+              title: "",
+            ),
+          );
+        } else {
+          return Container();
+        }
+      }
+    }
+  }
+}
+
+class WProjectItemPreview extends ConsumerWidget {
+  final Project project;
+  /// index of image on project
+  final int indexImage;
+  final Function? onRemove;
+  final String? title;
+  /// Use with layoutIndex is 1,2,3
+  final List<dynamic>? layoutExtractList;
+
+  const WProjectItemPreview(
+      {super.key,
+      required this.project,
+      required this.indexImage,
+      this.title,
+      this.onRemove,
+      this.layoutExtractList});
+
+  EdgeInsets _getPaddingAtribute() {
+    return EdgeInsets.only(
+        top: 5 + (project.paddingAttribute?.verticalPadding ?? 0.0),
+        left: 5 + (project.paddingAttribute?.horizontalPadding ?? 0.0),
+        right: 5 + (project.paddingAttribute?.horizontalPadding ?? 0.0),
+        bottom: 5 + (project.paddingAttribute?.verticalPadding ?? 0.0));
+  }
+
+  double _getSpacingHorizontalValue() {
+    return 3 + (project.spacingAttribute?.horizontalSpacing ?? 0.0) * 5;
+  }
+
+  double _getSpacingVerticalValue() {
+    return 3 + (project.spacingAttribute?.verticalSpacing ?? 0.0) * 5;
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      padding: const EdgeInsets.all(3),
+      child: Column(
+        children: [
+          Container(
+            width: MediaQuery.sizeOf(context).width * LIST_RATIO_PREVIEW[0],
+            height: MediaQuery.sizeOf(context).width * LIST_RATIO_PREVIEW[1],
+            decoration:
+                BoxDecoration(color: project.backgroundColor, boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                spreadRadius: 0.5,
+                blurRadius: 5,
+                offset: const Offset(0, 1),
+              ),
+            ]),
+            child: Center(
+              child: Stack(
+                children: [
+                  Container(
+                    padding: _getPaddingAtribute(),
+                    alignment: project.alignmentAttribute?.alignmentMode,
+                    child: buildLayoutMedia(indexImage, project,
+                        layoutExtractList, LIST_RATIO_PREVIEW,
+                        spacingHorizontal: _getSpacingHorizontalValue(),
+                        spacingVertical: _getSpacingVerticalValue()),
+                  ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+          WSpacer(
+            height: 10,
+          ),
+          WTextContent(
+            value: title ?? "",
+            textFontWeight: FontWeight.w600,
+            textLineHeight: 14.32,
+            textSize: 12,
+            textColor: Theme.of(context).textTheme.bodyMedium!.color,
+          ),
+        ],
       ),
     );
   }

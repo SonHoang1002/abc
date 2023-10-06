@@ -29,6 +29,7 @@ class Project {
   final double compression;
   final CoverPhoto? coverPhoto;
   final List<Placement>? placements;
+  final bool useAvailableLayout;
 
   Project(
       {required this.id,
@@ -43,7 +44,8 @@ class Project {
       this.spacingAttribute,
       this.compression = 1.0,
       this.coverPhoto,
-      this.placements});
+      this.placements,
+      this.useAvailableLayout = true});
 
   void getInfor() {
     final id = "id: ${this.id},";
@@ -60,6 +62,7 @@ class Project {
         "alignmentAttribute: ${this.alignmentAttribute},";
     final coverPhoto = "coverPhoto: ${this.coverPhoto},";
     final placementAttribute = "placements: ${this.placements},";
+    final useAvailableLayout = "useAvailableLayout: ${this.useAvailableLayout}";
     print(id +
         title +
         listMedia +
@@ -72,7 +75,8 @@ class Project {
         paper +
         alignmentAttribute +
         coverPhoto +
-        placementAttribute);
+        placementAttribute +
+        useAvailableLayout);
   }
 
   Project copyWith(
@@ -87,7 +91,8 @@ class Project {
       AlignmentAttribute? alignmentAttribute,
       double? compression,
       CoverPhoto? coverPhoto,
-      List<Placement>? placements}) {
+      List<Placement>? placements,
+      bool? useAvailableLayout}) {
     return Project(
         id: id,
         title: title ?? this.title,
@@ -101,7 +106,8 @@ class Project {
         compression: compression ?? this.compression,
         coverPhoto: coverPhoto ?? this.coverPhoto,
         alignmentAttribute: alignmentAttribute ?? this.alignmentAttribute,
-        placements: placements ?? this.placements);
+        placements: placements ?? this.placements,
+        useAvailableLayout: useAvailableLayout ?? this.useAvailableLayout);
   }
 }
 

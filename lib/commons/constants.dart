@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/models/project.dart';
@@ -163,8 +164,14 @@ const List<Color> ALL_COLORS = [
   Colors.white,
 ];
 
+
+// TẤT CẢ CÁC TỈ LỆ NÀY ĐỀU ĐƯỢC SO SÁNH VỚI WIDTH CỦA MÀN HÌNH
+
 /// Ratio of changeable placement board: width, height
 const List<double> LIST_RATIO_PLACEMENT_BOARD = [0.6,0.8];
 
 /// Ratio of changeable project item: width, height
 const List<double> LIST_RATIO_PROJECT_ITEM = [0.3,0.4];
+
+/// Ratio of changeable preview item: width, height
+const List<double> LIST_RATIO_PREVIEW= [0.75,1.1];

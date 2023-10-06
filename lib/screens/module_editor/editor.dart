@@ -1,3 +1,8 @@
+import 'dart:io';
+
+import 'package:path_provider/path_provider.dart';
+import 'package:printing/printing.dart';
+import 'package:photo_to_pdf/helpers/pdf_file_helper.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
@@ -11,6 +16,8 @@ import 'package:photo_to_pdf/providers/project_provider.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_paper.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_cover_photos.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_selected_photos.dart';
+import 'package:photo_to_pdf/screens/module_pdf/hello.dart';
+import 'package:photo_to_pdf/screens/module_pdf/preview_pdf.dart';
 import 'package:photo_to_pdf/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_divider.dart';
 import 'package:photo_to_pdf/widgets/project_items/w_project_item_main.dart';
@@ -40,6 +47,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   late dynamic _coverConfig;
   // selected photos
   late double _sliderCompressionValue;
+  late List pdfFiles;
 
   @override
   void initState() {
@@ -70,22 +78,6 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
       "content": "None"
     };
     _sliderCompressionValue = _project.compression;
-  }
-
-  int getNumberImageFromLayoutIndex() {
-    final layoutIndex = _project.layoutIndex;
-    var result = 1;
-    if (layoutIndex == 0) {
-      result = 1;
-    } else if (layoutIndex == 1) {
-      result = 2;
-    } else if ([2, 3].contains(layoutIndex)) {
-      result = 3;
-    } else {
-      result = _project.placements?.length ?? 1;
-    }
-    print("result ${result}");
-    return result;
   }
 
   @override
@@ -130,7 +122,6 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                             child: _buildPreviewProjectBody()))),
                 // page size and bottom buttons
                 SizedBox(
-                  height: _size.height * 0.4,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -141,8 +132,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             WTextContent(
-                              value:
-                                  "${extractList(getNumberImageFromLayoutIndex(), _project.listMedia).length} Pages",
+                              value: "${_project.listMedia.length} Pages",
                               textColor:
                                   Theme.of(context).textTheme.bodyMedium!.color,
                               textLineHeight: 14.32,
@@ -245,7 +235,10 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                       ]),
                       buildBottomButton(
                           context: context,
-                          onApply: () {},
+                          onApply: () async {
+                            pushCustomMaterialPageRoute(
+                                context, PdfViewerPage());
+                          },
                           onCancel: () {
                             ref
                                 .read(projectControllerProvider.notifier)
@@ -407,7 +400,9 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   }
 
   Widget _buildPreviewProjectBody() {
-    if (_project.placements != null && _project.placements!.isNotEmpty) {
+    if (_project.useAvailableLayout != true &&
+        _project.placements != null &&
+        _project.placements!.isNotEmpty) {
       List list = extractList(_project.placements!.length, _project.listMedia);
       return Wrap(
         alignment: WrapAlignment.center,
@@ -503,9 +498,10 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
             }).toList(),
           );
         } else {
-          return Container(height: 50, width: 200, color: colorRed);
+          return const SizedBox();
         }
       }
     }
   }
+
 }

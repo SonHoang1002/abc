@@ -374,3 +374,71 @@ class _TestDragState extends flutter_riverpod.ConsumerState<TestDrag> {
     );
   }
 }
+Photo to PDF (Ngày bắt đầu: 18/9)
+
+
+Task
+- [x] Khởi tạo project
+- Set up màu
+- [x] Màn Home: 
+- Các giao diện trong màn hình
+- [x] Màn Select Photo 2
+- Tạo Bottom sheet
+- Nhấn giữ PDF Project
+
+Photo to PDF (Ngày bắt đầu: 19/9)
+
+
+Task
+- [x] Tạo item hiển thị ảnh
+- [x] Hoàn thiện màn hình Home
+- [x] Màn Select Photo 2
+- Tạo Bottom sheet
+- Nhấn giữ PDF Project
+- 
+Photo to PDF (ngày 20/9)
+ - tạo các nút action 
+ - Thêm bottom sheet create pdf (50%)
+
+Photo to PDF (ngày 21/9)
+ - Xây dựng layout editor screen( tiếp )
+ - Tạo các options tạo editor layout
+
+ Photo to PDF (ngày 22/9)
+- Xây dựng paper size layout
+- preview screen
+
+ Photo to PDF (ngày 25/9)
+ - Xây dựng options layout : 50%
+
+ Photo to PDF (ngày 26/9)
+ - Xây dựng options layout: còn phần backgroundColor
+ - Xây dựng options Selected photos options
+
+ Photo to PDF (ngày 27/9)
+ - Xây dựng layout cover photos
+
+ Photo to PDF (ngày 28/9)
+ - Xây dựng setting screen
+ - Xử lý theme mode
+
+ Photo to PDF (ngày 29/9)
+ - Xử lý theme mode và background trong options layout
+
+ Photo to PDF (ngày 2/10)
+ - Thêm chức năng chọn ảnh, chọn file
+ - Xử lý data truyền vào các ui
+
+ Photo to PDF (ngày 3/10)
+ - Tiếp tục truyền data vào ui
+ - hiển thị các ảnh sau khi truyền data
+
+ Photo to PDF (ngày 4/10)
+ - Tính toán việc hiên thị ảnh khi người dùng sử dụng placement 
+
+ Photo to PDF (ngày 6/10)
+ - Thêm chức năng tạo pdf, preview pdf
+
+
+
+ 

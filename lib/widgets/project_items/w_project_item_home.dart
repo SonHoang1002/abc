@@ -8,12 +8,12 @@ import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/commons/themes.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/providers/project_provider.dart';
-import 'package:photo_to_pdf/widgets/project_items/w_project_item_main.dart';
+import 'package:photo_to_pdf/widgets/project_items/w_project_ratio.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 import "package:provider/provider.dart" as pv;
 
-class WProjectItemHome extends ConsumerWidget {
+class WProjectItemHome extends ConsumerStatefulWidget {
   final Project project;
   final bool isFocusByLongPress;
   final int index;
@@ -34,19 +34,28 @@ class WProjectItemHome extends ConsumerWidget {
       this.layoutExtractList});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WProjectItemHome> createState() => _WProjectItemHomeState();
+}
+
+class _WProjectItemHomeState extends ConsumerState<WProjectItemHome> {
+  final GlobalKey keyTest = GlobalKey();
+  @override
+  Widget build(BuildContext context) {
+    // final renderBox = keyTest.currentContext?.findRenderObject() as RenderBox?;
+    // print("keyTest ${renderBox?.size}");
     return GestureDetector(
-      onTap: onTap,
+      // key: keyTest,
+      onTap: widget.onTap,
       child: Container(
         padding: const EdgeInsets.all(3),
         child: Column(
           children: [
-            SizedBox(
-              width: 160,
-              height: 160,
+            Container(
+              height: 155.6,
+              width: MediaQuery.sizeOf(context).width * 0.3,
               child: Center(
                 child: Stack(
-                  alignment: !isFocusByLongPress
+                  alignment: !widget.isFocusByLongPress
                       ? AlignmentDirectional.center
                       : AlignmentDirectional.topStart,
                   children: [
@@ -62,19 +71,14 @@ class WProjectItemHome extends ConsumerWidget {
                             ]),
                       ),
                     ),
-                    project.listMedia.isNotEmpty
+                    widget.project.listMedia.isNotEmpty
                         ? Container(
-                            padding: const EdgeInsets.all(9),
-                            child:
-                                buildLayoutMedia(0, project, layoutExtractList)
-                            // project.listMedia[0] is File
-                            //     ? Image.file(project.listMedia[0])
-                            //     : Image.asset(
-                            //         project.listMedia[0],
-                            //       ),
-                            )
-                        : const SizedBox(),
-                    isFocusByLongPress
+                            key: keyTest,
+                            padding: const EdgeInsets.all(3),
+                            child: buildLayoutMedia(
+                                0, widget.project, widget.layoutExtractList,LIST_RATIO_PROJECT_ITEM))
+                        : Image.asset("${pathPrefixImage}blank_page.jpg"),
+                    widget.isFocusByLongPress
                         ? Positioned(
                             top: -12,
                             left: -12,
@@ -83,7 +87,7 @@ class WProjectItemHome extends ConsumerWidget {
                                 final listProject = ref
                                     .watch(projectControllerProvider)
                                     .listProject;
-                                listProject.removeAt(index);
+                                listProject.removeAt(widget.index);
                                 ref
                                     .read(projectControllerProvider.notifier)
                                     .setProject(listProject);
@@ -105,14 +109,14 @@ class WProjectItemHome extends ConsumerWidget {
                 ),
               ),
             ),
-            isHaveTitle!
+            widget.isHaveTitle!
                 ? Column(
                     children: [
                       WSpacer(
                         height: 10,
                       ),
                       WTextContent(
-                        value: project.title,
+                        value: widget.project.title,
                         textFontWeight: FontWeight.w600,
                         textLineHeight: 14.32,
                         textSize: 12,
