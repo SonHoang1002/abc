@@ -439,6 +439,11 @@ Photo to PDF (ngày 21/9)
  Photo to PDF (ngày 6/10)
  - Thêm chức năng tạo pdf, preview pdf
 
+adb devices -v
+abd devices -l
 
+adb -s
+adb -s [ten mays] shell  -> vi du:  adb -s ABT00017096 shell
+run-as [ten app]-> vi du:  run-as com.example.test_photo_to_pdf
 
  

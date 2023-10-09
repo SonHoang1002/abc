@@ -33,7 +33,7 @@ class _PdfViewerPageState extends State<PdfViewerPage> {
         pdfFiles = pdfFilesList.cast<File>();
       });
       pdfFiles.forEach((element) async {
-        print('pdfFiles.length ${await element.length()}');
+        print('pdfFiles.length ${await element.length()/2024 } MB');
       });
     }
   }

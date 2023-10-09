@@ -1,7 +1,3 @@
-import 'dart:io';
-
-import 'package:path_provider/path_provider.dart';
-import 'package:printing/printing.dart';
 import 'package:photo_to_pdf/helpers/pdf_file_helper.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_layout.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +13,7 @@ import 'package:photo_to_pdf/screens/module_editor/bodies/body_paper.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_cover_photos.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_selected_photos.dart';
 import 'package:photo_to_pdf/screens/module_pdf/hello.dart';
-import 'package:photo_to_pdf/screens/module_pdf/preview_pdf.dart';
+import 'package:photo_to_pdf/services/isar_project_service.dart';
 import 'package:photo_to_pdf/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_divider.dart';
 import 'package:photo_to_pdf/widgets/project_items/w_project_item_main.dart';
@@ -94,18 +90,13 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
               children: [
                 // input
                 buildFileNameInput(context, _project, _fileNameController,
-                    (value) {
-                  _project = Project(
-                      id: _project.id,
-                      title: value.trim(),
-                      listMedia: _project.listMedia);
-                  ref.read(projectControllerProvider.notifier).updateProject(
-                      Project(
-                          id: _project.id,
-                          listMedia: _project.listMedia,
-                          title: value.trim()));
+                    (value) async {
+                  _project = _project.copyWith(title: value.trim());
+                  ref
+                      .read(projectControllerProvider.notifier)
+                      .updateProject(_project);
+                  await IsarProjectService().updateProject(_project);
                 }),
-                //
                 WSpacer(
                   height: 10,
                 ),
@@ -236,8 +227,10 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                       buildBottomButton(
                           context: context,
                           onApply: () async {
+                            await savePdf(const SizedBox(), _project);
+                            // ignore: use_build_context_synchronously
                             pushCustomMaterialPageRoute(
-                                context, PdfViewerPage());
+                                context, const PdfViewerPage());
                           },
                           onCancel: () {
                             ref
@@ -308,10 +301,12 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                   indexPageSizeSelectionWidget: _indexPageSizeSelectionWidget,
                   paperConfig: _paperConfig,
                   pageSizeIsPortrait: _paperSizeIsPortrait,
-                  onApply: (newPaper, pageSizeIsPortrait) {
+                  onApply: (newPaper, pageSizeIsPortrait) async {
                     _project = _project.copyWith(paper: newPaper);
                     _paperSizeIsPortrait = pageSizeIsPortrait;
                     setState(() {});
+                    await IsarProjectService().updateProject(_project);
+                    // ignore: use_build_context_synchronously
                     popNavigator(context);
                   });
             }),
@@ -349,7 +344,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                 });
                 setStatefull(() {});
               },
-              onApply: (newProject) {
+              onApply: (newProject) async {
                 setState(() {
                   _project = _project.copyWith(
                       listMedia: newProject.listMedia,
@@ -360,6 +355,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                   };
                 });
                 setStatefull(() {});
+                await IsarProjectService().updateProject(_project);
               },
             );
           });
@@ -378,7 +374,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
           return StatefulBuilder(builder: (context, setStatefull) {
             return CoverBody(
                 project: _project,
-                onUpdatePhoto: (newCoverPhoto) {
+                onUpdatePhoto: (newCoverPhoto) async {
                   if (newCoverPhoto.backPhoto != null &&
                       newCoverPhoto.frontPhoto != null) {
                     _coverConfig["content"] = "Edit";
@@ -388,6 +384,8 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                   _project = _project.copyWith(coverPhoto: newCoverPhoto);
                   setState(() {});
                   setStatefull(() {});
+                  await IsarProjectService().updateProject(_project);
+                  // ignore: use_build_context_synchronously
                   popNavigator(context);
                 },
                 reRenderFunction: () {
@@ -503,5 +501,4 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
       }
     }
   }
-
 }

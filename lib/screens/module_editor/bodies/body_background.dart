@@ -16,7 +16,7 @@ class BackgroundBody extends StatelessWidget {
     final size = MediaQuery.sizeOf(context);
     return Container(
       constraints: BoxConstraints(
-          maxHeight: size.height * 0.8, minHeight: size.height * 0.5),
+          maxHeight: size.height * 0.85, minHeight: size.height * 0.5),
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         borderRadius: const BorderRadius.only(

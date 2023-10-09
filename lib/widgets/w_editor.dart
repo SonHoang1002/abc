@@ -264,6 +264,7 @@ Widget buildFileNameInput(BuildContext context, Project project,
         ),
         placeholder: "Untitled",
         placeholderStyle: buildTextStyleInputFileName(colorBlue),
+        autofocus: true,
       ),
     ),
   );

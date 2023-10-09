@@ -7,9 +7,11 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/models/project.dart';
 
 class PreviewPdf extends StatefulWidget {
-  const PreviewPdf({super.key});
+  final Project project;
+  const PreviewPdf({super.key, required this.project});
 
   @override
   State<PreviewPdf> createState() => _PreviewPdfState();

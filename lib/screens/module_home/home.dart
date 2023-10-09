@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:photo_to_pdf/services/isar_project_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
 import 'package:image_picker/image_picker.dart';
@@ -12,6 +14,7 @@ import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/providers/project_provider.dart';
 import 'package:photo_to_pdf/screens/module_editor/editor.dart';
 import 'package:photo_to_pdf/screens/module_setting/setting.dart';
+import 'package:photo_to_pdf/services/isar_service.dart';
 import 'package:photo_to_pdf/widgets/project_items/w_project_item_home.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/project_items/w_project_item_main.dart';
@@ -19,17 +22,6 @@ import 'package:photo_to_pdf/widgets/project_items/w_project_item_bottom.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
-
-final testProjectList = [
-  Project(
-      id: getRandomNumber(), listMedia: ["${pathPrefixImage}test_image_1.png"]),
-  Project(
-      id: getRandomNumber(), listMedia: ["${pathPrefixImage}test_image_2.png"]),
-  Project(
-      id: getRandomNumber(), listMedia: ["${pathPrefixImage}test_image_3.png"]),
-  Project(
-      id: getRandomNumber(), listMedia: ["${pathPrefixImage}test_image_4.png"]),
-];
 
 class HomePage extends flutter_riverpod.ConsumerStatefulWidget {
   const HomePage({
@@ -46,7 +38,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
       "Easily create PDF documents from your photos";
 
   int _naviSelected = 0;
-  late bool _galleryIsEmpty;
+  // late bool _galleryIsEmpty;
   late bool _isFocusProjectList;
   late bool _isFocusProjectListBottom;
   late List<Project> _listProject;
@@ -55,12 +47,13 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration.zero, () {
-      ref.read(projectControllerProvider.notifier).setProject(testProjectList);
+    Future.delayed(Duration.zero, () async {
+      final List<Project> listProject =
+          await IsarProjectService().getProjects();
+      ref.read(projectControllerProvider.notifier).setProject(listProject);
     });
     _isFocusProjectList = false;
     _isFocusProjectListBottom = true;
-    _galleryIsEmpty = false;
   }
 
   int getLayoutImageNumber(int layoutIndex) {
@@ -78,7 +71,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
     _listProject = ref.watch(projectControllerProvider).listProject;
     return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        appBar: !_galleryIsEmpty && _naviSelected == 0
+        appBar: _listProject.isNotEmpty && _naviSelected == 0
             ? AppBar(
                 centerTitle: true,
                 title: WTextContent(
@@ -112,7 +105,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
             : null,
         body: SafeArea(
           child: Stack(
-            alignment: _galleryIsEmpty
+            alignment: _listProject.isEmpty
                 ? Alignment.center
                 : AlignmentDirectional.topStart,
             children: [
@@ -128,7 +121,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
 
   Widget _buildBody() {
     if (_naviSelected == 0) {
-      if (_galleryIsEmpty) {
+      if (_listProject.isEmpty) {
         return Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -154,7 +147,13 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
               width: 255,
               backgroundColor: colorBlue,
               textColor: colorWhite,
-              onPressed: () {},
+              onPressed: () {
+                setState(() {
+                  _currentProject =
+                      Project(id: getRandomNumber(), listMedia: []);
+                });
+                _buildBottomSheetCreatePdf();
+              },
             )
           ],
         );
@@ -184,7 +183,6 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
             final index = _listProject.indexOf(e);
             return Container(
               key: ValueKey(_listProject[index]),
-              // padding: EdgeInsets.all(30),
               child: WProjectItemHome(
                 key: ValueKey(_listProject[index]),
                 project: _listProject[index],
@@ -515,15 +513,11 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                             backgroundColor: colorBlue,
                             textColor: colorWhite,
                             onPressed: () {
-                              // if (_currentProject.listMedia.isEmpty) {
-                              //   _currentProject = Project(
-                              //       id: _currentProject.id,
-                              //       listMedia: [
-                              //         "${pathPrefixImage}blank_page.jpg"
-                              //       ]);
-                              // }
                               ref
                                   .read(projectControllerProvider.notifier)
+                                  .addProject(_currentProject);
+                              // data on database
+                              IsarProjectService()
                                   .addProject(_currentProject);
                               popNavigator(context);
                               pushNavigator(

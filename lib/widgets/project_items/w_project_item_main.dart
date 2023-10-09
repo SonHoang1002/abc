@@ -33,22 +33,6 @@ class WProjectItemEditor extends ConsumerWidget {
       this.onRemove,
       this.layoutExtractList});
 
-  EdgeInsets _getPaddingAtribute() {
-    return EdgeInsets.only(
-        top: 5 + (project.paddingAttribute?.verticalPadding ?? 0.0),
-        left: 5 + (project.paddingAttribute?.horizontalPadding ?? 0.0),
-        right: 5 + (project.paddingAttribute?.horizontalPadding ?? 0.0),
-        bottom: 5 + (project.paddingAttribute?.verticalPadding ?? 0.0));
-  }
-
-  double _getSpacingHorizontalValue() {
-    return 3 + (project.spacingAttribute?.horizontalSpacing ?? 0.0) * 5;
-  }
-
-  double _getSpacingVerticalValue() {
-    return 3 + (project.spacingAttribute?.verticalSpacing ?? 0.0) * 5;
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
@@ -82,14 +66,13 @@ class WProjectItemEditor extends ConsumerWidget {
               child: Center(
                 child: Stack(
                   children: [
-                    Container(
-                      padding: _getPaddingAtribute(),
-                      alignment: project.alignmentAttribute?.alignmentMode,
-                      child: buildLayoutMedia(indexImage, project,
-                          layoutExtractList, LIST_RATIO_PROJECT_ITEM,
-                          spacingHorizontal: _getSpacingHorizontalValue(),
-                          spacingVertical: _getSpacingVerticalValue()),
+                    LayoutMedia(
+                     indexImage:indexImage,
+                    project:project,
+                    layoutExtractList:layoutExtractList,
+                    ratioTarget:   LIST_RATIO_PROJECT_ITEM,
                     ),
+                    
                     isFocusByLongPress
                         ? Positioned(
                             top: -10,

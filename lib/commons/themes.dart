@@ -1,6 +1,6 @@
+import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:photo_to_pdf/commons/colors.dart';
 
 class ThemeManager with ChangeNotifier {
   ThemeMode themeMode = ThemeMode.system;

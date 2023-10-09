@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
@@ -13,9 +11,6 @@ import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:photo_to_pdf/commons/themes.dart';
-import 'package:photo_to_pdf/helpers/render_boxfit.dart';
-import "package:provider/provider.dart" as pv;
 
 class Preview extends StatefulWidget {
   final Project project;
@@ -78,7 +73,7 @@ class _PreviewState extends State<Preview> {
                   alignment: Alignment.center,
                   children: [
                     Container(
-                      height: size.height * (589 / 844)*0.95,
+                      height: size.height * (589 / 844) * 0.95,
                       decoration: BoxDecoration(
                           color: Theme.of(context).cardColor,
                           borderRadius: BorderRadius.circular(10)),
@@ -118,7 +113,9 @@ class _PreviewState extends State<Preview> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 70,)
+                const SizedBox(
+                  height: 70,
+                )
               ],
             ),
             Column(
@@ -126,8 +123,7 @@ class _PreviewState extends State<Preview> {
               children: [
                 const SizedBox(),
                 Container(
-                  margin: const EdgeInsets.only(
-                      bottom: 30),
+                  margin: const EdgeInsets.only(bottom: 30),
                   child: WButtonFilled(
                     message: "Close",
                     textColor: colorBlue,
@@ -215,10 +211,12 @@ class _PreviewState extends State<Preview> {
 
 class WProjectItemPreview extends ConsumerWidget {
   final Project project;
+
   /// index of image on project
   final int indexImage;
   final Function? onRemove;
   final String? title;
+
   /// Use with layoutIndex is 1,2,3
   final List<dynamic>? layoutExtractList;
 
@@ -229,22 +227,6 @@ class WProjectItemPreview extends ConsumerWidget {
       this.title,
       this.onRemove,
       this.layoutExtractList});
-
-  EdgeInsets _getPaddingAtribute() {
-    return EdgeInsets.only(
-        top: 5 + (project.paddingAttribute?.verticalPadding ?? 0.0),
-        left: 5 + (project.paddingAttribute?.horizontalPadding ?? 0.0),
-        right: 5 + (project.paddingAttribute?.horizontalPadding ?? 0.0),
-        bottom: 5 + (project.paddingAttribute?.verticalPadding ?? 0.0));
-  }
-
-  double _getSpacingHorizontalValue() {
-    return 3 + (project.spacingAttribute?.horizontalSpacing ?? 0.0) * 5;
-  }
-
-  double _getSpacingVerticalValue() {
-    return 3 + (project.spacingAttribute?.verticalSpacing ?? 0.0) * 5;
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -267,13 +249,11 @@ class WProjectItemPreview extends ConsumerWidget {
             child: Center(
               child: Stack(
                 children: [
-                  Container(
-                    padding: _getPaddingAtribute(),
-                    alignment: project.alignmentAttribute?.alignmentMode,
-                    child: buildLayoutMedia(indexImage, project,
-                        layoutExtractList, LIST_RATIO_PREVIEW,
-                        spacingHorizontal: _getSpacingHorizontalValue(),
-                        spacingVertical: _getSpacingVerticalValue()),
+                  LayoutMedia(
+                    indexImage:indexImage,
+                    project:project,
+                    layoutExtractList:layoutExtractList,
+                    ratioTarget: LIST_RATIO_PREVIEW,
                   ),
                 ],
               ),

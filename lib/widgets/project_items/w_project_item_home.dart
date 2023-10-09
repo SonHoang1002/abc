@@ -1,13 +1,11 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:provider/provider.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/commons/themes.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/providers/project_provider.dart';
+import 'package:photo_to_pdf/services/isar_project_service.dart';
 import 'package:photo_to_pdf/widgets/project_items/w_project_ratio.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
@@ -41,16 +39,13 @@ class _WProjectItemHomeState extends ConsumerState<WProjectItemHome> {
   final GlobalKey keyTest = GlobalKey();
   @override
   Widget build(BuildContext context) {
-    // final renderBox = keyTest.currentContext?.findRenderObject() as RenderBox?;
-    // print("keyTest ${renderBox?.size}");
     return GestureDetector(
-      // key: keyTest,
       onTap: widget.onTap,
       child: Container(
         padding: const EdgeInsets.all(3),
         child: Column(
           children: [
-            Container(
+            SizedBox(
               height: 155.6,
               width: MediaQuery.sizeOf(context).width * 0.3,
               child: Center(
@@ -75,22 +70,35 @@ class _WProjectItemHomeState extends ConsumerState<WProjectItemHome> {
                         ? Container(
                             key: keyTest,
                             padding: const EdgeInsets.all(3),
-                            child: buildLayoutMedia(
-                                0, widget.project, widget.layoutExtractList,LIST_RATIO_PROJECT_ITEM))
+                            child: 
+                  //            LayoutMedia(
+                  //   indexImage:indexImage,
+                  //   project:project,
+                  //   layoutExtractList:layoutExtractList,
+                  //   ratioTarget: LIST_RATIO_PREVIEW,
+                  // ),
+                            LayoutMedia(
+                              indexImage:  0,
+                                project:  widget.project,
+                                  layoutExtractList:widget.layoutExtractList,
+                                 ratioTarget: LIST_RATIO_PROJECT_ITEM))
                         : Image.asset("${pathPrefixImage}blank_page.jpg"),
                     widget.isFocusByLongPress
                         ? Positioned(
-                            top: -12,
-                            left: -12,
+                            top: -15,
+                            left: -15,
                             child: GestureDetector(
-                              onTap: () {
+                              onTap: () async {
                                 final listProject = ref
                                     .watch(projectControllerProvider)
                                     .listProject;
+                                final deleteItem = listProject[widget.index];
                                 listProject.removeAt(widget.index);
                                 ref
                                     .read(projectControllerProvider.notifier)
                                     .setProject(listProject);
+                                await IsarProjectService()
+                                    .deletePostIsar(deleteItem);
                               },
                               child: Container(
                                 alignment: Alignment.topLeft,
@@ -116,7 +124,7 @@ class _WProjectItemHomeState extends ConsumerState<WProjectItemHome> {
                         height: 10,
                       ),
                       WTextContent(
-                        value: widget.project.title,
+                        value: widget.project.title =="" ? "Untitled":widget.project.title ,
                         textFontWeight: FontWeight.w600,
                         textLineHeight: 14.32,
                         textSize: 12,
