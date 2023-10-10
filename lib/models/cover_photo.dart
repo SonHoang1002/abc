@@ -1,3 +1,4 @@
+import 'dart:io';
 
 class CoverPhoto {
   /// [frontPhoto] can be String, File to show Image
@@ -15,15 +16,19 @@ class CoverPhoto {
 
   Map<String, dynamic> toJson() {
     return {
-      'frontPhoto': frontPhoto,
-      'backPhoto': backPhoto,
+      'frontPhoto': frontPhoto?.path,
+      'backPhoto': backPhoto?.path,
     };
   }
 
   factory CoverPhoto.fromJson(Map<String, dynamic> json) {
     return CoverPhoto(
-      frontPhoto: json['frontPhoto'],
-      backPhoto: json['backPhoto'],
+      frontPhoto: json['frontPhoto'] != null
+          ? File(json['frontPhoto'])
+          : json['frontPhoto'],
+      backPhoto: json['backPhoto'] != null
+          ? File(json['backPhoto'])
+          : json['backPhoto'],
     );
   }
 

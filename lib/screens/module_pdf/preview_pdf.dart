@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -34,17 +36,26 @@ class _PreviewPdfState extends State<PreviewPdf> {
 
   Future<Uint8List> makePdf() async {
     final pdf = pw.Document();
-    pdf.addPage(pw.Page(
-        margin: const pw.EdgeInsets.all(10),
-        pageFormat: PdfPageFormat.a4,
-        build: (context) {
-          return pw.Column(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.SizedBox(),
-                pw.Expanded(child: DottedBorder(child: pw.Container()))
-              ]);
-        }));
+    final image = pw.MemoryImage(
+      File(widget.project.listMedia[0].path).readAsBytesSync(),
+    );
+
+    pdf.addPage(pw.Page(build: (pw.Context context) {
+      return pw.Center(
+        child: pw.Image(image),
+      ); // Center
+    }));
+    // pdf.addPage(pw.Page(
+    //     margin: const pw.EdgeInsets.all(10),
+    //     pageFormat: PdfPageFormat.a4,
+    //     build: (context) {
+    //       return pw.Column(
+    //           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+    //           children: [
+    //             pw.SizedBox(),
+    //             pw.Expanded(child: DottedBorder(child: pw.Container()))
+    //           ]);
+    //     }));
     return pdf.save();
   }
 }
@@ -90,33 +101,6 @@ class DottedBorder extends pw.StatelessWidget {
                     width: 400)),
           ],
         ));
-  }
-
-  void _getCirclePath(PdfGraphics canvas, PdfPoint size) {
-    double w = size.x;
-    double h = size.y;
-    double s = size.x > size.y ? size.y : size.x;
-
-    canvas.drawRRect(
-      w > s ? (w - s) / 2 : 0,
-      h > s ? (h - s) / 2 : 0,
-      s,
-      s,
-      s / 2,
-      s / 2,
-    );
-  }
-
-  void _getRRectPath(PdfGraphics canvas, PdfPoint size, double radius) {
-    canvas.drawRRect(0, 0, size.x, size.y, radius, radius);
-  }
-
-  void _getRectPath(PdfGraphics canvas, PdfPoint size) {
-    canvas.drawRect(0, 0, size.x, size.y);
-  }
-
-  void _getOvalPath(PdfGraphics canvas, PdfPoint size) {
-    canvas.drawEllipse(size.x, size.y, 8, 8);
   }
 }
 

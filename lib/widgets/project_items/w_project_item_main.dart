@@ -67,12 +67,11 @@ class WProjectItemEditor extends ConsumerWidget {
                 child: Stack(
                   children: [
                     LayoutMedia(
-                     indexImage:indexImage,
-                    project:project,
-                    layoutExtractList:layoutExtractList,
-                    ratioTarget:   LIST_RATIO_PROJECT_ITEM,
+                      indexImage: indexImage,
+                      project: project,
+                      layoutExtractList: layoutExtractList,
+                      ratioTarget: LIST_RATIO_PROJECT_ITEM,
                     ),
-                    
                     isFocusByLongPress
                         ? Positioned(
                             top: -10,

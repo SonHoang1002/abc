@@ -1,23 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/models/project.dart';
-import 'package:photo_to_pdf/helpers/random_number.dart';
+import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/models/project.dart';
 
 const String pathPrefixIcon = "assets/icons/";
 const String pathPrefixImage = "assets/images/";
 const String myCustomFont = "FontsFree-Net-SFProDisplay-Regular";
-
-// List<dynamic> LIST_PAGE_SIZE = [
-//   {"title": "A3", "width": 29.7, "height": 42, "unit": CENTIMET},
-//   {"title": "A4", "width": 21.0, "height": 29.7, "unit": CENTIMET},
-//   {"title": "B5", "width": 17.6, "height": 25.0, "unit": CENTIMET},
-//   {"title": "JIS B5", "width": 18.2, "height": 25.7, "unit": CENTIMET},
-//   {"title": "Legal", "width": 8.5, "height": 14.0, "unit": INCH},
-//   {"title": "Letter", "width": 8.5, "height": 11.0, "unit": INCH},
-//   {"title": "Tabloid", "width": 11.0, "height": 17.0, "unit": INCH},
-//   {"title": "Custom", "width": 1.0, "height": 1.0, "unit": INCH},
-// ];
 
 List<PaperAttribute> LIST_PAGE_SIZE = [
   PaperAttribute(title: "A3", width: 29.7, height: 42, unit: CENTIMET),
@@ -86,7 +75,6 @@ PaddingAttribute PADDING_OPTIONS = PaddingAttribute(
 SpacingAttribute SPACING_OPTIONS = SpacingAttribute(
     horizontalSpacing: 1.0, verticalSpacing: 1.0, unit: CENTIMET);
 
-// ignore: non_constant_identifier_names
 final PLACEMENT_ATTRIBUTE = PlacementAttribute(
     horizontal: 0.0,
     vertical: 0.0,

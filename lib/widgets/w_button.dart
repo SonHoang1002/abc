@@ -10,6 +10,8 @@ class WButtonElevated extends StatelessWidget {
   final Function()? onPressed;
   final Color? backgroundColor;
   final Color? textColor;
+  final double? elevation;
+  final Color? shadowColor;
 
   /// [mediaValue] can be IconData, assets String ( include icon or image )
   final dynamic mediaValue;
@@ -28,7 +30,9 @@ class WButtonElevated extends StatelessWidget {
       this.mediaColor,
       this.mediaSize,
       this.haveShadow,
-      this.textColor});
+      this.textColor,
+      this.elevation,
+      this.shadowColor});
 
   @override
   Widget build(BuildContext context) {
@@ -36,9 +40,9 @@ class WButtonElevated extends StatelessWidget {
         style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.only(bottom: 10),
             shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            // shadowColor: colorLightBlue,
-            // elevation: 2,
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+            shadowColor: shadowColor,
+            elevation: elevation,
             backgroundColor: backgroundColor),
         onPressed: onPressed,
         child: SizedBox(

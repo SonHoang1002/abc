@@ -22,10 +22,6 @@ class MyApp extends StatelessWidget {
     ], child: const MaterialWithTheme());
   }
 }
-
-
-
-
 // void main() {
 //   runApp(const MaterialApp(
 //     home: Scaffold(

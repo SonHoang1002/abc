@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/helpers/compress_file.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
-import 'package:photo_to_pdf/helpers/pdf_file_helper.dart';
+import 'package:photo_to_pdf/helpers/create_pdf.dart';
 import 'package:photo_to_pdf/helpers/pick_media.dart';
 import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/models/project.dart';
@@ -23,15 +23,16 @@ class SelectedPhotosBody extends StatefulWidget {
   final double sliderCompressionLevelValue;
   final Function(double)? onChangedSlider;
   final Function() reRenderFunction;
-  final Function(Project project) onApply;
-  const SelectedPhotosBody({
-    super.key,
-    required this.project,
-    required this.sliderCompressionLevelValue,
-    required this.onChangedSlider,
-    required this.reRenderFunction,
-    required this.onApply,
-  });
+  final Function(Project project, double size) onApply;
+  final double sizeOfFile;
+  const SelectedPhotosBody(
+      {super.key,
+      required this.project,
+      required this.sliderCompressionLevelValue,
+      required this.onChangedSlider,
+      required this.reRenderFunction,
+      required this.onApply,
+      required this.sizeOfFile});
 
   @override
   State<SelectedPhotosBody> createState() => _SelectedPhotosBodyState();
@@ -40,13 +41,13 @@ class SelectedPhotosBody extends StatefulWidget {
 class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
   late bool _isFocusProject;
   late Project _project;
-  late List<dynamic> compressList;
+  late double _sizeOfFile;
   @override
   void initState() {
     super.initState();
     _isFocusProject = false;
     _project = widget.project;
-    compressList = [];
+    _sizeOfFile = widget.sizeOfFile;
   }
 
   _pickFiles() async {
@@ -63,10 +64,24 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
     widget.reRenderFunction();
   }
 
+  Future<void> _getFileSize(double value) async {
+    Future.delayed(Duration.zero, () async {
+      // ignore: use_build_context_synchronously
+      final pdfUint8List = await createPdfFile(_project, context,
+          compressValue: widget.sliderCompressionLevelValue);
+      // render to file
+      final pdfFile = await convertUint8ListToFile(pdfUint8List);
+      _sizeOfFile = ((await pdfFile.length()) / 1024) / 1024;
+      setState(() {});
+      widget.reRenderFunction();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
-    print("compressList ${compressList}");
+    print(
+        "widget.sliderCompressionLevelValue ${widget.sliderCompressionLevelValue}");
     return Container(
       height: size.height * 0.95,
       decoration: BoxDecoration(
@@ -259,10 +274,8 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
                         min: 0,
                         max: 1,
                         onChangeEnd: (value) async {
-                          // final newFiles =   await testCompressFile(
-                          //       _project.listMedia as List<File>, value);
-                          // _project = _project.copyWith(listMedia: newFiles);
-                          // savePdf(SizedBox(), _project,"abcde${getRandomNumber()}");
+                          _project = _project.copyWith(compression: value);
+                          await _getFileSize(value);
                         },
                         thumbColor: colorWhite,
                         activeColor: colorBlue,
@@ -272,7 +285,8 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
                   ],
                 ),
                 WTextContent(
-                  value: "Estimated Total Size: -- MB",
+                  value:
+                      "Estimated Total Size: ${_sizeOfFile.toStringAsFixed(2)} MB",
                   textSize: 14,
                   textLineHeight: 16.71,
                   textColor: Theme.of(context).textTheme.bodyMedium!.color,
@@ -283,18 +297,9 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
           buildBottomButton(
             context: context,
             onApply: () async {
-              widget.onApply(_project);
-              final compressList1 = await testCompressFile(
-                  _project.listMedia.map<File>((e) => File(e.path)).toList(),
-                  widget.sliderCompressionLevelValue);
-              // _project = _project.copyWith(listMedia: newFiles);
-              setState(() {
-                compressList = compressList1;
-              });
+              widget.onApply(_project, _sizeOfFile);
               widget.reRenderFunction();
-              await savePdf(SizedBox(), _project);
-              pushNavigator(context, Preview(project: _project, indexPage: 0));
-             
+              popNavigator(context);
             },
             onCancel: () {
               popNavigator(context);

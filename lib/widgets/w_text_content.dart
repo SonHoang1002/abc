@@ -19,7 +19,7 @@ class WTextContent extends StatelessWidget {
       this.textColor,
       this.textFontWeight = FontWeight.w700,
       this.textLineHeight,
-      this.textSize,
+      this.textSize=12,
       this.textOverflow,
       this.textMaxLength,
       this.onTap});
@@ -34,12 +34,12 @@ class WTextContent extends StatelessWidget {
               textAlign: textAlign,
               maxLines: textMaxLength,
               style: TextStyle(
-                  fontSize: textSize,
+                  fontSize: (textSize! +1.0),
                   color:
                       textColor ?? Theme.of(context).textTheme.bodySmall!.color,
                   decoration: TextDecoration.none,
                   fontWeight: textFontWeight,
-                  fontFamily: myCustomFont,
+                  // fontFamily: myCustomFont,
                   overflow: textOverflow,
                   height: textLineHeight != null && textSize != null
                       ? (textLineHeight! / textSize!)
@@ -52,11 +52,11 @@ class WTextContent extends StatelessWidget {
             maxLines: textMaxLength,
             style: TextStyle(
                 decoration: TextDecoration.none,
-                fontSize: textSize,
+                fontSize: (textSize! +1.0),
                 color:
                     textColor ?? Theme.of(context).textTheme.bodySmall!.color,
                 fontWeight: textFontWeight,
-                fontFamily: myCustomFont,
+                // fontFamily: myCustomFont,
                 overflow: textOverflow,
                 height: textLineHeight != null && textSize != null
                     ? (textLineHeight! / textSize!)

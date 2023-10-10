@@ -228,7 +228,8 @@ Widget buildPageSizeOrientationItem(
 }
 
 Widget buildFileNameInput(BuildContext context, Project project,
-    TextEditingController controller, Function(String value) onChange) {
+    TextEditingController controller, Function(String value) onChange,
+    {bool autofocus = false, Function()? onTap}) {
   TextStyle buildTextStyleInputFileName(Color textColor) {
     return TextStyle(
         color: textColor,
@@ -256,6 +257,7 @@ Widget buildFileNameInput(BuildContext context, Project project,
         decoration: const BoxDecoration(),
         style: const TextStyle(color: colorBlue),
         controller: controller,
+        onTap: onTap,
         prefix: Container(
           margin: const EdgeInsets.only(left: 15),
           child: Text("File name",
@@ -264,7 +266,7 @@ Widget buildFileNameInput(BuildContext context, Project project,
         ),
         placeholder: "Untitled",
         placeholderStyle: buildTextStyleInputFileName(colorBlue),
-        autofocus: true,
+        autofocus: autofocus,
       ),
     ),
   );

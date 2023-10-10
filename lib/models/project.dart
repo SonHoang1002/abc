@@ -35,7 +35,7 @@ class Project {
       this.backgroundColor = colorWhite,
       this.paddingAttribute,
       this.spacingAttribute,
-      this.compression = 1.0,
+      this.compression = 0.8,
       this.coverPhoto,
       this.placements,
       this.useAvailableLayout = true});
@@ -319,8 +319,8 @@ class AlignmentAttribute {
 
   factory AlignmentAttribute.fromJson(Map<String, dynamic> json) {
     return AlignmentAttribute(
-      alignmentMode: Alignment(json['alignmentMode']?.toDouble() ?? 0.0,
-          json['alignmentMode']?.toDouble() ?? 0.0),
+      alignmentMode: Alignment(json['alignmentMode'][0]?.toDouble() ?? 0.0,
+          json['alignmentMode'][1]?.toDouble() ?? 0.0),
       title: json['title'] ?? "Center",
       mediaSrc: json['mediaSrc'] ?? "",
     );

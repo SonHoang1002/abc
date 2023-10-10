@@ -56,9 +56,9 @@ class _WProjectItemHomeState extends ConsumerState<WProjectItemHome> {
                   children: [
                     Positioned.fill(
                       child: Container(
-                        decoration: const BoxDecoration(
-                            color: colorWhite,
-                            boxShadow: [
+                        decoration: BoxDecoration(
+                            color: widget.project.backgroundColor,
+                            boxShadow: const [
                               BoxShadow(
                                   blurRadius: 20,
                                   spreadRadius: 0,
@@ -69,19 +69,12 @@ class _WProjectItemHomeState extends ConsumerState<WProjectItemHome> {
                     widget.project.listMedia.isNotEmpty
                         ? Container(
                             key: keyTest,
-                            padding: const EdgeInsets.all(3),
-                            child: 
-                  //            LayoutMedia(
-                  //   indexImage:indexImage,
-                  //   project:project,
-                  //   layoutExtractList:layoutExtractList,
-                  //   ratioTarget: LIST_RATIO_PREVIEW,
-                  // ),
-                            LayoutMedia(
-                              indexImage:  0,
-                                project:  widget.project,
-                                  layoutExtractList:widget.layoutExtractList,
-                                 ratioTarget: LIST_RATIO_PROJECT_ITEM))
+                            padding: const EdgeInsets.all(1),
+                            child: LayoutMedia(
+                                indexImage: 0,
+                                project: widget.project,
+                                layoutExtractList: widget.layoutExtractList,
+                                ratioTarget: LIST_RATIO_PROJECT_ITEM))
                         : Image.asset("${pathPrefixImage}blank_page.jpg"),
                     widget.isFocusByLongPress
                         ? Positioned(
@@ -124,10 +117,13 @@ class _WProjectItemHomeState extends ConsumerState<WProjectItemHome> {
                         height: 10,
                       ),
                       WTextContent(
-                        value: widget.project.title =="" ? "Untitled":widget.project.title ,
+                        value: widget.project.title == ""
+                            ? "Untitled"
+                            : widget.project.title,
                         textFontWeight: FontWeight.w600,
                         textLineHeight: 14.32,
                         textSize: 12,
+                        textOverflow: TextOverflow.ellipsis,
                         textColor:
                             Theme.of(context).textTheme.bodyMedium!.color,
                       ),

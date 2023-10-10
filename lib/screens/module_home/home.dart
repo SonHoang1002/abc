@@ -56,13 +56,19 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
     _isFocusProjectListBottom = true;
   }
 
-  int getLayoutImageNumber(int layoutIndex) {
-    if (layoutIndex == 0) {
-      return 1;
-    } else if (layoutIndex == 1) {
-      return 2;
+  int getLayoutImageNumber(
+    Project project,
+  ) {
+    if (project.useAvailableLayout) {
+      if (project.layoutIndex == 0) {
+        return 1;
+      } else if (project.layoutIndex == 1) {
+        return 2;
+      } else {
+        return 3;
+      }
     } else {
-      return 3;
+      return (project.placements?.length) ?? 0;
     }
   }
 
@@ -147,6 +153,8 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
               width: 255,
               backgroundColor: colorBlue,
               textColor: colorWhite,
+              elevation: 10,
+              shadowColor: Colors.blue,
               onPressed: () {
                 setState(() {
                   _currentProject =
@@ -193,8 +201,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                         (_listProject[index].layoutIndex != 0 &&
                             _listProject[index].listMedia.isEmpty)
                     ? null
-                    : extractList(
-                        getLayoutImageNumber(_listProject[index].layoutIndex),
+                    : extractList(getLayoutImageNumber(_listProject[index]),
                         _listProject[index].listMedia)[0],
                 onTap: () {
                   pushCustomMaterialPageRoute(
@@ -517,8 +524,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                                   .read(projectControllerProvider.notifier)
                                   .addProject(_currentProject);
                               // data on database
-                              IsarProjectService()
-                                  .addProject(_currentProject);
+                              IsarProjectService().addProject(_currentProject);
                               popNavigator(context);
                               pushNavigator(
                                   context, Editor(project: _currentProject));

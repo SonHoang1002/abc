@@ -1,5 +1,6 @@
-import 'package:photo_to_pdf/helpers/pdf_file_helper.dart';
+import 'package:photo_to_pdf/helpers/create_pdf.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_layout.dart';
+import 'package:photo_to_pdf/screens/module_pdf/preview_pdf.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
 import 'package:photo_to_pdf/commons/colors.dart';
@@ -12,7 +13,6 @@ import 'package:photo_to_pdf/providers/project_provider.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_paper.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_cover_photos.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_selected_photos.dart';
-import 'package:photo_to_pdf/screens/module_pdf/hello.dart';
 import 'package:photo_to_pdf/services/isar_project_service.dart';
 import 'package:photo_to_pdf/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_divider.dart';
@@ -43,7 +43,8 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   late dynamic _coverConfig;
   // selected photos
   late double _sliderCompressionValue;
-  late List pdfFiles;
+  late bool _autofocusFileName;
+  late double _sizeOfFile;
 
   @override
   void initState() {
@@ -58,22 +59,57 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
       "content": _project.paper ?? LIST_PAGE_SIZE[5]
     };
 
-    _layoutConfig = {
-      "mediaSrc": "${pathPrefixIcon}icon_layout.png",
-      "title": "Layout",
-      "content": "Layout ${_project.layoutIndex + 1}"
-    };
+    if (_project.useAvailableLayout) {
+      _layoutConfig = {
+        "mediaSrc": "${pathPrefixIcon}icon_layout.png",
+        "title": "Layout",
+        "content": "Layout ${_project.layoutIndex + 1}"
+      };
+    } else {
+      _layoutConfig = {
+        "mediaSrc": "${pathPrefixIcon}icon_layout.png",
+        "title": "Layout",
+        "content": "Edit"
+      };
+    }
     _photosConfig = {
       "mediaSrc": "${pathPrefixIcon}icon_frame.png",
       "title": "Selected Photos",
       "content": "${_project.listMedia.length} Photos"
     };
-    _coverConfig = {
-      "mediaSrc": "${pathPrefixIcon}icon_frame_1.png",
-      "title": "Cover Photos",
-      "content": "None"
-    };
+    if (_project.coverPhoto?.frontPhoto != null ||
+        _project.coverPhoto?.backPhoto != null) {
+      _coverConfig = {
+        "mediaSrc": "${pathPrefixIcon}icon_frame_1.png",
+        "title": "Cover Photos",
+        "content": "Edit"
+      };
+    } else {
+      _coverConfig = {
+        "mediaSrc": "${pathPrefixIcon}icon_frame_1.png",
+        "title": "Cover Photos",
+        "content": "None"
+      };
+    }
     _sliderCompressionValue = _project.compression;
+    _autofocusFileName = _project.title == "Untitled" || _project.title == "";
+    _sizeOfFile = 0.0;
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      await _getFileSize();
+    });
+  }
+
+  Future<void> _getFileSize() async {
+    Future.delayed(Duration.zero, () async {
+      _sizeOfFile = await getPdfFileSize(_project, context,
+          compressValue: _sliderCompressionValue);
+      setState(() {});
+    });
+  }
+
+  void _onTapFileNameInput() {
+    _fileNameController.selection = TextSelection(
+        baseOffset: 0, extentOffset: _fileNameController.value.text.length);
   }
 
   @override
@@ -89,14 +125,22 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 // input
-                buildFileNameInput(context, _project, _fileNameController,
-                    (value) async {
-                  _project = _project.copyWith(title: value.trim());
-                  ref
-                      .read(projectControllerProvider.notifier)
-                      .updateProject(_project);
-                  await IsarProjectService().updateProject(_project);
-                }),
+                buildFileNameInput(
+                  context,
+                  _project,
+                  _fileNameController,
+                  (value) async {
+                    _project = _project.copyWith(title: value.trim());
+                    ref
+                        .read(projectControllerProvider.notifier)
+                        .updateProject(_project);
+                    await IsarProjectService().updateProject(_project);
+                  },
+                  autofocus: _autofocusFileName,
+                  onTap: () {
+                    _onTapFileNameInput();
+                  },
+                ),
                 WSpacer(
                   height: 10,
                 ),
@@ -123,7 +167,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             WTextContent(
-                              value: "${_project.listMedia.length} Pages",
+                              value: "${_project.listMedia.length} Images",
                               textColor:
                                   Theme.of(context).textTheme.bodyMedium!.color,
                               textLineHeight: 14.32,
@@ -140,7 +184,8 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                 margin:
                                     const EdgeInsets.symmetric(horizontal: 10)),
                             WTextContent(
-                              value: "File Size: ${"----"} MB",
+                              value:
+                                  "File Size: ${_sizeOfFile.toStringAsFixed(2)} MB",
                               textColor:
                                   Theme.of(context).textTheme.bodyMedium!.color,
                               textLineHeight: 14.32,
@@ -227,10 +272,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                       buildBottomButton(
                           context: context,
                           onApply: () async {
-                            await savePdf(const SizedBox(), _project);
-                            // ignore: use_build_context_synchronously
-                            pushCustomMaterialPageRoute(
-                                context, const PdfViewerPage());
+                            await createAndPreviewPdf(_project, context);
                           },
                           onCancel: () {
                             ref
@@ -268,14 +310,23 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                     setState(() {});
                     setStatefull(() {});
                   },
-                  onApply: (project) {
+                  onApply: (project) async {
                     _project = project;
-                    _layoutConfig = {
-                      ..._layoutConfig,
-                      "content": "Layout ${_project.layoutIndex + 1}"
-                    };
+                    if (_project.useAvailableLayout) {
+                      _layoutConfig = {
+                        ..._layoutConfig,
+                        "content": "Layout ${_project.layoutIndex + 1}"
+                      };
+                    } else {
+                      _layoutConfig = {..._layoutConfig, "content": "Edit"};
+                    }
+                    ref
+                        .read(projectControllerProvider.notifier)
+                        .updateProject(project);
                     setState(() {});
                     popNavigator(context);
+                    await _getFileSize();
+                    await IsarProjectService().updateProject(project);
                   },
                 ));
           });
@@ -305,9 +356,9 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                     _project = _project.copyWith(paper: newPaper);
                     _paperSizeIsPortrait = pageSizeIsPortrait;
                     setState(() {});
-                    await IsarProjectService().updateProject(_project);
-                    // ignore: use_build_context_synchronously
                     popNavigator(context);
+                    await IsarProjectService().updateProject(_project);
+                    await _getFileSize();
                   });
             }),
           );
@@ -330,6 +381,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
               reRenderFunction: () {
                 setStatefull(() {});
               },
+              sizeOfFile: _sizeOfFile,
               project: _project,
               sliderCompressionLevelValue: sliderCompressionLevelValue,
               onChangedSlider: (value) {
@@ -344,7 +396,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                 });
                 setStatefull(() {});
               },
-              onApply: (newProject) async {
+              onApply: (newProject, size) async {
                 setState(() {
                   _project = _project.copyWith(
                       listMedia: newProject.listMedia,
@@ -353,9 +405,11 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                     ..._photosConfig,
                     "content": "${_project.listMedia.length} Photos"
                   };
+                  _sizeOfFile = size;
                 });
                 setStatefull(() {});
                 await IsarProjectService().updateProject(_project);
+                await _getFileSize();
               },
             );
           });
@@ -375,7 +429,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
             return CoverBody(
                 project: _project,
                 onUpdatePhoto: (newCoverPhoto) async {
-                  if (newCoverPhoto.backPhoto != null &&
+                  if (newCoverPhoto.backPhoto != null ||
                       newCoverPhoto.frontPhoto != null) {
                     _coverConfig["content"] = "Edit";
                   } else {
@@ -387,6 +441,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                   await IsarProjectService().updateProject(_project);
                   // ignore: use_build_context_synchronously
                   popNavigator(context);
+                  await _getFileSize();
                 },
                 reRenderFunction: () {
                   setStatefull(() {});

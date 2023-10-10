@@ -244,12 +244,6 @@ class _LayoutBodyState extends State<LayoutBody> {
                   useAvailableLayout: false);
             }
             widget.onApply(_project);
-            // layout
-            // resize mode
-            // alignment
-            // background
-            // padding
-            // spacing
           },
           onCancel: () {
             popNavigator(context);

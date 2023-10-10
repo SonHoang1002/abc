@@ -1,33 +1,23 @@
 // 1. compress file and get Uint8List
 import 'dart:io';
-
+import 'package:photo_to_pdf/helpers/create_pdf.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'dart:typed_data';
-import 'package:path_provider/path_provider.dart';
 
 
-Future<List<File>> testCompressFile(
-  List<File> files, double compressValue) async {
+
+Future<List<File>> compressImageFile(
+  List<dynamic> imageFiles, double compressValue,
+) async {
   List<File> results = [];
-  for (var element in files) {
+  for (var element in imageFiles) {
     final result = await FlutterImageCompress.compressWithFile(
       element.absolute.path,
-      quality: int.parse(compressValue.toStringAsFixed(0)),
+      quality: int.parse((compressValue * 100).toStringAsFixed(0)),
     );
-    final compressedFile = await convertUint8ListToFile(result, element);
-    results.add(compressedFile);
+    if (result != null) {
+      final file = await convertUint8ListToFile(result);
+      results.add(file);
+    }
   }
-  print("results: $results");
   return results;
-}
-
-
-Future<File> convertUint8ListToFile(Uint8List? data, File file) async {
-  if (data != null) {
-    final newFile = File(file.path);
-    await newFile.writeAsBytes(data);
-    return newFile;
-  } else {
-    return file;
-  }
 }

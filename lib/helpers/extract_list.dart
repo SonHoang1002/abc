@@ -1,12 +1,12 @@
 ///
 /// [number] : số phần tử trong mỗi item của kết quả trả ra
-/// 
+///
 /// [list] : danh sách đầu vào
-/// 
-/// Ví dụ: 
-/// 
+///
+/// Ví dụ:
+///
 ///  {number:3,list:[1,2,3,4,5,6,7,8,9]} => [[1,2,3],[4,5,6],[7,8,9]]
-/// 
+///
 ///  {number:4,list:[1,2,3,4,5,6,7,8,9]} => [[1,2,3,4],[5,6,7,8],[9,null,null,null]]
 List extractList(int number, List list) {
   List result = [];
@@ -22,6 +22,5 @@ List extractList(int number, List list) {
     }
     result.add(sublist);
   }
-print("result result ${result}");
   return result;
 }
