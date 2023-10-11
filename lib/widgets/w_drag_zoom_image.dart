@@ -3,9 +3,11 @@ import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/models/placement.dart';
+import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 
 class WDragZoomImage extends StatefulWidget {
+  final Color backgroundColor;
   final Function reRenerFunction;
   final List<Placement> listPlacement;
   final List<ValueNotifier<Matrix4>> matrix4Notifiers;
@@ -15,6 +17,7 @@ class WDragZoomImage extends StatefulWidget {
       onFocusPlacement;
   const WDragZoomImage({
     super.key,
+    required this.backgroundColor,
     required this.reRenerFunction,
     required this.listPlacement,
     required this.matrix4Notifiers,
@@ -69,134 +72,130 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
   Widget _buildCustomArea() {
     return Stack(
       alignment: Alignment.center,
-        children: [
-      Container(
-        alignment: Alignment.center,
-        child: Container(
-          width: _size.width * LIST_RATIO_PLACEMENT_BOARD[0],
-          height: _size.width * LIST_RATIO_PLACEMENT_BOARD[1],
-          decoration: BoxDecoration(color: Colors.white, boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              spreadRadius: 0.5,
-              blurRadius: 5,
-              offset: const Offset(0, 1),
-            ),
-          ]),
+      children: [
+        Container(
+          alignment: Alignment.center,
+          child: Container(
+            width: _size.width * LIST_RATIO_PLACEMENT_BOARD[0],
+            height: _size.width * LIST_RATIO_PLACEMENT_BOARD[1],
+            decoration: BoxDecoration(color: Colors.white, boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                spreadRadius: 0.5,
+                blurRadius: 5,
+                offset: const Offset(0, 1),
+              ),
+            ]),
+          ),
         ),
-      ),
-      Container(
-        alignment: Alignment.center,
-        width: _size.width * LIST_RATIO_PLACEMENT_BOARD[0]+15,
-        height: _size.width * LIST_RATIO_PLACEMENT_BOARD[1]+15,
-        child: Stack(
-          key: _placementFrame,
-          children: _listPlacement.map<Widget>(
-            (e) {
-              final index = _listPlacement.indexOf(e);
-              return GestureDetector(
-                onPanUpdate: (details) {
-                  _listPlacement[index].offset = _listPlacement[index]
-                      .offset
-                      .translate(details.delta.dx, details.delta.dy);
-                  //left
-                  if (_listPlacement[index].offset.dx <= 0) {
-                    _listPlacement[index].offset =
-                        Offset(0, _listPlacement[index].offset.dy);
-                  }
-                  //top
-                  if (_listPlacement[index].offset.dy <= 0) {
-                    _listPlacement[index].offset =
-                        Offset(_listPlacement[index].offset.dx, 0);
-                  }
-                  //right
-                  if (_listPlacement[index].offset.dx +
-                          _listPlacement[index].width >=
-                      _size.width * LIST_RATIO_PLACEMENT_BOARD[0]) {
-                    _listPlacement[index].offset = Offset(
-                        _size.width * LIST_RATIO_PLACEMENT_BOARD[0] -
-                            _listPlacement[index].width,
-                        _listPlacement[index].offset.dy);
-                  }
-                  //bottom
-                  if (_listPlacement[index].offset.dy +
-                          _listPlacement[index].height >=
-                      _size.width * LIST_RATIO_PLACEMENT_BOARD[1]) {
-                    _listPlacement[index].offset = Offset(
-                        _listPlacement[index].offset.dx,
-                        _size.width * LIST_RATIO_PLACEMENT_BOARD[1] -
-                            _listPlacement[index].height);
-                  }
-                  widget.updatePlacement(_listPlacement);
-                  setState(() {});
-                },
-                onTap: () {
-                  widget.onFocusPlacement != null
-                      ? widget.onFocusPlacement!(
-                          _listPlacement[index],
-                          _matrix4Notifiers[index])
-                      : null;
-                },
-                onPanStart: (details) {
-                  widget.onFocusPlacement != null
-                      ? widget.onFocusPlacement!(
-                          _listPlacement[index],
-                          _matrix4Notifiers[index])
-                      : null;
-                },
-                child: AnimatedBuilder(
-                  animation: _matrix4Notifiers[index],
-                  builder: (context, child) {
-                    return Stack(
-                      children: [
-                        Positioned(
-                          top: _listPlacement[index].offset.dy,
-                          left: _listPlacement[index].offset.dx,
-                          child: Stack(children: [
-                            Container(
-                              margin: const EdgeInsets.all(7),
-                              child: Image.asset(
-                                "${pathPrefixImage}image_demo.png",
-                                fit: BoxFit.cover,
-                                height: _listPlacement[index].height,
-                                width: _listPlacement[index].width,
-                              ),
-                            ),
-                            Positioned.fill(
-                                child: Center(
-                              child: Container(
-                                height: 25,
-                                width: 25,
-                                decoration: BoxDecoration(
-                                    borderRadius:
-                                        BorderRadius.circular(12.5),
-                                    color: colorBlue),
-                                child: Center(
-                                    child: WTextContent(
-                                  value: index.toString(),
-                                  textColor: colorWhite,
-                                )),
-                              ),
-                            )),
-                            widget.seletedPlacement ==
-                                    _listPlacement[index]
-                                ? Positioned.fill(
-                                    child:
-                                        _buildPanGestureWidget(index))
-                                : const SizedBox()
-                          ]),
-                        ),
-                      ],
-                    );
+        Container(
+          color: widget.backgroundColor,
+          alignment: Alignment.center,
+          width: _size.width * LIST_RATIO_PLACEMENT_BOARD[0] + 15,
+          height: _size.width * LIST_RATIO_PLACEMENT_BOARD[1] + 15,
+          child: Stack(
+            key: _placementFrame,
+            children: _listPlacement.map<Widget>(
+              (e) {
+                final index = _listPlacement.indexOf(e);
+                return GestureDetector(
+                  onPanUpdate: (details) {
+                    _listPlacement[index].offset = _listPlacement[index]
+                        .offset
+                        .translate(details.delta.dx, details.delta.dy);
+                    //left
+                    if (_listPlacement[index].offset.dx <= 0) {
+                      _listPlacement[index].offset =
+                          Offset(0, _listPlacement[index].offset.dy);
+                    }
+                    //top
+                    if (_listPlacement[index].offset.dy <= 0) {
+                      _listPlacement[index].offset =
+                          Offset(_listPlacement[index].offset.dx, 0);
+                    }
+                    //right
+                    if (_listPlacement[index].offset.dx +
+                            _listPlacement[index].width >=
+                        _size.width * LIST_RATIO_PLACEMENT_BOARD[0]) {
+                      _listPlacement[index].offset = Offset(
+                          _size.width * LIST_RATIO_PLACEMENT_BOARD[0] -
+                              _listPlacement[index].width,
+                          _listPlacement[index].offset.dy);
+                    }
+                    //bottom
+                    if (_listPlacement[index].offset.dy +
+                            _listPlacement[index].height >=
+                        _size.width * LIST_RATIO_PLACEMENT_BOARD[1]) {
+                      _listPlacement[index].offset = Offset(
+                          _listPlacement[index].offset.dx,
+                          _size.width * LIST_RATIO_PLACEMENT_BOARD[1] -
+                              _listPlacement[index].height);
+                    }
+                    widget.updatePlacement(_listPlacement);
+                    setState(() {});
                   },
-                ),
-              );
-            },
-          ).toList(),
-        ),
-      )
-        ],
-      );
+                  onTap: () {
+                    widget.onFocusPlacement != null
+                        ? widget.onFocusPlacement!(
+                            _listPlacement[index], _matrix4Notifiers[index])
+                        : null;
+                  },
+                  onPanStart: (details) {
+                    widget.onFocusPlacement != null
+                        ? widget.onFocusPlacement!(
+                            _listPlacement[index], _matrix4Notifiers[index])
+                        : null;
+                  },
+                  child: AnimatedBuilder(
+                    animation: _matrix4Notifiers[index],
+                    builder: (context, child) {
+                      return Stack(
+                        children: [
+                          Positioned(
+                            top: _listPlacement[index].offset.dy,
+                            left: _listPlacement[index].offset.dx,
+                            child: Stack(children: [
+                              Container(
+                                margin: const EdgeInsets.all(7),
+                                child: Image.asset(
+                                  "${pathPrefixImage}image_demo.png",
+                                  fit: BoxFit.cover,
+                                  height: _listPlacement[index].height,
+                                  width: _listPlacement[index].width,
+                                ),
+                              ),
+                              Positioned.fill(
+                                  child: Center(
+                                child: Container(
+                                  height: 25,
+                                  width: 25,
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12.5),
+                                      color: colorBlue),
+                                  child: Center(
+                                      child: WTextContent(
+                                    value: index.toString(),
+                                    textColor: colorWhite,
+                                  )),
+                                ),
+                              )),
+                              widget.seletedPlacement == _listPlacement[index]
+                                  ? Positioned.fill(
+                                      child: _buildPanGestureWidget(index))
+                                  : const SizedBox()
+                            ]),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                );
+              },
+            ).toList(),
+          ),
+        )
+      ],
+    );
   }
 
   double limitLeft(int index) {

@@ -92,7 +92,6 @@ class _TestDragState extends flutter_riverpod.ConsumerState<TestDrag> {
                           rerenderFunction();
                         },
                         onTap: () {
-                          print("$index hehehehe");
                         },
                         child: AnimatedBuilder(
                           animation: _matrix4Notifiers[index],
@@ -356,8 +355,6 @@ class _TestDragState extends flutter_riverpod.ConsumerState<TestDrag> {
     return GestureDetector(
       onPanUpdate: (details) {
         onPanUpdate!(details);
-        print("details.delta.dx ${details.delta.dx}");
-        print("details.delta.dy ${details.delta.dy}");
       },
       onTap: onTap,
       onPanStart: onPanStart,
@@ -446,4 +443,5 @@ adb -s
 adb -s [ten mays] shell  -> vi du:  adb -s ABT00017096 shell
 run-as [ten app]-> vi du:  run-as com.example.test_photo_to_pdf
 
- 
+ Hn/Wn = Hl/Wl 
+ -> Hn * Wl/Wn

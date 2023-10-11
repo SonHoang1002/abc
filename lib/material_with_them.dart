@@ -24,3 +24,17 @@ class _MaterialWithThemeState extends State<MaterialWithTheme> {
     );
   }
 }
+//  _project = _project.copyWith(
+//                 layoutIndex: _listLayoutStatus
+//                     .indexWhere((element) => element['isFocus'] == true),
+//                 resizeAttribute: _resizeModeSelectedValue,
+//                 alignmentAttribute: _listAlignment
+//                     .where((element) => element['isFocus'] == true)
+//                     .toList()
+//                     .first['alignment'],
+//                 backgroundColor: _currentLayoutColor,
+//                 paddingAttribute: _paddingOptions,
+//                 spacingAttribute: _spacingOptions,
+//                 placements: _listPlacement,
+//                 useAvailableLayout: _segmentCurrentIndex == 0);
+//             widget.onApply(_project, _segmentCurrentIndex);

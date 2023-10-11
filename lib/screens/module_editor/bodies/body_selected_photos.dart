@@ -23,7 +23,7 @@ class SelectedPhotosBody extends StatefulWidget {
   final double sliderCompressionLevelValue;
   final Function(double)? onChangedSlider;
   final Function() reRenderFunction;
-  final Function(Project project, double size) onApply;
+  final Function(Project project, double size, double sliderValue) onApply;
   final double sizeOfFile;
   const SelectedPhotosBody(
       {super.key,
@@ -42,19 +42,20 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
   late bool _isFocusProject;
   late Project _project;
   late double _sizeOfFile;
+  late double _sliderValue;
   @override
   void initState() {
     super.initState();
     _isFocusProject = false;
     _project = widget.project;
     _sizeOfFile = widget.sizeOfFile;
+    _sliderValue = widget.sliderCompressionLevelValue;
   }
 
   _pickFiles() async {
     final result = await pickImage(ImageSource.gallery, true);
     _project = _project.copyWith(listMedia: [..._project.listMedia, ...result]);
-    setState(() {});
-    widget.reRenderFunction();
+    _getFileSize(_sliderValue);
   }
 
   _pickImages() async {
@@ -80,8 +81,6 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
-    print(
-        "widget.sliderCompressionLevelValue ${widget.sliderCompressionLevelValue}");
     return Container(
       height: size.height * 0.95,
       decoration: BoxDecoration(
@@ -270,7 +269,12 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
                       ),
                       child: Slider(
                         value: widget.sliderCompressionLevelValue,
-                        onChanged: widget.onChangedSlider,
+                        onChanged: (value) {
+                          widget.onChangedSlider!(value);
+                          _sliderValue = value;
+                          setState(() {});
+                          widget.reRenderFunction();
+                        },
                         min: 0,
                         max: 1,
                         onChangeEnd: (value) async {
@@ -297,7 +301,7 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
           buildBottomButton(
             context: context,
             onApply: () async {
-              widget.onApply(_project, _sizeOfFile);
+              widget.onApply(_project, _sizeOfFile, _sliderValue);
               widget.reRenderFunction();
               popNavigator(context);
             },

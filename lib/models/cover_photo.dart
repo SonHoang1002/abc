@@ -32,8 +32,8 @@ class CoverPhoto {
     );
   }
 
-  void getInfor() {
-    print("frontPhoto: ${this.frontPhoto}, backPhoto: ${this.backPhoto}");
+  String getInfor() {
+    return ("frontPhoto: ${this.frontPhoto}, backPhoto: ${this.backPhoto}");
   }
 }
 

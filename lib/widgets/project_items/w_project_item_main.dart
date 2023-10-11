@@ -1,10 +1,8 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/commons/themes.dart';
+import 'package:photo_to_pdf/helpers/extract_list.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
-import 'package:photo_to_pdf/helpers/render_boxfit.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/screens/module_editor/preview.dart';
 import 'package:photo_to_pdf/widgets/project_items/w_project_ratio.dart';
@@ -12,7 +10,7 @@ import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 import "package:provider/provider.dart" as pv;
 
-class WProjectItemEditor extends ConsumerWidget {
+class WProjectItemEditor extends StatelessWidget {
   final Project project;
   final bool isFocusByLongPress;
 
@@ -23,6 +21,7 @@ class WProjectItemEditor extends ConsumerWidget {
 
   /// Use with layoutIndex is 1,2,3
   final List<dynamic>? layoutExtractList;
+  final Function()? onTap;
 
   const WProjectItemEditor(
       {super.key,
@@ -31,17 +30,40 @@ class WProjectItemEditor extends ConsumerWidget {
       required this.indexImage,
       this.title,
       this.onRemove,
-      this.layoutExtractList});
+      this.layoutExtractList,
+      this.onTap});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        // List _previewExtractList = [];
+        // if (project.useAvailableLayout == true) {
+        //   if (project.layoutIndex == 0) {
+        //     _previewExtractList = project.listMedia;
+        //   } else if (project.layoutIndex == 0) {
+        //     _previewExtractList = extractList(2, project.listMedia);
+        //   } else if ([2, 3].contains(project.layoutIndex)) {
+        //     _previewExtractList = extractList(3, project.listMedia);
+        //   }
+        // } else {
+        //   _previewExtractList =
+        //       extractList(project.placements!.length, project.listMedia);
+        // }
+        // if (project.coverPhoto != null) {
+        //   _previewExtractList
+        //       .insert(0, {"front_cover": project.coverPhoto!.frontPhoto});
+        // }
+        // if (project.coverPhoto?.backPhoto != null) {
+        //   _previewExtractList
+        //       .add({"back_cover": project.coverPhoto!.backPhoto});
+        // }
         pushCustomMaterialPageRoute(
             context,
-            Preview(
+            PreviewProject(
               project: project,
               indexPage: indexImage,
+              // previewExtractList: _previewExtractList,
             ));
       },
       child: Container(

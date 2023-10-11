@@ -61,8 +61,10 @@ Future<double> getPdfFileSize(Project project, BuildContext context,
   return fileSizeInMB;
 }
 
-Future<void> createAndPreviewPdf(Project project, BuildContext context) async {
-  final result = await createPdfFile(project, context);
+Future<void> createAndPreviewPdf(Project project, BuildContext context,
+    {double? compressValue}) async {
+  final result =
+      await createPdfFile(project, context, compressValue: compressValue);
   // ignore: use_build_context_synchronously
   await Navigator.of(context).push(
     MaterialPageRoute(
@@ -91,18 +93,13 @@ Future<void> createAndPreviewPdf(Project project, BuildContext context) async {
                 color: colorBlack,
                 size: 23,
               ),
-            )
-            // IconButton(
-            //   icon: const Icon(FontAwesomeIcons.chevronLeft),
-            //   color: colorRed,
-            //   onPressed: ()  {
-            //   },
-            // ),
-            ),
+            )),
         body: PdfPreview(
-          maxPageWidth: 700,
-          // initialPageFormat: ,
-          // pa
+          maxPageWidth: 793.70,
+          // static const double point = 1.0;
+          // static const double inch = 72.0;
+          // static const double cm = inch / 2.54;
+          // static const double mm = inch / 25.4;
           allowSharing: true,
           allowPrinting: false,
           padding: EdgeInsets.zero,
@@ -146,28 +143,43 @@ Future<Uint8List> createPdfFile(Project project, BuildContext context,
   List listExtract =
       extractList(checkNumberExtractList(_project), _project.listMedia);
   if (_project.coverPhoto?.frontPhoto != null) {
+    File compressFrontPhoto;
+    if (compressValue != null) {
+      compressFrontPhoto = (await compressImageFile(
+          [_project.coverPhoto?.frontPhoto], compressValue))[0];
+    } else {
+      compressFrontPhoto = _project.coverPhoto?.frontPhoto;
+    }
     pdf.addPage(pw.Page(build: (ctx) {
       return pw.Container(
           color: convertColorToPdfColor(_project.backgroundColor),
           child: pw.Image(
-              pw.MemoryImage(
-                  File(_project.coverPhoto?.frontPhoto.path).readAsBytesSync()),
+              pw.MemoryImage(File(compressFrontPhoto.path).readAsBytesSync()),
               fit: pw.BoxFit.cover));
     }));
   }
   for (var element in listExtract) {
     int index = listExtract.indexOf(element);
     pdf.addPage(pw.Page(build: (ctx) {
-      return _buildPdfPreview(_project, listExtract, index, [3, 4]);
+      return pw.Center(
+          child: _buildPdfPreview(
+              context, _project, listExtract, index, LIST_RATIO_PDF));
     }));
   }
   if (_project.coverPhoto?.backPhoto != null) {
+    File compressBackPhoto;
+    if (compressValue != null) {
+      compressBackPhoto = (await compressImageFile(
+          [_project.coverPhoto?.backPhoto], compressValue))[0];
+    } else {
+      compressBackPhoto = _project.coverPhoto?.backPhoto;
+    }
     pdf.addPage(pw.Page(build: (ctx) {
       return pw.Container(
           child: pw.Center(
               child: pw.Image(
-                  pw.MemoryImage(File(_project.coverPhoto?.backPhoto.path)
-                      .readAsBytesSync()),
+                  pw.MemoryImage(
+                      File(compressBackPhoto.path).readAsBytesSync()),
                   fit: pw.BoxFit.cover)));
     }));
   }
@@ -177,11 +189,11 @@ Future<Uint8List> createPdfFile(Project project, BuildContext context,
 }
 
 double getDrawBoardWithPreviewBoardHeight(List<dynamic> ratioTarget) {
-  return ratioTarget[0] / LIST_RATIO_PLACEMENT_BOARD[0];
+  return ratioTarget[0] / (LIST_RATIO_PLACEMENT_BOARD[0]);
 }
 
 double getDrawBoardWithPreviewBoardWidth(List<dynamic> ratioTarget) {
-  return ratioTarget[1] / LIST_RATIO_PLACEMENT_BOARD[1];
+  return ratioTarget[1] / (LIST_RATIO_PLACEMENT_BOARD[1]);
 }
 
 pw.Widget _buildCorePDFLayoutMedia(
@@ -197,7 +209,8 @@ pw.Widget _buildCorePDFLayoutMedia(
   if (project.useAvailableLayout != true &&
       project.placements != null &&
       project.placements!.isNotEmpty) {
-    return pw.Stack(
+    return pw.Container(
+        child: pw.Stack(
       children: layoutExtractList!.map((e) {
         final index = layoutExtractList.indexOf(e);
         return pw.Positioned(
@@ -211,7 +224,7 @@ pw.Widget _buildCorePDFLayoutMedia(
           ),
         );
       }).toList(),
-    );
+    ));
   } else {
     if (project.layoutIndex == 0 && layoutExtractList != null) {
       return _buildImageWidget(project, project.listMedia[indexPage]);
@@ -223,8 +236,6 @@ pw.Widget _buildCorePDFLayoutMedia(
                 child: _buildImageWidget(
               project,
               layoutExtractList[0],
-              height: 150,
-              width: 150,
             )),
             _buildSpacer(
               height: spacingVerticalValue,
@@ -233,8 +244,6 @@ pw.Widget _buildCorePDFLayoutMedia(
                 child: _buildImageWidget(
               project,
               layoutExtractList[1],
-              height: 150,
-              width: 150,
             )),
           ],
         );
@@ -246,7 +255,6 @@ pw.Widget _buildCorePDFLayoutMedia(
                 child: _buildImageWidget(
               project,
               layoutExtractList[0],
-              width: 150,
             )),
             _buildSpacer(height: spacingVerticalValue),
             pw.Flexible(
@@ -293,7 +301,7 @@ pw.Widget _buildCorePDFLayoutMedia(
                 child: _buildImageWidget(
               project,
               layoutExtractList[2],
-              width: 150,
+              // width: 150,
             )),
           ],
         );
@@ -311,23 +319,22 @@ pw.Widget _buildImageWidget(Project project, dynamic imageData,
     return pw.Container();
   } else {
     return pw.Image(pw.MemoryImage(File(imageData.path).readAsBytesSync()),
-        fit: fit);
+        fit: fit, height: height, width: width);
   }
 }
 
-pw.Widget _buildPdfPreview(Project project, List layoutExtractList,
-    int indexPage, List<double> ratioTarget) {
+pw.Widget _buildPdfPreview(BuildContext context, Project project,
+    List layoutExtractList, int indexPage, List<double> ratioTarget) {
   return pw.Container(
+    width: MediaQuery.of(context).size.width * LIST_RATIO_PDF[0],
+    height: MediaQuery.of(context).size.width * LIST_RATIO_PDF[1],
     color: convertColorToPdfColor(project.backgroundColor),
     padding: pw.EdgeInsets.only(
-        top: (2 + (project.paddingAttribute?.verticalPadding ?? 0.0)) *
-            getDrawBoardWithPreviewBoardHeight(ratioTarget),
-        left: (2 + (project.paddingAttribute?.horizontalPadding ?? 0.0)) *
-            getDrawBoardWithPreviewBoardWidth(ratioTarget),
-        right: (2 + (project.paddingAttribute?.horizontalPadding ?? 0.0)) *
-            getDrawBoardWithPreviewBoardWidth(ratioTarget),
-        bottom: (2 + (project.paddingAttribute?.verticalPadding ?? 0.0)) *
-            getDrawBoardWithPreviewBoardHeight(ratioTarget)),
+      top: (2 + (project.paddingAttribute?.verticalPadding ?? 0.0)),
+      left: (2 + (project.paddingAttribute?.horizontalPadding ?? 0.0)),
+      right: (2 + (project.paddingAttribute?.horizontalPadding ?? 0.0)),
+      bottom: (2 + (project.paddingAttribute?.verticalPadding ?? 0.0)),
+    ),
     // alignment: project.alignmentAttribute?.alignmentMode,
     child: _buildCorePDFLayoutMedia(
         indexPage, project, layoutExtractList[indexPage], ratioTarget),
@@ -336,14 +343,16 @@ pw.Widget _buildPdfPreview(Project project, List layoutExtractList,
 
 double getRealHeight(
     int extractIndex, Project project, List<dynamic> ratioTarget) {
-  return getDrawBoardWithPreviewBoardHeight(ratioTarget) *
+  final realHeight = getDrawBoardWithPreviewBoardHeight(ratioTarget) *
       (project.placements![extractIndex].height);
+  return realHeight;
 }
 
 double getRealWidth(
     int extractIndex, Project project, List<dynamic> ratioTarget) {
-  return getDrawBoardWithPreviewBoardWidth(ratioTarget) *
+  final realWidth = getDrawBoardWithPreviewBoardWidth(ratioTarget) *
       (project.placements![extractIndex].width);
+  return realWidth;
 }
 
 double getPositionWithTop(

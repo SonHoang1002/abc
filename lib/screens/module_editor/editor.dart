@@ -1,5 +1,6 @@
 import 'package:photo_to_pdf/helpers/create_pdf.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_layout.dart';
+import 'package:photo_to_pdf/screens/module_editor/preview.dart';
 import 'package:photo_to_pdf/screens/module_pdf/preview_pdf.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
@@ -45,6 +46,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   late double _sliderCompressionValue;
   late bool _autofocusFileName;
   late double _sizeOfFile;
+  late int _segmentCurrentIndex;
 
   @override
   void initState() {
@@ -73,7 +75,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
       };
     }
     _photosConfig = {
-      "mediaSrc": "${pathPrefixIcon}icon_frame.png",
+      "mediaSrc": "${pathPrefixIcon}icon_frame_border.png",
       "title": "Selected Photos",
       "content": "${_project.listMedia.length} Photos"
     };
@@ -94,6 +96,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     _sliderCompressionValue = _project.compression;
     _autofocusFileName = _project.title == "Untitled" || _project.title == "";
     _sizeOfFile = 0.0;
+    _segmentCurrentIndex = _project.useAvailableLayout == true ? 0 : 1;
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       await _getFileSize();
     });
@@ -272,7 +275,9 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                       buildBottomButton(
                           context: context,
                           onApply: () async {
-                            await createAndPreviewPdf(_project, context);
+                            print("222 on tap ${_project.listMedia}");
+                            await createAndPreviewPdf(_project, context,
+                                compressValue: _sliderCompressionValue);
                           },
                           onCancel: () {
                             ref
@@ -310,7 +315,8 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                     setState(() {});
                     setStatefull(() {});
                   },
-                  onApply: (project) async {
+                  segmentCurrentIndex: _segmentCurrentIndex,
+                  onApply: (project, newSegmentIndex) async {
                     _project = project;
                     if (_project.useAvailableLayout) {
                       _layoutConfig = {
@@ -323,9 +329,10 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                     ref
                         .read(projectControllerProvider.notifier)
                         .updateProject(project);
+                    _segmentCurrentIndex = newSegmentIndex;
                     setState(() {});
-                    popNavigator(context);
                     await _getFileSize();
+                    popNavigator(context);
                     await IsarProjectService().updateProject(project);
                   },
                 ));
@@ -386,17 +393,11 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
               sliderCompressionLevelValue: sliderCompressionLevelValue,
               onChangedSlider: (value) {
                 setState(() {
-                  // use sliderCompressionLevelValue to announce for selected photos
-                  // body that have changable variable
-                  // if only use _sliderCompressionValue, don't change value
-                  // sliderCompressionLevelValue because pass data
-                  // through every child and don't listen changes
                   sliderCompressionLevelValue = value;
-                  _sliderCompressionValue = value;
                 });
                 setStatefull(() {});
               },
-              onApply: (newProject, size) async {
+              onApply: (newProject, size, sliderValue) async {
                 setState(() {
                   _project = _project.copyWith(
                       listMedia: newProject.listMedia,
@@ -406,6 +407,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                     "content": "${_project.listMedia.length} Photos"
                   };
                   _sizeOfFile = size;
+                  _sliderCompressionValue = sliderValue;
                 });
                 setStatefull(() {});
                 await IsarProjectService().updateProject(_project);

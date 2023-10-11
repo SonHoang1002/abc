@@ -1,49 +1,65 @@
+import 'dart:io';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/extract_list.dart';
-import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/helpers/random_number.dart';
+import 'package:photo_to_pdf/helpers/render_boxfit.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/widgets/project_items/w_project_ratio.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class Preview extends StatefulWidget {
+class PreviewProject extends StatefulWidget {
   final Project project;
   final int indexPage;
-  const Preview({
+  const PreviewProject({
     super.key,
     required this.project,
     required this.indexPage,
   });
 
   @override
-  State<Preview> createState() => _PreviewState();
+  State<PreviewProject> createState() => _PreviewState();
 }
 
-class _PreviewState extends State<Preview> {
+class _PreviewState extends State<PreviewProject> {
   late Project _project;
-  late List _layoutExtractList;
+  late List _previewExtractList;
   @override
   void initState() {
-    super.initState();
     _project = widget.project;
+    _previewExtractList = [];
     if (_project.useAvailableLayout == true) {
       if (_project.layoutIndex == 0) {
-        _layoutExtractList = _project.listMedia;
+        _previewExtractList = _project.listMedia;
       } else if (_project.layoutIndex == 0) {
-        _layoutExtractList = extractList(2, _project.listMedia);
+        _previewExtractList = extractList(2, _project.listMedia);
       } else if ([2, 3].contains(_project.layoutIndex)) {
-        _layoutExtractList = extractList(3, _project.listMedia);
+        _previewExtractList = extractList(3, _project.listMedia);
       }
     } else {
-      _layoutExtractList =
+      _previewExtractList =
           extractList(_project.placements!.length, _project.listMedia);
     }
+    if (_project.coverPhoto != null) {
+      _previewExtractList
+          .insert(0, {"front_cover": _project.coverPhoto!.frontPhoto});
+    }
+    if (_project.coverPhoto?.backPhoto != null) {
+      _previewExtractList.add({"back_cover": _project.coverPhoto!.backPhoto});
+    }
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _previewExtractList = [];
+    _project = Project(id: 0, listMedia: []);
   }
 
   @override
@@ -57,11 +73,10 @@ class _PreviewState extends State<Preview> {
               color: const Color.fromRGBO(0, 0, 0, 0.1),
             ),
             Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              // mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Padding(
-                  padding:
-                      EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+                Container(
+                  margin: const EdgeInsets.only(top: 20),
                   child: WTextContent(
                     value: "Preview",
                     textSize: 16,
@@ -69,78 +84,114 @@ class _PreviewState extends State<Preview> {
                     textColor: Theme.of(context).textTheme.displayLarge!.color,
                   ),
                 ),
-                Stack(
-                  alignment: Alignment.center,
+                Expanded(
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        height: size.height * (589 / 844) * 0.95,
+                        decoration: BoxDecoration(
+                            color: Theme.of(context).cardColor,
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                      CarouselSlider.builder(
+                        itemCount: _previewExtractList.length,
+                        itemBuilder: (context, currentIndex, afterIndex) {
+                          return Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              _buildImageContent(widget.project, currentIndex),
+                              WSpacer(
+                                width: 40,
+                              ),
+                              WTextContent(
+                                value: "Page ${currentIndex + 1}",
+                                textSize: 12,
+                                textFontWeight: FontWeight.w600,
+                                textLineHeight: 14.32,
+                                textColor: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium!
+                                    .color,
+                              )
+                            ],
+                          );
+                        },
+                        options: CarouselOptions(
+                          height: size.height * 0.8,
+                          aspectRatio: size.height / size.width + 1,
+                          initialPage: 0,
+                          scrollPhysics: const BouncingScrollPhysics(),
+                          enableInfiniteScroll: false,
+                          autoPlayCurve: Curves.fastOutSlowIn,
+                          onPageChanged: (index, reason) {},
+                          scrollDirection: Axis.horizontal,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    const SizedBox(),
                     Container(
-                      height: size.height * (589 / 844) * 0.95,
-                      decoration: BoxDecoration(
-                          color: Theme.of(context).cardColor,
-                          borderRadius: BorderRadius.circular(10)),
-                    ),
-                    CarouselSlider.builder(
-                      itemCount: _layoutExtractList.length,
-                      itemBuilder: (context, currentIndex, afterIndex) {
-                        return Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            _buildPreviewItem(indexExtract: currentIndex),
-                            WSpacer(
-                              width: 40,
-                            ),
-                            WTextContent(
-                              value: "Page ${currentIndex + 1}",
-                              textSize: 12,
-                              textFontWeight: FontWeight.w600,
-                              textLineHeight: 14.32,
-                              textColor:
-                                  Theme.of(context).textTheme.bodyMedium!.color,
-                            )
-                          ],
-                        );
-                      },
-                      options: CarouselOptions(
-                        height: size.height * 0.8,
-                        aspectRatio: size.height / size.width + 1,
-                        initialPage: 0,
-                        scrollPhysics: const BouncingScrollPhysics(),
-                        enableInfiniteScroll: false,
-                        autoPlayCurve: Curves.fastOutSlowIn,
-                        onPageChanged: (index, reason) {},
-                        scrollDirection: Axis.horizontal,
+                      margin: const EdgeInsets.only(bottom: 30),
+                      width: size.width * 0.8,
+                      child: WButtonFilled(
+                        message: "Close",
+                        textColor: colorBlue,
+                        height: 60,
+                        backgroundColor: colorWhite,
+                        onPressed: () {
+                          /// không hiểu tại sao lại data binding 2 chiều ?? -> đành phải làm chiêu này
+                          setState(() {
+                            if (_project.coverPhoto?.frontPhoto != null) {
+                              _previewExtractList.removeAt(
+                                0,
+                              );
+                            }
+                            if (_project.coverPhoto?.backPhoto != null) {
+                              _previewExtractList.removeLast();
+                            }
+                          });
+                          // Future.delayed(const Duration(milliseconds: 200), () {
+                          Navigator.of(context).pop();
+                          // });
+                        },
                       ),
                     ),
                   ],
-                ),
-                const SizedBox(
-                  height: 70,
                 )
               ],
             ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const SizedBox(),
-                Container(
-                  margin: const EdgeInsets.only(bottom: 30),
-                  child: WButtonFilled(
-                    message: "Close",
-                    textColor: colorBlue,
-                    height: 60,
-                    width: size.width * (311 / 390) * 0.6,
-                    backgroundColor: colorWhite,
-                    onPressed: () {
-                      popNavigator(context);
-                    },
-                  ),
-                ),
-              ],
-            )
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildImageContent(Project project, int currentIndex) {
+    if (_previewExtractList[currentIndex] is! List &&
+        _previewExtractList[currentIndex] is! File &&
+        _previewExtractList[currentIndex]?['front_cover'] != null) {
+      return WProjectItemPreview(
+        project: _project,
+        indexImage: 0,
+        coverFile: _previewExtractList[currentIndex]?['front_cover'],
+      );
+    }
+    if (_previewExtractList[currentIndex] is! List &&
+        _previewExtractList[currentIndex] is! File &&
+        _previewExtractList[currentIndex]?['back_cover'] != null) {
+      return WProjectItemPreview(
+        project: _project,
+        indexImage: 0,
+        coverFile: _previewExtractList[currentIndex]?['back_cover'],
+      );
+    }
+    return _buildPreviewItem(indexExtract: currentIndex);
   }
 
   Widget _buildPreviewItem({
@@ -154,7 +205,7 @@ class _PreviewState extends State<Preview> {
         child: WProjectItemPreview(
           project: _project,
           indexImage: indexExtract,
-          layoutExtractList: _layoutExtractList[indexExtract],
+          layoutExtractList: _previewExtractList[indexExtract],
           title: "",
         ),
       );
@@ -187,7 +238,7 @@ class _PreviewState extends State<Preview> {
             child: WProjectItemPreview(
               project: _project,
               indexImage: indexExtract,
-              layoutExtractList: _layoutExtractList[indexExtract],
+              layoutExtractList: _previewExtractList[indexExtract],
               title: "",
             ),
           );
@@ -197,7 +248,7 @@ class _PreviewState extends State<Preview> {
             child: WProjectItemPreview(
               project: _project,
               indexImage: indexExtract,
-              layoutExtractList: _layoutExtractList[indexExtract],
+              layoutExtractList: _previewExtractList[indexExtract],
               title: "",
             ),
           );
@@ -209,13 +260,14 @@ class _PreviewState extends State<Preview> {
   }
 }
 
-class WProjectItemPreview extends ConsumerWidget {
+class WProjectItemPreview extends StatelessWidget {
   final Project project;
 
   /// index of image on project
   final int indexImage;
   final Function? onRemove;
   final String? title;
+  final File? coverFile;
 
   /// Use with layoutIndex is 1,2,3
   final List<dynamic>? layoutExtractList;
@@ -226,51 +278,71 @@ class WProjectItemPreview extends ConsumerWidget {
       required this.indexImage,
       this.title,
       this.onRemove,
-      this.layoutExtractList});
+      this.layoutExtractList,
+      this.coverFile});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      padding: const EdgeInsets.all(3),
-      child: Column(
-        children: [
-          Container(
-            width: MediaQuery.sizeOf(context).width * LIST_RATIO_PREVIEW[0],
-            height: MediaQuery.sizeOf(context).width * LIST_RATIO_PREVIEW[1],
-            decoration:
-                BoxDecoration(color: project.backgroundColor, boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                spreadRadius: 0.5,
-                blurRadius: 5,
-                offset: const Offset(0, 1),
-              ),
-            ]),
-            child: Center(
-              child: Stack(
-                children: [
-                  LayoutMedia(
-                    indexImage:indexImage,
-                    project:project,
-                    layoutExtractList:layoutExtractList,
-                    ratioTarget: LIST_RATIO_PREVIEW,
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(3),
+          child: Column(
+            children: [
+              Container(
+                width: MediaQuery.sizeOf(context).width * LIST_RATIO_PREVIEW[0],
+                height:
+                    MediaQuery.sizeOf(context).width * LIST_RATIO_PREVIEW[1],
+                decoration:
+                    BoxDecoration(color: project.backgroundColor, boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    spreadRadius: 0.5,
+                    blurRadius: 5,
+                    offset: const Offset(0, 1),
                   ),
-                ],
+                ]),
+                child: Center(
+                  child: Stack(
+                    children: [
+                      coverFile != null
+                          ? const SizedBox()
+                          : LayoutMedia(
+                              indexImage: indexImage,
+                              project: project,
+                              layoutExtractList: layoutExtractList,
+                              ratioTarget: LIST_RATIO_PREVIEW,
+                            ),
+                    ],
+                  ),
+                ),
               ),
-            ),
+              WSpacer(
+                height: 10,
+              ),
+              WTextContent(
+                value: title ?? "",
+                textFontWeight: FontWeight.w600,
+                textLineHeight: 14.32,
+                textSize: 12,
+                textColor: Theme.of(context).textTheme.bodyMedium!.color,
+              ),
+            ],
           ),
-          WSpacer(
-            height: 10,
-          ),
-          WTextContent(
-            value: title ?? "",
-            textFontWeight: FontWeight.w600,
-            textLineHeight: 14.32,
-            textSize: 12,
-            textColor: Theme.of(context).textTheme.bodyMedium!.color,
-          ),
-        ],
-      ),
+        ),
+        coverFile != null
+            ? Positioned.fill(
+                child: Container(
+                margin: const EdgeInsets.fromLTRB(3, 3, 3, 29),
+                color: colorBlue,
+                child: Image.file(
+                  coverFile!,
+                  fit: BoxFit.fitHeight,
+                  filterQuality: FilterQuality.medium,
+                ),
+              ))
+            : const SizedBox()
+      ],
     );
   }
 }

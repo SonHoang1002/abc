@@ -70,6 +70,14 @@ class _WProjectItemHomeState extends ConsumerState<WProjectItemHome> {
                         ? Container(
                             key: keyTest,
                             padding: const EdgeInsets.all(1),
+                            decoration: BoxDecoration(boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                spreadRadius: 0.5,
+                                blurRadius: 5,
+                                offset: const Offset(0, 1),
+                              ),
+                            ]),
                             child: LayoutMedia(
                                 indexImage: 0,
                                 project: widget.project,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:photo_to_pdf/commons/constants.dart';
 
 // ignore: must_be_immutable
 class WTextContent extends StatelessWidget {
@@ -19,7 +18,7 @@ class WTextContent extends StatelessWidget {
       this.textColor,
       this.textFontWeight = FontWeight.w700,
       this.textLineHeight,
-      this.textSize=12,
+      this.textSize = 12,
       this.textOverflow,
       this.textMaxLength,
       this.onTap});
@@ -34,7 +33,7 @@ class WTextContent extends StatelessWidget {
               textAlign: textAlign,
               maxLines: textMaxLength,
               style: TextStyle(
-                  fontSize: (textSize! +1.0),
+                  fontSize: (textSize! + 1.0),
                   color:
                       textColor ?? Theme.of(context).textTheme.bodySmall!.color,
                   decoration: TextDecoration.none,
@@ -52,7 +51,7 @@ class WTextContent extends StatelessWidget {
             maxLines: textMaxLength,
             style: TextStyle(
                 decoration: TextDecoration.none,
-                fontSize: (textSize! +1.0),
+                fontSize: (textSize! + 1.0),
                 color:
                     textColor ?? Theme.of(context).textTheme.bodySmall!.color,
                 fontWeight: textFontWeight,

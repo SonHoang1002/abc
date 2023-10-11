@@ -40,7 +40,7 @@ class MyThemes {
       // mau nen cac nut
       cardColor: const Color.fromRGBO(255, 255, 255, 0.1),
       // mau nen block navigator
-      canvasColor: const Color.fromRGBO(34, 34, 34, 1),
+      canvasColor: const Color.fromRGBO(0,0,0,0.1),
       // canvasColor: Colors.red,
       primaryColor: Colors.grey.withOpacity(0.6),
       appBarTheme: AppBarTheme(backgroundColor: Colors.grey.shade900),
@@ -58,7 +58,8 @@ class MyThemes {
       splashColor: Colors.transparent,
       hoverColor: Colors.transparent,
       focusColor: Colors.transparent,
-      dialogBackgroundColor: Color.fromRGBO(34, 34, 34, 0.8),
+      iconTheme: const IconThemeData(color: Color.fromRGBO(0, 0, 0, 0.1)),
+      dialogBackgroundColor: const Color.fromRGBO(34, 34, 34, 0.8),
       // ignore: deprecated_member_use
       backgroundColor: Colors.white.withOpacity(0.1));
 
@@ -82,7 +83,8 @@ class MyThemes {
       splashColor: Colors.transparent,
       hoverColor: Colors.transparent,
       focusColor: Colors.transparent,
-      dialogBackgroundColor: Color.fromRGBO(255, 255, 255, 0.8),
+      iconTheme: const IconThemeData(color: Color.fromRGBO(0,0,0, 0.1)),
+      dialogBackgroundColor: const Color.fromRGBO(255, 255, 255, 0.8),
       // ignore: deprecated_member_use
       backgroundColor: Colors.black.withOpacity(0.1));
 }

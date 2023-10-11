@@ -16,12 +16,14 @@ import 'package:photo_to_pdf/widgets/w_text_content.dart';
 class LayoutBody extends StatefulWidget {
   final Project project;
   final Function() reRenderFunction;
-  final Function(Project project) onApply;
+  final Function(Project project, int segmentIndex) onApply;
+  final int segmentCurrentIndex;
   const LayoutBody(
       {super.key,
       required this.project,
       required this.reRenderFunction,
-      required this.onApply});
+      required this.onApply,
+      required this.segmentCurrentIndex});
 
   @override
   State<LayoutBody> createState() => _LayoutBodyState();
@@ -50,16 +52,16 @@ class _LayoutBodyState extends State<LayoutBody> {
   final List<ValueNotifier<Matrix4>> _matrix4Notifiers = [];
   List<Placement> _listPlacement = [];
   Placement? _seletedPlacement;
-  // late PlacementAttribute _placementOptions;
 
   // background variable
   late Color _currentLayoutColor;
+
   @override
   void initState() {
     super.initState();
     _project = widget.project;
     _resizeModeSelectedValue = _project.resizeAttribute ?? LIST_RESIZE_MODE[0];
-    _segmentCurrentIndex = 0;
+    _segmentCurrentIndex = widget.segmentCurrentIndex;
     _listLayoutStatus = LIST_LAYOUT.map((e) {
       return {"mediaSrc": e, "isFocus": false};
     }).toList();
@@ -243,7 +245,7 @@ class _LayoutBodyState extends State<LayoutBody> {
                   placements: _listPlacement,
                   useAvailableLayout: false);
             }
-            widget.onApply(_project);
+            widget.onApply(_project, _segmentCurrentIndex);
           },
           onCancel: () {
             popNavigator(context);
@@ -473,6 +475,7 @@ class _LayoutBodyState extends State<LayoutBody> {
           child: Column(children: [
             Expanded(
                 child: WDragZoomImage(
+              backgroundColor: _currentLayoutColor,
               reRenerFunction: rerenderFunction,
               listPlacement: _listPlacement,
               matrix4Notifiers: _matrix4Notifiers,

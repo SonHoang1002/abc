@@ -288,14 +288,33 @@ Widget buildSelection(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          SizedBox(
-            width: size.width * 0.1,
-            child: Image.asset(
-              mediaSrc,
-              height: 35,
-              // color: Theme.of(context).cardColor,
-            ),
-          ),
+          // title == "Selected Photos"
+          //     ? Container(
+          //         width: size.width * 0.11,
+          //         padding:
+          //             const EdgeInsets.symmetric(horizontal: 5, vertical: 2.5),
+          //         decoration: BoxDecoration(
+          //             borderRadius: BorderRadius.circular(14),
+          //             border: Border.all(
+          //                 color: Theme.of(context).iconTheme.color!, width: 2)),
+          //         child: Container(
+          //           decoration: BoxDecoration(
+          //               color: Theme.of(context).iconTheme.color!),
+          //           child: Image.asset(
+          //             mediaSrc,
+          //             height: 30,
+          //           ),
+          //         ),
+          //       )
+          //     :
+               SizedBox(
+                  width: size.width * 0.1,
+                  child: Image.asset(
+                    mediaSrc,
+                    height: 35,
+                    // color: Theme.of(context).iconTheme.color!
+                  ),
+                ),
           WSpacer(
             width: 10,
           ),
@@ -308,6 +327,7 @@ Widget buildSelection(
                 textLineHeight: 14.32,
                 textFontWeight: FontWeight.w600,
                 textSize: 12,
+                textOverflow: TextOverflow.ellipsis,
                 textColor: Theme.of(context).textTheme.bodySmall!.color,
               ),
               WSpacer(
@@ -317,6 +337,7 @@ Widget buildSelection(
                 value: content,
                 textLineHeight: 19.09,
                 textSize: 16,
+                textOverflow: TextOverflow.ellipsis,
                 textColor: const Color.fromRGBO(10, 132, 255, 1),
               ),
             ],
