@@ -1,15 +1,18 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/commons/themes.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/w_divider.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
+import 'package:provider/provider.dart' as pv;
 
 ///////////// PAGE SIZE ///////////////
 
@@ -272,8 +275,8 @@ Widget buildFileNameInput(BuildContext context, Project project,
   );
 }
 
-Widget buildSelection(
-    BuildContext context, String mediaSrc, String title, String content,
+Widget buildSelection(BuildContext context, Map<String, dynamic> mediaSrc,
+    String title, String content,
     {Function()? onTap}) {
   final size = MediaQuery.sizeOf(context);
   return InkWell(
@@ -288,33 +291,15 @@ Widget buildSelection(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          // title == "Selected Photos"
-          //     ? Container(
-          //         width: size.width * 0.11,
-          //         padding:
-          //             const EdgeInsets.symmetric(horizontal: 5, vertical: 2.5),
-          //         decoration: BoxDecoration(
-          //             borderRadius: BorderRadius.circular(14),
-          //             border: Border.all(
-          //                 color: Theme.of(context).iconTheme.color!, width: 2)),
-          //         child: Container(
-          //           decoration: BoxDecoration(
-          //               color: Theme.of(context).iconTheme.color!),
-          //           child: Image.asset(
-          //             mediaSrc,
-          //             height: 30,
-          //           ),
-          //         ),
-          //       )
-          //     :
-               SizedBox(
-                  width: size.width * 0.1,
-                  child: Image.asset(
-                    mediaSrc,
-                    height: 35,
-                    // color: Theme.of(context).iconTheme.color!
-                  ),
-                ),
+          SizedBox(
+            width: size.width * 0.1,
+            child: Image.asset(
+              !(pv.Provider.of<ThemeManager>(context).isDarkMode)
+                  ? mediaSrc["light"]
+                  : mediaSrc['dark'],
+              height: 35,
+            ),
+          ),
           WSpacer(
             width: 10,
           ),
@@ -322,7 +307,7 @@ Widget buildSelection(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              WTextContent(
+            WTextContent(
                 value: title,
                 textLineHeight: 14.32,
                 textFontWeight: FontWeight.w600,
@@ -390,17 +375,22 @@ Widget buildSegmentControl(
     {required BuildContext context,
     required int? groupValue,
     required void Function(int?) onValueChanged}) {
+  bool isDarkMode = pv.Provider.of<ThemeManager>(context).isDarkMode;
   return CupertinoSlidingSegmentedControl<int>(
     groupValue: groupValue,
-    // _segmentCurrentIndex,
-    backgroundColor: const Color.fromRGBO(0, 0, 0, 0.04),
+    backgroundColor: Theme.of(context).tabBarTheme.unselectedLabelColor!,
     onValueChanged: onValueChanged,
+    thumbColor: thumbColorSegments,
     children: {
       0: Container(
           margin: const EdgeInsets.symmetric(horizontal: 10),
           child: WTextContent(
             value: "Presets",
-            textColor: Theme.of(context).textTheme.titleLarge!.color,
+            textColor: !isDarkMode
+                ? colorBlack
+                : groupValue == 0
+                    ? colorBlack
+                    : const Color.fromRGBO(255, 255, 255, 0.7),
             textSize: 14,
             textLineHeight: 16.71,
             textFontWeight: FontWeight.w600,
@@ -409,7 +399,11 @@ Widget buildSegmentControl(
           margin: const EdgeInsets.symmetric(horizontal: 10),
           child: WTextContent(
             value: "Custom",
-            textColor: Theme.of(context).textTheme.titleLarge!.color,
+            textColor: !isDarkMode
+                ? colorBlack
+                : groupValue == 1
+                    ? colorBlack
+                    : const Color.fromRGBO(255, 255, 255, 0.7),
             textSize: 14,
             textLineHeight: 16.71,
             textFontWeight: FontWeight.w600,
@@ -691,16 +685,26 @@ void showLayoutDialogWithOffset(
       return Material(
         color: transparent,
         child: Stack(children: [
-          Positioned.fill(child: GestureDetector(
+          Positioned.fill(
+              child: GestureDetector(
             onTap: () {
               popNavigator(context);
             },
-            // child: Container(color: Color.fromRGBO(0, 0, 0, 0.03)),
+            child: Container(color: const Color.fromRGBO(0, 0, 0, 0.03)),
           )),
           Positioned(
               bottom: size.height - offset.dy,
               left: offset.dx,
-              child: dialogWidget)
+              child: Container(
+                  decoration: BoxDecoration(boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      spreadRadius: 0,
+                      blurRadius: 20,
+                      offset: const Offset(0, 5),
+                    ),
+                  ]),
+                  child: dialogWidget))
         ]),
       );
     },
@@ -724,7 +728,7 @@ Widget buildDialogResizeMode(
     ),
     WDivider(
       height: 1,
-      color: const Color.fromRGBO(0, 0, 0, 0.3),
+      color: const Color.fromRGBO(0, 0, 0, 0.1),
     ),
     _buildDialogInformationItem(
         context,
@@ -812,7 +816,7 @@ Widget buildDialogPadding(
     width: size.width * 0.9,
     decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
-        color: const Color.fromRGBO(255, 255, 255, 0.8)),
+        color: Theme.of(context).dialogBackgroundColor),
     child: Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -892,10 +896,7 @@ Widget buildDialogAddCover(
         color: Theme.of(context).dialogBackgroundColor,
       ),
     ),
-    WDivider(
-      height: 1,
-      color: const Color.fromRGBO(0, 0, 0, 0.3),
-    ),
+    WDivider(height: 1, color: Theme.of(context).dividerColor),
     _buildDialogInformationItem(
         context,
         LIST_ADD_COVER[1]['mediaSrc'],
@@ -905,10 +906,7 @@ Widget buildDialogAddCover(
             ),
         boxDecoration:
             BoxDecoration(color: Theme.of(context).dialogBackgroundColor)),
-    WDivider(
-      height: 1,
-      color: const Color.fromRGBO(0, 0, 0, 0.3),
-    ),
+    WDivider(height: 1, color: Theme.of(context).dividerColor),
     _buildDialogInformationItem(
       context,
       LIST_ADD_COVER[2]['mediaSrc'],

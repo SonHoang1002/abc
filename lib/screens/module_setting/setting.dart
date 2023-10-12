@@ -142,37 +142,36 @@ class Setting extends StatelessWidget {
     return GestureDetector(
       onTap: () {
       },
-      child: Container(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Image.asset(
-                  prefixMediaSrc,
-                  height: 20,
-                  width: 20,
-                  color: Theme.of(context).textTheme.displayLarge!.color,
-                ),
-                WSpacer(
-                  width: 10,
-                ),
-                WTextContent(
-                  value: title,
-                  textSize: 15,
-                  textLineHeight: 20,
-                  textFontWeight: FontWeight.w500,
-                  textColor: Theme.of(context).textTheme.displayLarge!.color,
-                ),
-              ],
-            ),
-            const Icon(
-              FontAwesomeIcons.chevronRight,
-              size: 20,
-            )
-          ],
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Image.asset(
+                prefixMediaSrc,
+                height: 20,
+                width: 20,
+                color: Theme.of(context).textTheme.displayLarge!.color,
+              ),
+              WSpacer(
+                width: 10,
+              ),
+              WTextContent(
+                value: title,
+                textSize: 15,
+                textLineHeight: 20,
+                textFontWeight: FontWeight.w500,
+                textColor: Theme.of(context).textTheme.displayLarge!.color,
+              ),
+            ],
+          ),
+           Icon(
+            FontAwesomeIcons.chevronRight,
+            size: 20,
+            color: Theme.of(context).textTheme.displayLarge!.color,
+          )
+        ],
       ),
     );
   }

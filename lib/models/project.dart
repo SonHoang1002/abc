@@ -342,6 +342,9 @@ class PaperAttribute {
         unit: unit ?? this.unit,
         title: title ?? this.title);
   }
+    String getInfor() {
+    return "PaperAttribute title: ${this.title}, PaperAttribute width: ${this.width},PaperAttribute height: ${this.height},PaperAttribute unit: ${this.unit?.getInfor()},";
+  }
 
   Map<String, dynamic> toJson() {
     return {

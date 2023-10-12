@@ -1,4 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:pdf/pdf.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/models/project.dart';
@@ -164,3 +166,19 @@ const List<double> LIST_RATIO_PREVIEW = [0.75, 1.1];
 
 /// Ratio of changeable preview item: width, height
 const List<double> LIST_RATIO_PDF = [1.2, 1.6];
+
+const thumbColorSegments = CupertinoDynamicColor.withBrightness(
+  color: Color(0xFFFFFFFF),
+  darkColor: Color.fromRGBO(255, 255, 255, 1),
+);
+
+const PDF_PAGE_FORMAT = <String, PdfPageFormat>{
+  "A3": PdfPageFormat.a3,
+  'A4': PdfPageFormat.a4,
+  "B5": PdfPageFormat.a5,
+  "JIS B5": PdfPageFormat.roll57,
+  "Legal": PdfPageFormat.legal,
+  'Letter': PdfPageFormat.letter,
+  "Tabloid": PdfPageFormat.roll80,
+  "Custom": PdfPageFormat.undefined
+};

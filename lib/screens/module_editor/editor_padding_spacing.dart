@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
@@ -53,16 +55,23 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
   Placement? _placement;
   SpacingAttribute? _spacingAttribute;
   PaddingAttribute? _paddingAttribute;
-   List<TextEditingController> controllers = [];
+  List<TextEditingController> controllers = [];
   @override
   void initState() {
     super.initState();
+    for (var element in widget.inputValues) {
+      controllers.add(TextEditingController(text: element));
+    }
     if ([TITLE_EDIT_PLACEMENT].contains(widget.title)) {
       _labelInputs = LABELS_EDIT_PLACEMENT;
       _selectedLabel = _labelInputs[2];
+      controllers[2].selection = TextSelection(
+          baseOffset: 0, extentOffset: controllers[2].value.text.length);
     } else {
       _labelInputs = LABELS_PADDING_SPACING;
       _selectedLabel = _labelInputs[0];
+      controllers[0].selection = TextSelection(
+          baseOffset: 0, extentOffset: controllers[0].value.text.length);
     }
     _placement = widget.placement;
     _spacingAttribute = widget.spacingAttribute;
@@ -71,99 +80,100 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
         (_spacingAttribute?.unit) ??
         (_placement?.placementAttribute?.unit) ??
         widget.unit;
-    widget.inputValues.forEach((element) {
-      controllers.add(TextEditingController(text: element));
-    });
-    controllers[0].selection = TextSelection(
-        baseOffset: 0, extentOffset: controllers[0].value.text.length);
+  }
+
+  void _onDone(Unit newUnit) {
+    if (_placement != null) {
+      _placement = _placement?.copyWith(
+          placementAttribute: PlacementAttribute(
+              horizontal: parseStringToDouble(controllers[0].text.trim()),
+              vertical: parseStringToDouble(
+                controllers[1].text.trim(),
+              ),
+              top: parseStringToDouble(
+                controllers[2].text.trim(),
+              ),
+              left: parseStringToDouble(
+                controllers[3].text.trim(),
+              ),
+              right: parseStringToDouble(
+                controllers[4].text.trim(),
+              ),
+              bottom: parseStringToDouble(
+                controllers[5].text.trim(),
+              ),
+              unit: newUnit));
+      widget.onDone(_placement);
+    } else if (_paddingAttribute != null) {
+      _paddingAttribute = _paddingAttribute?.copyWith(
+        horizontalPadding: parseStringToDouble(
+          controllers[0].text.trim(),
+        ),
+        verticalPadding: parseStringToDouble(
+          controllers[1].text.trim(),
+        ),
+        unit: newUnit,
+      );
+      widget.onDone(_paddingAttribute);
+    } else if (_spacingAttribute != null) {
+      _spacingAttribute = _spacingAttribute?.copyWith(
+        horizontalSpacing: parseStringToDouble(
+          controllers[0].text.trim(),
+        ),
+        verticalSpacing: parseStringToDouble(
+          controllers[1].text.trim(),
+        ),
+        unit: newUnit,
+      );
+      widget.onDone(_spacingAttribute);
+    }
+    popNavigator(context);
   }
 
   @override
   Widget build(BuildContext context) {
     _size = MediaQuery.sizeOf(context);
-    return Scaffold(
-      backgroundColor: transparent,
-      resizeToAvoidBottomInset: true,
-      body: Stack(
-        children: [
-          Positioned.fill(child: GestureDetector(
-            onTap: () {
-              for (int i = 0; i < controllers.length; i++) {
-                if (controllers[i].text.trim().isEmpty) {
-                  widget.onChanged(i, "0.0");
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+      child: Scaffold(
+        backgroundColor: const Color.fromRGBO(0, 0, 0, 0.1),
+        resizeToAvoidBottomInset: true,
+        body: Stack(
+          children: [
+            Positioned.fill(child: GestureDetector(
+              onTap: () {
+                for (int i = 0; i < controllers.length; i++) {
+                  if (controllers[i].text.trim().isEmpty) {
+                    widget.onChanged(i, "0.0");
+                  }
                 }
-              }
-              popNavigator(context);
-            },
-          )),
-          [TITLE_EDIT_PLACEMENT].contains(widget.title)
-              ? _buildEditPlacementBody()
-              : _buildPaddingSpacingBody(title: widget.title, height: 140),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const SizedBox(),
-              MediaQuery.of(context).viewInsets.bottom > 0
-                  ? WUnitSelections(
-                      unitValue: _unit,
-                      onSelected: (value) {
-                        setState(() {
-                          _unit = value;
-                        });
-                      },
-                      onDone: (newUnit) {
-                        if (_placement != null) {
-                          _placement = _placement?.copyWith(
-                              placementAttribute: PlacementAttribute(
-                                  horizontal: parseStringToDouble(
-                                      controllers[0].text.trim()),
-                                  vertical: parseStringToDouble(
-                                    controllers[1].text.trim(),
-                                  ),
-                                  top: parseStringToDouble(
-                                    controllers[2].text.trim(),
-                                  ),
-                                  left: parseStringToDouble(
-                                    controllers[3].text.trim(),
-                                  ),
-                                  right: parseStringToDouble(
-                                    controllers[4].text.trim(),
-                                  ),
-                                  bottom: parseStringToDouble(
-                                    controllers[5].text.trim(),
-                                  ),
-                                  unit: newUnit));
-                          widget.onDone(_placement);
-                        } else if (_paddingAttribute != null) {
-                          _paddingAttribute = _paddingAttribute?.copyWith(
-                            horizontalPadding: parseStringToDouble(
-                              controllers[0].text.trim(),
-                            ),
-                            verticalPadding: parseStringToDouble(
-                              controllers[1].text.trim(),
-                            ),
-                            unit: newUnit,
-                          );
-                          widget.onDone(_paddingAttribute);
-                        } else if (_spacingAttribute != null) {
-                          _spacingAttribute = _spacingAttribute?.copyWith(
-                            horizontalSpacing: parseStringToDouble(
-                              controllers[0].text.trim(),
-                            ),
-                            verticalSpacing: parseStringToDouble(
-                              controllers[1].text.trim(),
-                            ),
-                            unit: newUnit,
-                          );
-                          widget.onDone(_spacingAttribute);
-                        }
-                        popNavigator(context);
-                      },
-                    )
-                  : const SizedBox(),
-            ],
-          ),
-        ],
+                popNavigator(context);
+              },
+            )),
+            [TITLE_EDIT_PLACEMENT].contains(widget.title)
+                ? _buildEditPlacementBody()
+                : _buildPaddingSpacingBody(title: widget.title, height: 140),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const SizedBox(),
+                MediaQuery.of(context).viewInsets.bottom > 0
+                    ? WUnitSelections(
+                        unitValue: _unit,
+                        onSelected: (value) {
+                          setState(() {
+                            _unit = value;
+                          });
+                        },
+                        onDone: (newUnit) {
+                          _onDone(newUnit);
+                        },
+                      )
+                    : const SizedBox(),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -175,15 +185,13 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
   Widget _buildEditPlacementBody() {
     return Center(
       child: Container(
-        height: _size.width * 0.9,
+        height: _size.width * 0.8,
         padding: const EdgeInsets.all(10),
-        // margin:
-        //     EdgeInsets.only(top: _size.height * 0.07, left: _size.height * 0.025),
         alignment: Alignment.center,
         width: _size.width * 0.9,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
-            color: Theme.of(context).canvasColor),
+            color: Theme.of(context).dialogBackgroundColor),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -211,7 +219,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                           _selectedLabel = _labelInputs[2];
                         });
                       },
-                      autoFocus: false),
+                      autoFocus: true),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -283,8 +291,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
               ],
             ),
             _buildPaddingSpacingBody(
-              padding: EdgeInsets.zero,
-            )
+                padding: EdgeInsets.zero, haveBackgroundColor: false)
           ],
         ),
       ),
@@ -294,7 +301,8 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
   Widget _buildPaddingSpacingBody(
       {double? height,
       EdgeInsets? padding = const EdgeInsets.all(10),
-      String? title}) {
+      String? title,
+      bool? haveBackgroundColor = true}) {
     return Center(
       child: Container(
         height: height,
@@ -303,7 +311,10 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
         width: _size.width * 0.9,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
-            color: Theme.of(context).canvasColor),
+            // color:colorRed
+            color: haveBackgroundColor!
+                ? Theme.of(context).dialogBackgroundColor
+                : null),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -408,13 +419,17 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
             controller.selection = TextSelection(
                 baseOffset: 0, extentOffset: controller.value.text.length);
           },
+          onSubmitted: (value) {
+            _onDone(_unit);
+          },
           onChanged: onChanged,
           autofocus: autoFocus ?? false,
           textAlign: TextAlign.center,
           keyboardType: TextInputType.number,
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              color: Theme.of(context).cardColor,
+              // color:Colors.red,
+              color: Theme.of(context).scaffoldBackgroundColor,
               border: Border.all(
                   color: isFocus
                       ? const Color.fromRGBO(98, 161, 255, 1)
@@ -425,8 +440,8 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                   alignment: Alignment.centerLeft,
                   margin: const EdgeInsets.only(right: 10),
                   child: Text(suffixValue,
-                      style: const TextStyle(
-                          color: Color.fromRGBO(0, 0, 0, 0.5),
+                      style: TextStyle(
+                          color: Theme.of(context).textTheme.bodyMedium!.color,
                           fontFamily: myCustomFont,
                           fontWeight: FontWeight.w700,
                           height: 16.71 / 14,

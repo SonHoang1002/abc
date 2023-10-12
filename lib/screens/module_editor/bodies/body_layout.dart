@@ -365,14 +365,7 @@ class _LayoutBodyState extends State<LayoutBody> {
                                   _paddingOptions.horizontalPadding.toString(),
                                   _paddingOptions.verticalPadding.toString()
                                 ],
-                                onChanged: (index, value) {
-                                  // if (index == 0) {
-                                  //   _paddingHorizontalController.text = value;
-                                  // }
-                                  // if (index == 1) {
-                                  //   _paddingVerticalController.text = value;
-                                  // }
-                                },
+                                onChanged: (index, value) {},
                                 onDone: (newPaddingAttribute) {
                                   setState(() {
                                     _paddingOptions = newPaddingAttribute;
@@ -399,14 +392,7 @@ class _LayoutBodyState extends State<LayoutBody> {
                                         .toString(),
                                     _spacingOptions.verticalSpacing.toString(),
                                   ],
-                                  onChanged: (index, value) {
-                                    // if (index == 0) {
-                                    //   _spacingHorizontalController.text = value;
-                                    // }
-                                    // if (index == 1) {
-                                    //   _spacingVerticalController.text = value;
-                                    // }
-                                  },
+                                  onChanged: (index, value) {},
                                   onDone: (newSpacingAttribute) {
                                     setState(() {
                                       _spacingOptions = newSpacingAttribute;
@@ -530,8 +516,15 @@ class _LayoutBodyState extends State<LayoutBody> {
                               id: getRandomNumber(),
                               width: 70,
                               height: 70,
-                              offset: Offset(_size.width * 0.4 - 35,
-                                  _size.width * 0.4 - 35),
+                              offset: Offset(
+                                  _size.width *
+                                          LIST_RATIO_PLACEMENT_BOARD[0] /
+                                          2 -
+                                      35,
+                                  _size.width *
+                                          LIST_RATIO_PLACEMENT_BOARD[1] /
+                                          2 -
+                                      35),
                               placementAttribute: PLACEMENT_ATTRIBUTE));
                           _seletedPlacement = _listPlacement.last;
                         });

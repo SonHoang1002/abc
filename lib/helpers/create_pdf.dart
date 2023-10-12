@@ -88,33 +88,21 @@ Future<void> createAndPreviewPdf(Project project, BuildContext context,
               onTap: () {
                 popNavigator(context);
               },
-              child: const Icon(
+              child: Icon(
                 FontAwesomeIcons.chevronLeft,
-                color: colorBlack,
                 size: 23,
+                color: Theme.of(context).textTheme.displayLarge!.color,
               ),
             )),
         body: PdfPreview(
           maxPageWidth: 793.70,
-          // static const double point = 1.0;
-          // static const double inch = 72.0;
-          // static const double cm = inch / 2.54;
-          // static const double mm = inch / 25.4;
           allowSharing: true,
           allowPrinting: false,
           padding: EdgeInsets.zero,
           shouldRepaint: true,
           pdfFileName: project.title,
-          pageFormats: const <String, PdfPageFormat>{
-            "A3": PdfPageFormat.a3,
-            'A4': PdfPageFormat.a4,
-            "B5": PdfPageFormat.a5,
-            "JIS B5": PdfPageFormat.roll57,
-            "Legal": PdfPageFormat.legal,
-            'Letter': PdfPageFormat.letter,
-            "Tabloid": PdfPageFormat.roll80,
-            "Custom": PdfPageFormat.undefined
-          },
+          canChangePageFormat: true,
+          pageFormats: PDF_PAGE_FORMAT,
           build: (fomat) {
             return result;
           },
@@ -133,6 +121,8 @@ PdfColor convertColorToPdfColor(Color color) {
 
 Future<Uint8List> createPdfFile(Project project, BuildContext context,
     {double? compressValue}) async {
+  PdfPageFormat? pdfPageFormat = PDF_PAGE_FORMAT[project.paper?.title];
+
   Project _project = project;
   if (compressValue != null) {
     final compressImages =
@@ -150,21 +140,26 @@ Future<Uint8List> createPdfFile(Project project, BuildContext context,
     } else {
       compressFrontPhoto = _project.coverPhoto?.frontPhoto;
     }
-    pdf.addPage(pw.Page(build: (ctx) {
-      return pw.Container(
-          color: convertColorToPdfColor(_project.backgroundColor),
-          child: pw.Image(
-              pw.MemoryImage(File(compressFrontPhoto.path).readAsBytesSync()),
-              fit: pw.BoxFit.cover));
-    }));
+    pdf.addPage(pw.Page(
+        build: (ctx) {
+          return pw.Container(
+              color: convertColorToPdfColor(_project.backgroundColor),
+              child: pw.Image(
+                  pw.MemoryImage(
+                      File(compressFrontPhoto.path).readAsBytesSync()),
+                  fit: pw.BoxFit.cover));
+        },
+        pageFormat: pdfPageFormat));
   }
   for (var element in listExtract) {
     int index = listExtract.indexOf(element);
-    pdf.addPage(pw.Page(build: (ctx) {
-      return pw.Center(
-          child: _buildPdfPreview(
-              context, _project, listExtract, index, LIST_RATIO_PDF));
-    }));
+    pdf.addPage(pw.Page(
+        build: (ctx) {
+          return pw.Center(
+              child: _buildPdfPreview(
+                  context, _project, listExtract, index, LIST_RATIO_PDF));
+        },
+        pageFormat: pdfPageFormat));
   }
   if (_project.coverPhoto?.backPhoto != null) {
     File compressBackPhoto;
@@ -174,14 +169,16 @@ Future<Uint8List> createPdfFile(Project project, BuildContext context,
     } else {
       compressBackPhoto = _project.coverPhoto?.backPhoto;
     }
-    pdf.addPage(pw.Page(build: (ctx) {
-      return pw.Container(
-          child: pw.Center(
-              child: pw.Image(
-                  pw.MemoryImage(
-                      File(compressBackPhoto.path).readAsBytesSync()),
-                  fit: pw.BoxFit.cover)));
-    }));
+    pdf.addPage(pw.Page(
+        build: (ctx) {
+          return pw.Container(
+              child: pw.Center(
+                  child: pw.Image(
+                      pw.MemoryImage(
+                          File(compressBackPhoto.path).readAsBytesSync()),
+                      fit: pw.BoxFit.cover)));
+        },
+        pageFormat: pdfPageFormat));
   }
 
   final result = await pdf.save();

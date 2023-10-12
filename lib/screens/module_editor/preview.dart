@@ -6,7 +6,6 @@ import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/extract_list.dart';
 import 'package:photo_to_pdf/helpers/random_number.dart';
-import 'package:photo_to_pdf/helpers/render_boxfit.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/widgets/project_items/w_project_ratio.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
@@ -73,7 +72,6 @@ class _PreviewState extends State<PreviewProject> {
               color: const Color.fromRGBO(0, 0, 0, 0.1),
             ),
             Column(
-              // mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
                   margin: const EdgeInsets.only(top: 20),
@@ -334,7 +332,6 @@ class WProjectItemPreview extends StatelessWidget {
             ? Positioned.fill(
                 child: Container(
                 margin: const EdgeInsets.fromLTRB(3, 3, 3, 29),
-                color: colorBlue,
                 child: Image.file(
                   coverFile!,
                   fit: BoxFit.fitHeight,

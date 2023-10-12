@@ -19,7 +19,7 @@ class WUnitSelections extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 60,
-      color: Theme.of(context).canvasColor,
+      color: Theme.of(context).scaffoldBackgroundColor,
       padding: const EdgeInsets.symmetric(horizontal: 15),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

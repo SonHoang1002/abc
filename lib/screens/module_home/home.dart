@@ -74,7 +74,6 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    print("home page build");
     _listProject = ref.watch(projectControllerProvider).listProject;
     return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,

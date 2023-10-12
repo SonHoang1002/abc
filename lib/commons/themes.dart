@@ -36,11 +36,12 @@ class ThemeManager with ChangeNotifier {
 
 class MyThemes {
   static final darkTheme = ThemeData(
-      scaffoldBackgroundColor: Colors.grey.shade900,
+      sliderTheme: const SliderThemeData(),
+      scaffoldBackgroundColor: const Color.fromRGBO(34,34,34,1),
       // mau nen cac nut
       cardColor: const Color.fromRGBO(255, 255, 255, 0.1),
       // mau nen block navigator
-      canvasColor: const Color.fromRGBO(0,0,0,0.1),
+      canvasColor: const Color.fromRGBO(0, 0, 0, 0.1),
       // canvasColor: Colors.red,
       primaryColor: Colors.grey.withOpacity(0.6),
       appBarTheme: AppBarTheme(backgroundColor: Colors.grey.shade900),
@@ -61,10 +62,16 @@ class MyThemes {
       iconTheme: const IconThemeData(color: Color.fromRGBO(0, 0, 0, 0.1)),
       dialogBackgroundColor: const Color.fromRGBO(34, 34, 34, 0.8),
       // ignore: deprecated_member_use
-      backgroundColor: Colors.white.withOpacity(0.1));
+      backgroundColor: Colors.white.withOpacity(0.1),
+      tabBarTheme: const TabBarTheme(
+        unselectedLabelColor: Color.fromRGBO(255, 255, 255, 0.04),
+      ),
+      dividerColor: const Color.fromRGBO(255, 255, 255, 0.1),
+      inputDecorationTheme: const InputDecorationTheme(fillColor: Color.fromRGBO(0,0,0,1))
+      );
 
   static final lightTheme = ThemeData(
-      scaffoldBackgroundColor: colorWhite,
+      scaffoldBackgroundColor:const Color.fromRGBO(250,250,250,1),
       cardColor: const Color.fromRGBO(0, 0, 0, 0.03),
       canvasColor: const Color.fromRGBO(250, 250, 250, 1),
       primaryColor: colorWhite,
@@ -83,8 +90,14 @@ class MyThemes {
       splashColor: Colors.transparent,
       hoverColor: Colors.transparent,
       focusColor: Colors.transparent,
-      iconTheme: const IconThemeData(color: Color.fromRGBO(0,0,0, 0.1)),
+      iconTheme: const IconThemeData(color: Color.fromRGBO(0, 0, 0, 0.1)),
       dialogBackgroundColor: const Color.fromRGBO(255, 255, 255, 0.8),
       // ignore: deprecated_member_use
-      backgroundColor: Colors.black.withOpacity(0.1));
+      backgroundColor: Colors.black.withOpacity(0.1),
+      tabBarTheme: const TabBarTheme(
+        unselectedLabelColor: Color.fromRGBO(0, 0, 0, 0.04),
+      ),
+      dividerColor: const Color.fromRGBO(0, 0, 0, 0.1),
+      inputDecorationTheme: const InputDecorationTheme(fillColor: Color.fromRGBO(255,255,255,1))
+      );
 }

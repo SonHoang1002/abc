@@ -56,39 +56,57 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         _project.title == "Untitled" ? "" : _project.title;
 
     _paperConfig = {
-      "mediaSrc": "${pathPrefixIcon}icon_letter.png",
+      "mediaSrc": {
+        "light": "${pathPrefixIcon}icon_letter_lm.png",
+        "dark": "${pathPrefixIcon}icon_letter_dm.png"
+      },
       "title": "Paper Size",
       "content": _project.paper ?? LIST_PAGE_SIZE[5]
     };
 
     if (_project.useAvailableLayout) {
       _layoutConfig = {
-        "mediaSrc": "${pathPrefixIcon}icon_layout.png",
+        "mediaSrc": {
+          "light": "${pathPrefixIcon}icon_layout_lm.png",
+          "dark": "${pathPrefixIcon}icon_layout_dm.png",
+        },
         "title": "Layout",
         "content": "Layout ${_project.layoutIndex + 1}"
       };
     } else {
       _layoutConfig = {
-        "mediaSrc": "${pathPrefixIcon}icon_layout.png",
+        "mediaSrc": {
+          "light": "${pathPrefixIcon}icon_layout_lm.png",
+          "dark": "${pathPrefixIcon}icon_layout_dm.png",
+        },
         "title": "Layout",
         "content": "Edit"
       };
     }
     _photosConfig = {
-      "mediaSrc": "${pathPrefixIcon}icon_frame_border.png",
+      "mediaSrc": {
+        "light": "${pathPrefixIcon}icon_frame_border_lm.png",
+        "dark": "${pathPrefixIcon}icon_frame_border_dm.png",
+      },
       "title": "Selected Photos",
       "content": "${_project.listMedia.length} Photos"
     };
     if (_project.coverPhoto?.frontPhoto != null ||
         _project.coverPhoto?.backPhoto != null) {
       _coverConfig = {
-        "mediaSrc": "${pathPrefixIcon}icon_frame_1.png",
+        "mediaSrc": {
+          "light": "${pathPrefixIcon}icon_cover_lm.png",
+          "dark": "${pathPrefixIcon}icon_cover_dm.png",
+        },
         "title": "Cover Photos",
         "content": "Edit"
       };
     } else {
       _coverConfig = {
-        "mediaSrc": "${pathPrefixIcon}icon_frame_1.png",
+        "mediaSrc": {
+          "light": "${pathPrefixIcon}icon_cover_lm.png",
+          "dark": "${pathPrefixIcon}icon_cover_dm.png",
+        },
         "title": "Cover Photos",
         "content": "None"
       };
@@ -115,9 +133,31 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         baseOffset: 0, extentOffset: _fileNameController.value.text.length);
   }
 
+  List<double>? _getRatioProject() {
+    print("_getRatioProject ${_project.paper?.getInfor()}");
+    if (_project.paper?.width != null &&
+        _project.paper?.width != 0 &&
+        _project.paper?.height != null &&
+        _project.paper?.height != 0) {
+      final heightForWidth = (_project.paper!.height / _project.paper!.width);
+      final result = [
+        0.5, 0.7
+        // LIST_RATIO_PROJECT_ITEM[0],
+        // heightForWidth/LIST_RATIO_PLACEMENT_BOARD[1] * LIST_RATIO_PLACEMENT_BOARD[0]
+      ];
+
+      print("_getRatioProject ${result}");
+      return result;
+    }
+    return null;
+  }
+
+// h1   h2
+// w1   w2
   @override
   Widget build(BuildContext context) {
     _size = MediaQuery.sizeOf(context);
+
     return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         resizeToAvoidBottomInset: false,
@@ -275,7 +315,6 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                       buildBottomButton(
                           context: context,
                           onApply: () async {
-                            print("222 on tap ${_project.listMedia}");
                             await createAndPreviewPdf(_project, context,
                                 compressValue: _sliderCompressionValue);
                           },
@@ -466,13 +505,13 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
           return Container(
             margin: const EdgeInsets.symmetric(horizontal: 10),
             child: WProjectItemEditor(
-              key: ValueKey(_project.listMedia[index]),
-              project: _project,
-              isFocusByLongPress: false,
-              indexImage: index,
-              layoutExtractList: list[index],
-              title: "Page ${index + 1}",
-            ),
+                key: ValueKey(_project.listMedia[index]),
+                project: _project,
+                isFocusByLongPress: false,
+                indexImage: index,
+                layoutExtractList: list[index],
+                title: "Page ${index + 1}",
+                ratioTarget: _getRatioProject()),
           );
         }).toList(),
       );

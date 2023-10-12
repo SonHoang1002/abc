@@ -18,11 +18,31 @@ class LayoutMedia extends StatelessWidget {
       required this.ratioTarget});
 
   double ratioTargetWithHeightPlacement() {
-    return ratioTarget[0] / LIST_RATIO_PLACEMENT_BOARD[0];
+    // if (project.paper != null &&
+    //     project.paper?.height != 0 &&
+    //     project.paper?.width != 0) {
+    //   final paperWidth = project.paper!.width;
+    //   final paperHeight = project.paper!.height;
+    //   return (paperWidth / paperHeight) /
+    //       (LIST_RATIO_PLACEMENT_BOARD[0] / LIST_RATIO_PLACEMENT_BOARD[1]) *
+    //       LIST_RATIO_PLACEMENT_BOARD[0];
+    // } else {
+      return ratioTarget[0] / LIST_RATIO_PLACEMENT_BOARD[0];
+    // }
   }
 
   double ratioTargetWithWidthPlacement() {
-    return ratioTarget[1] / LIST_RATIO_PLACEMENT_BOARD[1];
+    // if (project.paper != null &&
+    //     project.paper?.height != 0 &&
+    //     project.paper?.width != 0) {
+    //   final paperWidth = project.paper!.width;
+    //   final paperHeight = project.paper!.height;
+    //   return (paperHeight / paperWidth) /
+    //       (LIST_RATIO_PLACEMENT_BOARD[1] / LIST_RATIO_PLACEMENT_BOARD[0]) *
+    //       LIST_RATIO_PLACEMENT_BOARD[1];
+    // } else {
+      return ratioTarget[1] / LIST_RATIO_PLACEMENT_BOARD[1];
+    // }
   }
 
   Widget buildCoreLayoutMedia(
@@ -178,6 +198,7 @@ class LayoutMedia extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("paper ${project.paper?.getInfor()}");
     return Container(
       padding: EdgeInsets.only(
           top: 2 + (project.paddingAttribute?.verticalPadding ?? 0.0),

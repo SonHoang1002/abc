@@ -15,7 +15,8 @@ class PaperBody extends StatefulWidget {
   final dynamic paperConfig;
   // final List<String> values;
   final bool pageSizeIsPortrait;
-  final Function(PaperAttribute paperAttribute, bool pageSizeIsPortrait) onApply;
+  final Function(PaperAttribute paperAttribute, bool pageSizeIsPortrait)
+      onApply;
   const PaperBody(
       {super.key,
       required this.project,
@@ -165,9 +166,6 @@ class _PaperBodyState extends State<PaperBody> {
                         WSpacer(
                           height: 10,
                         ),
-                        // orientation
-                        // _overWHValue() ||
-
                         _buildOrientation(() {
                           widget.reRenderFunction();
                         })
@@ -232,28 +230,30 @@ class _PaperBodyState extends State<PaperBody> {
                 ],
               )),
               buildBottomButton(
-                  context: context,
-                  onApply: () {
-                    final widthValue = _paperSizeWidthController.text.trim();
-                    final heightValue = _paperSizeHeightController.text.trim();
-                    if (widthValue.isEmpty ||
-                        double.parse(widthValue) == 0.0 ||
-                        heightValue.isEmpty ||
-                        double.parse(heightValue) == 0.0) {
-                      widget.onApply(
-                          widget.paperConfig['content'], _pageSizeIsPortrait);
-                    } else {
-                      widget.onApply(
-                          PaperAttribute(
-                              title: _paperConfig['content'].title,
-                              width: double.parse(widthValue),
-                              height: double.parse(heightValue),
-                              unit: _paperConfig['content'].unit),
-                          _pageSizeIsPortrait);
-                    }
-                  },onCancel: () {
-                    popNavigator(context);
-                  },)
+                context: context,
+                onApply: () {
+                  final widthValue = _paperSizeWidthController.text.trim();
+                  final heightValue = _paperSizeHeightController.text.trim();
+                  if (widthValue.isEmpty ||
+                      double.parse(widthValue) == 0.0 ||
+                      heightValue.isEmpty ||
+                      double.parse(heightValue) == 0.0) {
+                    widget.onApply(
+                        widget.paperConfig['content'], _pageSizeIsPortrait);
+                  } else {
+                    widget.onApply(
+                        PaperAttribute(
+                            title: _paperConfig['content'].title,
+                            width: double.parse(widthValue),
+                            height: double.parse(heightValue),
+                            unit: _paperConfig['content'].unit),
+                        _pageSizeIsPortrait);
+                  }
+                },
+                onCancel: () {
+                  popNavigator(context);
+                },
+              )
             ],
           ),
           MediaQuery.of(context).viewInsets.bottom > 0.0

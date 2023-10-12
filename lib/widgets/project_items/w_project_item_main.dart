@@ -22,6 +22,7 @@ class WProjectItemEditor extends StatelessWidget {
   /// Use with layoutIndex is 1,2,3
   final List<dynamic>? layoutExtractList;
   final Function()? onTap;
+  final List<double>? ratioTarget;
 
   const WProjectItemEditor(
       {super.key,
@@ -31,33 +32,42 @@ class WProjectItemEditor extends StatelessWidget {
       this.title,
       this.onRemove,
       this.layoutExtractList,
-      this.onTap});
+      this.onTap,
+      this.ratioTarget});
+  double _getHeight(BuildContext context) {
+    // if (project.paper != null &&
+    //     project.paper?.height != 0 &&
+    //     project.paper?.width != 0) {
+    //   return MediaQuery.sizeOf(context).width *
+    //       LIST_RATIO_PROJECT_ITEM[0] *
+    //       (project.paper!.height) /
+    //       (project.paper!.width);
+    // } else {
+      return MediaQuery.sizeOf(context).width * LIST_RATIO_PROJECT_ITEM[1];
+    // }
+  }
+
+  // 29.7   1.41428571429
+  // 21
+  // 0.4    1.33333333333     => 0.56571428571
+  // 0.3
+  double _getWidth(BuildContext context) {
+    // if (project.paper != null &&
+    //     project.paper?.height != 0 &&
+    //     project.paper?.width != 0) {
+    //   return MediaQuery.sizeOf(context).width *
+    //       LIST_RATIO_PROJECT_ITEM[0] *
+    //       (project.paper!.height) /
+    //       (project.paper!.width);
+    // } else {
+      return MediaQuery.sizeOf(context).width * LIST_RATIO_PROJECT_ITEM[1];
+    // }
+  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // List _previewExtractList = [];
-        // if (project.useAvailableLayout == true) {
-        //   if (project.layoutIndex == 0) {
-        //     _previewExtractList = project.listMedia;
-        //   } else if (project.layoutIndex == 0) {
-        //     _previewExtractList = extractList(2, project.listMedia);
-        //   } else if ([2, 3].contains(project.layoutIndex)) {
-        //     _previewExtractList = extractList(3, project.listMedia);
-        //   }
-        // } else {
-        //   _previewExtractList =
-        //       extractList(project.placements!.length, project.listMedia);
-        // }
-        // if (project.coverPhoto != null) {
-        //   _previewExtractList
-        //       .insert(0, {"front_cover": project.coverPhoto!.frontPhoto});
-        // }
-        // if (project.coverPhoto?.backPhoto != null) {
-        //   _previewExtractList
-        //       .add({"back_cover": project.coverPhoto!.backPhoto});
-        // }
         pushCustomMaterialPageRoute(
             context,
             PreviewProject(
@@ -74,8 +84,7 @@ class WProjectItemEditor extends StatelessWidget {
             Container(
               width:
                   MediaQuery.sizeOf(context).width * LIST_RATIO_PROJECT_ITEM[0],
-              height:
-                  MediaQuery.sizeOf(context).width * LIST_RATIO_PROJECT_ITEM[1],
+              height: _getHeight(context),
               decoration:
                   BoxDecoration(color: project.backgroundColor, boxShadow: [
                 BoxShadow(
@@ -92,7 +101,9 @@ class WProjectItemEditor extends StatelessWidget {
                       indexImage: indexImage,
                       project: project,
                       layoutExtractList: layoutExtractList,
-                      ratioTarget: LIST_RATIO_PROJECT_ITEM,
+                      ratioTarget: 
+                      // ratioTarget ??
+                       LIST_RATIO_PROJECT_ITEM,
                     ),
                     isFocusByLongPress
                         ? Positioned(
