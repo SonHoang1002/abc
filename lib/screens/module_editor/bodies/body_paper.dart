@@ -13,8 +13,6 @@ class PaperBody extends StatefulWidget {
   final Function() reRenderFunction;
   final int? indexPageSizeSelectionWidget;
   final dynamic paperConfig;
-  // final List<String> values;
-  final bool pageSizeIsPortrait;
   final Function(PaperAttribute paperAttribute, bool pageSizeIsPortrait)
       onApply;
   const PaperBody(
@@ -24,7 +22,6 @@ class PaperBody extends StatefulWidget {
       required this.indexPageSizeSelectionWidget,
       required this.paperConfig,
       // required this.values,
-      required this.pageSizeIsPortrait,
       required this.onApply});
 
   @override
@@ -40,6 +37,16 @@ class _PaperBodyState extends State<PaperBody> {
   final TextEditingController _paperSizeHeightController =
       TextEditingController(text: "");
   late bool _pageSizeIsPortrait = true;
+
+  @override
+  void dispose() {
+    super.dispose();
+    _indexPageSizeSelectionWidget = null;
+    _paperConfig = null;
+    _paperSizeWidthController.dispose();
+    _paperSizeHeightController.dispose();
+  }
+
   @override
   void initState() {
     _project = widget.project;
@@ -50,7 +57,7 @@ class _PaperBodyState extends State<PaperBody> {
     _paperConfig = widget.paperConfig;
     _paperSizeWidthController.text = (_project.paper?.width).toString();
     _paperSizeHeightController.text = (_project.paper?.height).toString();
-    _pageSizeIsPortrait = widget.pageSizeIsPortrait;
+    _pageSizeIsPortrait = _project.paper?.isPortrait ?? true;
     super.initState();
   }
 
@@ -107,6 +114,7 @@ class _PaperBodyState extends State<PaperBody> {
                                   (_paperConfig['content'].width).toString();
                               _paperSizeHeightController.text =
                                   (_paperConfig['content'].height).toString();
+                              _pageSizeIsPortrait = true;
                             });
                             widget.reRenderFunction();
                           },
@@ -246,6 +254,7 @@ class _PaperBodyState extends State<PaperBody> {
                             title: _paperConfig['content'].title,
                             width: double.parse(widthValue),
                             height: double.parse(heightValue),
+                            isPortrait: _pageSizeIsPortrait,
                             unit: _paperConfig['content'].unit),
                         _pageSizeIsPortrait);
                   }
@@ -265,8 +274,9 @@ class _PaperBodyState extends State<PaperBody> {
                       unitValue: _paperConfig['content'].unit,
                       onSelected: (value) {
                         setState(() {
-                          _paperConfig['content'] =
-                              LIST_PAGE_SIZE[7].copyWith(unit: value);
+                          _paperConfig['content'] = LIST_PAGE_SIZE[7].copyWith(
+                            unit: value,
+                          );
                         });
                         widget.reRenderFunction();
                       },

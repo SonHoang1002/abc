@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/commons/themes.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/providers/project_provider.dart';
 import 'package:photo_to_pdf/services/isar_project_service.dart';
 import 'package:photo_to_pdf/widgets/project_items/w_project_ratio.dart';
-import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 import "package:provider/provider.dart" as pv;
 
@@ -20,6 +18,7 @@ class WProjectItemHome extends ConsumerStatefulWidget {
   final double? width;
   final void Function()? onTap;
   final List<dynamic>? layoutExtractList;
+  final List<double>? ratioTarget;
   const WProjectItemHome(
       {super.key,
       required this.project,
@@ -29,7 +28,8 @@ class WProjectItemHome extends ConsumerStatefulWidget {
       this.isHaveTitle = true,
       this.width = 160,
       this.onTap,
-      this.layoutExtractList});
+      this.layoutExtractList,
+      this.ratioTarget = LIST_RATIO_PROJECT_ITEM});
 
   @override
   ConsumerState<WProjectItemHome> createState() => _WProjectItemHomeState();
@@ -37,17 +37,28 @@ class WProjectItemHome extends ConsumerStatefulWidget {
 
 class _WProjectItemHomeState extends ConsumerState<WProjectItemHome> {
   final GlobalKey keyTest = GlobalKey();
+
+  double _getWidth(BuildContext context) {
+    return MediaQuery.sizeOf(context).width * widget.ratioTarget![0];
+  }
+
+  double _getHeight(BuildContext context) {
+    return MediaQuery.sizeOf(context).width * widget.ratioTarget![1];
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: widget.onTap,
       child: Container(
         padding: const EdgeInsets.all(3),
-        child: Column(
+        child: Stack(
+          alignment: Alignment.center,
           children: [
-            SizedBox(
-              height: 155.6,
-              width: MediaQuery.sizeOf(context).width * 0.3,
+            Container(
+              height: _getHeight(context),
+              width: _getWidth(context) - 20,
+              padding: const EdgeInsets.only(bottom: 25),
               child: Center(
                 child: Stack(
                   alignment: !widget.isFocusByLongPress
@@ -82,12 +93,12 @@ class _WProjectItemHomeState extends ConsumerState<WProjectItemHome> {
                                 indexImage: 0,
                                 project: widget.project,
                                 layoutExtractList: widget.layoutExtractList,
-                                ratioTarget: LIST_RATIO_PROJECT_ITEM))
+                                ratioTarget: widget.ratioTarget!))
                         : Image.asset("${pathPrefixImage}blank_page.jpg"),
                     widget.isFocusByLongPress
                         ? Positioned(
-                            top: -15,
-                            left: -15,
+                            top: -20,
+                            left: -20,
                             child: GestureDetector(
                               onTap: () async {
                                 final listProject = ref
@@ -118,26 +129,27 @@ class _WProjectItemHomeState extends ConsumerState<WProjectItemHome> {
                 ),
               ),
             ),
-            widget.isHaveTitle!
-                ? Column(
-                    children: [
-                      WSpacer(
-                        height: 10,
-                      ),
-                      WTextContent(
-                        value: widget.project.title == ""
-                            ? "Untitled"
-                            : widget.project.title,
-                        textFontWeight: FontWeight.w600,
-                        textLineHeight: 14.32,
-                        textSize: 12,
-                        textOverflow: TextOverflow.ellipsis,
-                        textColor:
-                            Theme.of(context).textTheme.bodyMedium!.color,
-                      ),
-                    ],
-                  )
-                : const SizedBox()
+            Positioned.fill(
+              child: widget.isHaveTitle!
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const SizedBox(),
+                        WTextContent(
+                          value: widget.project.title == ""
+                              ? "Untitled"
+                              : widget.project.title,
+                          textFontWeight: FontWeight.w600,
+                          textLineHeight: 14.32,
+                          textSize: 12,
+                          textOverflow: TextOverflow.ellipsis,
+                          textColor:
+                              Theme.of(context).textTheme.bodyMedium!.color,
+                        ),
+                      ],
+                    )
+                  : const SizedBox(),
+            )
           ],
         ),
       ),

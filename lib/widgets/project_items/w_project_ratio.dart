@@ -18,31 +18,11 @@ class LayoutMedia extends StatelessWidget {
       required this.ratioTarget});
 
   double ratioTargetWithHeightPlacement() {
-    // if (project.paper != null &&
-    //     project.paper?.height != 0 &&
-    //     project.paper?.width != 0) {
-    //   final paperWidth = project.paper!.width;
-    //   final paperHeight = project.paper!.height;
-    //   return (paperWidth / paperHeight) /
-    //       (LIST_RATIO_PLACEMENT_BOARD[0] / LIST_RATIO_PLACEMENT_BOARD[1]) *
-    //       LIST_RATIO_PLACEMENT_BOARD[0];
-    // } else {
-      return ratioTarget[0] / LIST_RATIO_PLACEMENT_BOARD[0];
-    // }
+    return ratioTarget[0] / LIST_RATIO_PLACEMENT_BOARD[0];
   }
 
   double ratioTargetWithWidthPlacement() {
-    // if (project.paper != null &&
-    //     project.paper?.height != 0 &&
-    //     project.paper?.width != 0) {
-    //   final paperWidth = project.paper!.width;
-    //   final paperHeight = project.paper!.height;
-    //   return (paperHeight / paperWidth) /
-    //       (LIST_RATIO_PLACEMENT_BOARD[1] / LIST_RATIO_PLACEMENT_BOARD[0]) *
-    //       LIST_RATIO_PLACEMENT_BOARD[1];
-    // } else {
-      return ratioTarget[1] / LIST_RATIO_PLACEMENT_BOARD[1];
-    // }
+    return ratioTarget[1] / LIST_RATIO_PLACEMENT_BOARD[1];
   }
 
   Widget buildCoreLayoutMedia(
@@ -51,10 +31,8 @@ class LayoutMedia extends StatelessWidget {
     List<dynamic>? layoutExtractList,
     List<double> ratioTarget,
   ) {
-    final double spacingHorizontalValue =
-        ((project.spacingAttribute?.horizontalSpacing ?? 0.0)) * 3;
-    final double spacingVerticalValue =
-        ((project.spacingAttribute?.verticalSpacing ?? 0.0)) * 3;
+    const double spaceWidth = 3;
+    const double spaceheight = 3;
     if (project.useAvailableLayout != true &&
         project.placements != null &&
         project.placements!.isNotEmpty) {
@@ -64,18 +42,32 @@ class LayoutMedia extends StatelessWidget {
           return Positioned(
             top: getPositionWithTop(indexExtract),
             left: getPositionWithLeft(indexExtract),
-            child: _buildImageWidget(
-              project,
-              layoutExtractList[indexExtract],
-              height: getRealHeight(indexExtract),
-              width: getRealWidth(indexExtract),
+            child: Container(
+              margin: EdgeInsets.symmetric(
+                  horizontal: ((project.placements![indexExtract]
+                          .placementAttribute?.horizontal) ??
+                      0),
+                  vertical: ((project.placements![indexExtract]
+                          .placementAttribute?.vertical) ??
+                      0)),
+              child: _buildImageWidget(
+                project,
+                layoutExtractList[indexExtract],
+                height: getRealHeight(indexExtract),
+                width: getRealWidth(indexExtract),
+              ),
             ),
           );
         }).toList(),
       );
     } else {
       if (project.layoutIndex == 0 && layoutExtractList == null) {
-        return _buildImageWidget(project, project.listMedia[indexImage]);
+        return _buildImageWidget(
+          project,
+          project.listMedia[indexImage],
+          width: double.infinity,
+          height: double.infinity,
+        );
       } else if (layoutExtractList != null && layoutExtractList.isNotEmpty) {
         if (project.layoutIndex == 1) {
           return Column(
@@ -84,18 +76,18 @@ class LayoutMedia extends StatelessWidget {
                   child: _buildImageWidget(
                 project,
                 layoutExtractList[0],
-                height: 150,
-                width: 150,
+                width: double.infinity,
+                height: double.infinity,
               )),
               WSpacer(
-                height: spacingVerticalValue,
+                height: spaceheight,
               ),
               Flexible(
                   child: _buildImageWidget(
                 project,
                 layoutExtractList[1],
-                height: 150,
-                width: 150,
+                width: double.infinity,
+                height: double.infinity,
               )),
             ],
           );
@@ -107,9 +99,10 @@ class LayoutMedia extends StatelessWidget {
                   child: _buildImageWidget(
                 project,
                 layoutExtractList[0],
-                width: 150,
+                width: double.infinity,
+                height: double.infinity,
               )),
-              WSpacer(height: spacingVerticalValue),
+              WSpacer(height: spaceheight),
               Flexible(
                 child: Flex(
                   direction: Axis.horizontal,
@@ -119,12 +112,19 @@ class LayoutMedia extends StatelessWidget {
                         child: _buildImageWidget(
                       project,
                       layoutExtractList[1],
+                      width: double.infinity,
+                      height: double.infinity,
                     )),
                     WSpacer(
-                      width: spacingHorizontalValue,
+                      width: spaceWidth,
                     ),
                     Flexible(
-                      child: _buildImageWidget(project, layoutExtractList[2]),
+                      child: _buildImageWidget(
+                        project,
+                        layoutExtractList[2],
+                        width: double.infinity,
+                        height: double.infinity,
+                      ),
                     ),
                   ],
                 ),
@@ -141,21 +141,32 @@ class LayoutMedia extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Flexible(
-                        child:
-                            _buildImageWidget(project, layoutExtractList[0])),
-                    WSpacer(width: spacingHorizontalValue),
+                      child: _buildImageWidget(
+                        project,
+                        layoutExtractList[0],
+                        width: double.infinity,
+                        height: double.infinity,
+                      ),
+                    ),
+                    WSpacer(width: spaceWidth),
                     Flexible(
-                      child: _buildImageWidget(project, layoutExtractList[1]),
+                      child: _buildImageWidget(
+                        project,
+                        layoutExtractList[1],
+                        width: double.infinity,
+                        height: double.infinity,
+                      ),
                     ),
                   ],
                 ),
               ),
-              WSpacer(height: spacingVerticalValue),
+              WSpacer(height: spaceheight),
               Flexible(
                   child: _buildImageWidget(
                 project,
                 layoutExtractList[2],
-                width: 150,
+                width: double.infinity,
+                height: double.infinity,
               )),
             ],
           );
@@ -168,26 +179,40 @@ class LayoutMedia extends StatelessWidget {
 
   Widget _buildImageWidget(Project project, dynamic imageData,
       {double? width, double? height}) {
+    EdgeInsets margin = EdgeInsets.only(
+      top: (2 + (project.spacingAttribute?.verticalSpacing ?? 0.0)),
+      left: (2 + (project.spacingAttribute?.horizontalSpacing ?? 0.0)),
+      right: (2 + (project.spacingAttribute?.horizontalSpacing ?? 0.0)),
+      bottom: (2 + (project.spacingAttribute?.verticalSpacing ?? 0.0)),
+    );
     final fit = renderImageBoxfit(project.resizeAttribute);
     if (imageData == null) {
       return Container();
     } else {
       if (imageData is File) {
-        return Image.file(
-          imageData,
-          fit: fit,
-          height: height,
-          width: width,
-          filterQuality: FilterQuality.high,
-        );
-      } else {
-        if (imageData is String) {
-          return Image.asset(
+        return Container(
+          margin: margin,
+          alignment: Alignment.center,
+          child: Image.file(
             imageData,
             fit: fit,
             height: height,
             width: width,
             filterQuality: FilterQuality.high,
+          ),
+        );
+      } else {
+        if (imageData is String) {
+          return Container(
+            alignment: Alignment.center,
+            margin: margin,
+            child: Image.asset(
+              imageData,
+              fit: fit,
+              height: height,
+              width: width,
+              filterQuality: FilterQuality.high,
+            ),
           );
         } else {
           return const SizedBox();
@@ -198,7 +223,6 @@ class LayoutMedia extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("paper ${project.paper?.getInfor()}");
     return Container(
       padding: EdgeInsets.only(
           top: 2 + (project.paddingAttribute?.verticalPadding ?? 0.0),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/commons/themes.dart';
-import 'package:photo_to_pdf/helpers/extract_list.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/screens/module_editor/preview.dart';
@@ -27,53 +26,40 @@ class WProjectItemEditor extends StatelessWidget {
   const WProjectItemEditor(
       {super.key,
       required this.project,
-      required this.isFocusByLongPress,
+      this.isFocusByLongPress = false,
       required this.indexImage,
       this.title,
       this.onRemove,
       this.layoutExtractList,
       this.onTap,
-      this.ratioTarget});
-  double _getHeight(BuildContext context) {
-    // if (project.paper != null &&
-    //     project.paper?.height != 0 &&
-    //     project.paper?.width != 0) {
-    //   return MediaQuery.sizeOf(context).width *
-    //       LIST_RATIO_PROJECT_ITEM[0] *
-    //       (project.paper!.height) /
-    //       (project.paper!.width);
-    // } else {
-      return MediaQuery.sizeOf(context).width * LIST_RATIO_PROJECT_ITEM[1];
-    // }
+      this.ratioTarget = LIST_RATIO_PROJECT_ITEM});
+  double _getWidth(BuildContext context) {
+    return MediaQuery.sizeOf(context).width * ratioTarget![0];
   }
 
-  // 29.7   1.41428571429
-  // 21
-  // 0.4    1.33333333333     => 0.56571428571
-  // 0.3
-  double _getWidth(BuildContext context) {
-    // if (project.paper != null &&
-    //     project.paper?.height != 0 &&
-    //     project.paper?.width != 0) {
-    //   return MediaQuery.sizeOf(context).width *
-    //       LIST_RATIO_PROJECT_ITEM[0] *
-    //       (project.paper!.height) /
-    //       (project.paper!.width);
-    // } else {
-      return MediaQuery.sizeOf(context).width * LIST_RATIO_PROJECT_ITEM[1];
-    // }
+  double _getHeight(BuildContext context) {
+    return MediaQuery.sizeOf(context).width * ratioTarget![1];
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        List<double> newRatioTarget = LIST_RATIO_PREVIEW;
+        if (project.paper != null &&
+            project.paper!.height != 0 &&
+            project.paper!.width != 0) {
+          newRatioTarget = [
+            LIST_RATIO_PREVIEW[0],
+            LIST_RATIO_PREVIEW[0] * project.paper!.height / project.paper!.width
+          ];
+        }
         pushCustomMaterialPageRoute(
             context,
             PreviewProject(
               project: project,
               indexPage: indexImage,
-              // previewExtractList: _previewExtractList,
+              ratioTarget: newRatioTarget,
             ));
       },
       child: Container(
@@ -82,8 +68,7 @@ class WProjectItemEditor extends StatelessWidget {
         child: Column(
           children: [
             Container(
-              width:
-                  MediaQuery.sizeOf(context).width * LIST_RATIO_PROJECT_ITEM[0],
+              width: _getWidth(context),
               height: _getHeight(context),
               decoration:
                   BoxDecoration(color: project.backgroundColor, boxShadow: [
@@ -101,9 +86,8 @@ class WProjectItemEditor extends StatelessWidget {
                       indexImage: indexImage,
                       project: project,
                       layoutExtractList: layoutExtractList,
-                      ratioTarget: 
-                      // ratioTarget ??
-                       LIST_RATIO_PROJECT_ITEM,
+                      ratioTarget:
+                          ratioTarget! ,
                     ),
                     isFocusByLongPress
                         ? Positioned(

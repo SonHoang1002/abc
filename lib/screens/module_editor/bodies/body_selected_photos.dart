@@ -1,15 +1,12 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
-import 'package:photo_to_pdf/helpers/compress_file.dart';
+import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/helpers/create_pdf.dart';
 import 'package:photo_to_pdf/helpers/pick_media.dart';
-import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/models/project.dart';
-import 'package:photo_to_pdf/screens/module_editor/preview.dart';
 import 'package:photo_to_pdf/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/project_items/w_project_item_bottom.dart';
@@ -68,7 +65,7 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
   Future<void> _getFileSize(double value) async {
     Future.delayed(Duration.zero, () async {
       // ignore: use_build_context_synchronously
-      final pdfUint8List = await createPdfFile(_project, context,
+      final pdfUint8List = await createPdfFile(_project, context,_getRatioProject(LIST_RATIO_PDF),
           compressValue: widget.sliderCompressionLevelValue);
       // render to file
       final pdfFile = await convertUint8ListToFile(pdfUint8List);
@@ -76,6 +73,20 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
       setState(() {});
       widget.reRenderFunction();
     });
+  }
+    List<double> _getRatioProject(List<double> oldRatioTarget) {
+    if (_project.paper?.width != null &&
+        _project.paper?.width != 0 &&
+        _project.paper?.height != null &&
+        _project.paper?.height != 0) {
+      final heightForWidth = (_project.paper!.height / _project.paper!.width);
+
+      final result = [
+        oldRatioTarget[0], oldRatioTarget[0] * heightForWidth
+      ];
+      return result;
+    }
+    return oldRatioTarget;
   }
 
   @override

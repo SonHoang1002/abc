@@ -15,11 +15,12 @@ import 'package:photo_to_pdf/widgets/w_text_content.dart';
 class PreviewProject extends StatefulWidget {
   final Project project;
   final int indexPage;
-  const PreviewProject({
-    super.key,
-    required this.project,
-    required this.indexPage,
-  });
+  final List<double>? ratioTarget;
+  const PreviewProject(
+      {super.key,
+      required this.project,
+      required this.indexPage,
+      this.ratioTarget = LIST_RATIO_PREVIEW});
 
   @override
   State<PreviewProject> createState() => _PreviewState();
@@ -28,6 +29,9 @@ class PreviewProject extends StatefulWidget {
 class _PreviewState extends State<PreviewProject> {
   late Project _project;
   late List _previewExtractList;
+  
+
+
   @override
   void initState() {
     _project = widget.project;
@@ -35,7 +39,7 @@ class _PreviewState extends State<PreviewProject> {
     if (_project.useAvailableLayout == true) {
       if (_project.layoutIndex == 0) {
         _previewExtractList = _project.listMedia;
-      } else if (_project.layoutIndex == 0) {
+      } else if (_project.layoutIndex == 1) {
         _previewExtractList = extractList(2, _project.listMedia);
       } else if ([2, 3].contains(_project.layoutIndex)) {
         _previewExtractList = extractList(3, _project.listMedia);
@@ -44,7 +48,7 @@ class _PreviewState extends State<PreviewProject> {
       _previewExtractList =
           extractList(_project.placements!.length, _project.listMedia);
     }
-    if (_project.coverPhoto != null) {
+    if (_project.coverPhoto?.frontPhoto != null) {
       _previewExtractList
           .insert(0, {"front_cover": _project.coverPhoto!.frontPhoto});
     }
@@ -99,7 +103,11 @@ class _PreviewState extends State<PreviewProject> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              _buildImageContent(widget.project, currentIndex),
+                              _buildImageContent(
+                                widget.project,
+                                currentIndex,
+                                widget.ratioTarget!,
+                              ),
                               WSpacer(
                                 width: 40,
                               ),
@@ -143,7 +151,7 @@ class _PreviewState extends State<PreviewProject> {
                         height: 60,
                         backgroundColor: colorWhite,
                         onPressed: () {
-                          /// không hiểu tại sao lại data binding 2 chiều ?? -> đành phải làm chiêu này
+                          /// không hiểu tại sao lại data binding 2 chiều ??
                           setState(() {
                             if (_project.coverPhoto?.frontPhoto != null) {
                               _previewExtractList.removeAt(
@@ -154,9 +162,7 @@ class _PreviewState extends State<PreviewProject> {
                               _previewExtractList.removeLast();
                             }
                           });
-                          // Future.delayed(const Duration(milliseconds: 200), () {
                           Navigator.of(context).pop();
-                          // });
                         },
                       ),
                     ),
@@ -170,30 +176,44 @@ class _PreviewState extends State<PreviewProject> {
     );
   }
 
-  Widget _buildImageContent(Project project, int currentIndex) {
+  Widget _buildImageContent(
+      Project project, int currentIndex, List<double> ratioTarget) {
     if (_previewExtractList[currentIndex] is! List &&
         _previewExtractList[currentIndex] is! File &&
+        _previewExtractList[currentIndex] is! String &&
         _previewExtractList[currentIndex]?['front_cover'] != null) {
-      return WProjectItemPreview(
-        project: _project,
-        indexImage: 0,
-        coverFile: _previewExtractList[currentIndex]?['front_cover'],
+      return Container(
+        margin: const EdgeInsets.only(right: 10),
+        child: WProjectItemPreview(
+          project: _project,
+          indexImage: 0,
+          coverFile: _previewExtractList[currentIndex]?['front_cover'],
+          ratioTarget: ratioTarget,
+        ),
       );
     }
     if (_previewExtractList[currentIndex] is! List &&
         _previewExtractList[currentIndex] is! File &&
+        _previewExtractList[currentIndex] is! String &&
         _previewExtractList[currentIndex]?['back_cover'] != null) {
-      return WProjectItemPreview(
-        project: _project,
-        indexImage: 0,
-        coverFile: _previewExtractList[currentIndex]?['back_cover'],
+      return Container(
+        margin: const EdgeInsets.only(right: 10),
+        child: WProjectItemPreview(
+          project: _project,
+          indexImage: 0,
+          coverFile: _previewExtractList[currentIndex]?['back_cover'],
+          ratioTarget: ratioTarget,
+        ),
       );
     }
-    return _buildPreviewItem(indexExtract: currentIndex);
+
+    return _buildPreviewItem(
+        indexExtract: currentIndex, ratioTarget: ratioTarget);
   }
 
   Widget _buildPreviewItem({
     required int indexExtract,
+    required List<double> ratioTarget,
   }) {
     if (_project.useAvailableLayout != true &&
         _project.placements != null &&
@@ -205,6 +225,7 @@ class _PreviewState extends State<PreviewProject> {
           indexImage: indexExtract,
           layoutExtractList: _previewExtractList[indexExtract],
           title: "",
+          ratioTarget: ratioTarget,
         ),
       );
     } else {
@@ -218,6 +239,7 @@ class _PreviewState extends State<PreviewProject> {
             project: blankProject,
             indexImage: 0,
             title: "",
+            ratioTarget: ratioTarget,
           ),
         );
       } else {
@@ -228,6 +250,7 @@ class _PreviewState extends State<PreviewProject> {
               project: _project,
               indexImage: indexExtract,
               title: "",
+              ratioTarget: ratioTarget,
             ),
           );
         } else if (_project.layoutIndex == 1) {
@@ -238,6 +261,7 @@ class _PreviewState extends State<PreviewProject> {
               indexImage: indexExtract,
               layoutExtractList: _previewExtractList[indexExtract],
               title: "",
+              ratioTarget: ratioTarget,
             ),
           );
         } else if ([2, 3].contains(_project.layoutIndex)) {
@@ -248,6 +272,7 @@ class _PreviewState extends State<PreviewProject> {
               indexImage: indexExtract,
               layoutExtractList: _previewExtractList[indexExtract],
               title: "",
+              ratioTarget: ratioTarget,
             ),
           );
         } else {
@@ -269,6 +294,7 @@ class WProjectItemPreview extends StatelessWidget {
 
   /// Use with layoutIndex is 1,2,3
   final List<dynamic>? layoutExtractList;
+  final List<double> ratioTarget;
 
   const WProjectItemPreview(
       {super.key,
@@ -277,7 +303,8 @@ class WProjectItemPreview extends StatelessWidget {
       this.title,
       this.onRemove,
       this.layoutExtractList,
-      this.coverFile});
+      this.coverFile,
+      required this.ratioTarget});
 
   @override
   Widget build(BuildContext context) {
@@ -288,33 +315,25 @@ class WProjectItemPreview extends StatelessWidget {
           child: Column(
             children: [
               Container(
-                width: MediaQuery.sizeOf(context).width * LIST_RATIO_PREVIEW[0],
-                height:
-                    MediaQuery.sizeOf(context).width * LIST_RATIO_PREVIEW[1],
-                decoration:
-                    BoxDecoration(color: project.backgroundColor, boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    spreadRadius: 0.5,
-                    blurRadius: 5,
-                    offset: const Offset(0, 1),
-                  ),
-                ]),
-                child: Center(
-                  child: Stack(
-                    children: [
-                      coverFile != null
-                          ? const SizedBox()
-                          : LayoutMedia(
-                              indexImage: indexImage,
-                              project: project,
-                              layoutExtractList: layoutExtractList,
-                              ratioTarget: LIST_RATIO_PREVIEW,
-                            ),
-                    ],
-                  ),
-                ),
-              ),
+                  width: MediaQuery.sizeOf(context).width * ratioTarget[0],
+                  height: MediaQuery.sizeOf(context).width * ratioTarget[1],
+                  decoration:
+                      BoxDecoration(color: project.backgroundColor, boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      spreadRadius: 0.5,
+                      blurRadius: 5,
+                      offset: const Offset(0, 1),
+                    ),
+                  ]),
+                  child: coverFile != null
+                      ? const SizedBox()
+                      : LayoutMedia(
+                          indexImage: indexImage,
+                          project: project,
+                          layoutExtractList: layoutExtractList,
+                          ratioTarget: ratioTarget,
+                        )),
               WSpacer(
                 height: 10,
               ),
@@ -334,7 +353,7 @@ class WProjectItemPreview extends StatelessWidget {
                 margin: const EdgeInsets.fromLTRB(3, 3, 3, 29),
                 child: Image.file(
                   coverFile!,
-                  fit: BoxFit.fitHeight,
+                  fit: BoxFit.cover,
                   filterQuality: FilterQuality.medium,
                 ),
               ))

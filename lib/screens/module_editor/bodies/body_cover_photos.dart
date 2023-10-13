@@ -32,6 +32,11 @@ class _CoverBodyState extends State<CoverBody> {
   final GlobalKey _backKey = GlobalKey();
 
   @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
     _project = widget.project;

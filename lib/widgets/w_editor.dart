@@ -1,7 +1,6 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
@@ -118,7 +117,9 @@ Widget buildPageSizePreset(
               width: 185,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(14),
-                color: Theme.of(context).canvasColor,
+                color: pv.Provider.of<ThemeManager>(context).isDarkMode
+                    ? const Color.fromRGBO(34,34,34,0.8)
+                    : Theme.of(context).canvasColor,
               ),
               offset: const Offset(5, -5),
               scrollbarTheme: ScrollbarThemeData(
@@ -287,7 +288,7 @@ Widget buildSelection(BuildContext context, Map<String, dynamic> mediaSrc,
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
           color: Theme.of(context).cardColor),
-      padding: const EdgeInsets.only(left: 20),
+      padding: const EdgeInsets.only(left: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
@@ -301,13 +302,13 @@ Widget buildSelection(BuildContext context, Map<String, dynamic> mediaSrc,
             ),
           ),
           WSpacer(
-            width: 10,
+            width: 5,
           ),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-            WTextContent(
+              WTextContent(
                 value: title,
                 textLineHeight: 14.32,
                 textFontWeight: FontWeight.w600,

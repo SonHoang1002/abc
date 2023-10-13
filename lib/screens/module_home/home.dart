@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:photo_to_pdf/services/isar_project_service.dart';
 import 'package:flutter/material.dart';
@@ -14,10 +13,8 @@ import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/providers/project_provider.dart';
 import 'package:photo_to_pdf/screens/module_editor/editor.dart';
 import 'package:photo_to_pdf/screens/module_setting/setting.dart';
-import 'package:photo_to_pdf/services/isar_service.dart';
 import 'package:photo_to_pdf/widgets/project_items/w_project_item_home.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
-import 'package:photo_to_pdf/widgets/project_items/w_project_item_main.dart';
 import 'package:photo_to_pdf/widgets/project_items/w_project_item_bottom.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
@@ -36,13 +33,17 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
   final String PHOTO_TO_PDF = "Photo to PDF";
   final String CONTENT_PHOTO_TO_PDF =
       "Easily create PDF documents from your photos";
-
   int _naviSelected = 0;
-  // late bool _galleryIsEmpty;
   late bool _isFocusProjectList;
   late bool _isFocusProjectListBottom;
   late List<Project> _listProject;
   late Project _currentProject;
+
+  @override
+  void dispose() {
+    _listProject = [];
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -70,6 +71,19 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
     } else {
       return (project.placements?.length) ?? 0;
     }
+  }
+
+  List<double> _getRatioProject(Project project, List<double> oldRatioTarget) {
+    if (project.paper?.width != null &&
+        project.paper?.width != 0 &&
+        project.paper?.height != null &&
+        project.paper?.height != 0) {
+      final heightForWidth = (project.paper!.height / project.paper!.width);
+
+      final result = [oldRatioTarget[0], oldRatioTarget[0] * heightForWidth];
+      return result;
+    }
+    return oldRatioTarget;
   }
 
   @override
@@ -110,16 +124,12 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                 backgroundColor: Theme.of(context).canvasColor)
             : null,
         body: SafeArea(
-          child: Stack(
-            alignment: _listProject.isEmpty
-                ? Alignment.center
-                : AlignmentDirectional.topStart,
+          child: Column(
             children: [
-              _buildBody(),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [const SizedBox(), _buildBottomNavigatorButtons()],
-              )
+              Expanded(
+                  child: Container(
+                      alignment: Alignment.center, child: _buildBody())),
+              _buildBottomNavigatorButtons()
             ],
           ),
         ));
@@ -167,7 +177,10 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
         );
       } else {
         return ReorderableGridView.count(
-          padding: const EdgeInsets.only(top: 10, bottom: 120, right: 20),
+          padding: const EdgeInsets.only(
+            top: 10,
+            bottom: 120,
+          ),
           shrinkWrap: true,
           crossAxisSpacing: 5,
           mainAxisSpacing: 10,
@@ -207,6 +220,8 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                   pushCustomMaterialPageRoute(
                       context, Editor(project: _listProject[index]));
                 },
+                ratioTarget: _getRatioProject(
+                    _listProject[index], LIST_RATIO_PROJECT_ITEM),
               ),
             );
           }).toList(),

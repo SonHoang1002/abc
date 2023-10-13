@@ -82,6 +82,17 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
         widget.unit;
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    _selectedLabel = "";
+    _labelInputs = [];
+    _placement = null;
+    _spacingAttribute = null;
+    _paddingAttribute = null;
+    controllers = [];
+  }
+
   void _onDone(Unit newUnit) {
     if (_placement != null) {
       _placement = _placement?.copyWith(

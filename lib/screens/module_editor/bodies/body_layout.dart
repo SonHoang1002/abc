@@ -49,12 +49,21 @@ class _LayoutBodyState extends State<LayoutBody> {
   //layout spacing variables
   late SpacingAttribute _spacingOptions;
   // layout custom variables
-  final List<ValueNotifier<Matrix4>> _matrix4Notifiers = [];
+  List<ValueNotifier<Matrix4>> _matrix4Notifiers = [];
   List<Placement> _listPlacement = [];
   Placement? _seletedPlacement;
 
   // background variable
   late Color _currentLayoutColor;
+
+  @override
+  void dispose() {
+    super.dispose();
+    _listAlignment = [];
+    _matrix4Notifiers = [];
+    _listPlacement = [];
+    _seletedPlacement = null;
+  }
 
   @override
   void initState() {
@@ -492,6 +501,7 @@ class _LayoutBodyState extends State<LayoutBody> {
                 widget.reRenderFunction();
               },
               seletedPlacement: _seletedPlacement,
+              paperAttribute: _project.paper,
             )),
             WSpacer(height: 10),
             SizedBox(

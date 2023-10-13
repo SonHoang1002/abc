@@ -57,6 +57,7 @@ class WTextContent extends StatelessWidget {
                 fontWeight: textFontWeight,
                 // fontFamily: myCustomFont,
                 overflow: textOverflow,
+                
                 height: textLineHeight != null && textSize != null
                     ? (textLineHeight! / textSize!)
                     : null),

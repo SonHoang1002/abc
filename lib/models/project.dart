@@ -332,18 +332,29 @@ class PaperAttribute {
   final double width;
   final double height;
   final Unit? unit;
+  final bool isPortrait;
   PaperAttribute(
-      {this.title = "", this.width = 0.0, this.height = 0.0, this.unit});
+      {this.title = "",
+      this.width = 0.0,
+      this.height = 0.0,
+      this.unit,
+      this.isPortrait = true});
   PaperAttribute copyWith(
-      {double? height, double? width, String? title, Unit? unit}) {
+      {double? height,
+      double? width,
+      String? title,
+      Unit? unit,
+      bool? isPortrait}) {
     return PaperAttribute(
         height: height ?? this.height,
         width: width ?? this.width,
         unit: unit ?? this.unit,
-        title: title ?? this.title);
+        title: title ?? this.title,
+        isPortrait: isPortrait ?? this.isPortrait);
   }
-    String getInfor() {
-    return "PaperAttribute title: ${this.title}, PaperAttribute width: ${this.width},PaperAttribute height: ${this.height},PaperAttribute unit: ${this.unit?.getInfor()},";
+
+  String getInfor() {
+    return "PaperAttribute title: ${this.title}, PaperAttribute width: ${this.width}, PaperAttribute height: ${this.height},PaperAttribute isPortrait: ${this.isPortrait}, PaperAttribute unit: ${this.unit?.getInfor()},";
   }
 
   Map<String, dynamic> toJson() {
@@ -351,6 +362,7 @@ class PaperAttribute {
       'title': title,
       'width': width,
       'height': height,
+      "isPortrait": isPortrait,
       'unit': unit?.toJson(),
     };
   }
@@ -360,6 +372,7 @@ class PaperAttribute {
       title: json['title'] ?? "",
       width: json['width'] ?? 0.0,
       height: json['height'] ?? 0.0,
+      isPortrait: json['isPortrait'] ?? true,
       unit: json['unit'] != null ? Unit.fromJson(json['unit']) : null,
     );
   }

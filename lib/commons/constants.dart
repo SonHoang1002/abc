@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/models/placement.dart';
-import 'package:photo_to_pdf/models/project.dart';
 
 const String pathPrefixIcon = "assets/icons/";
 const String pathPrefixImage = "assets/images/";
@@ -55,6 +54,7 @@ List<AlignmentAttribute> LIST_ALIGNMENT = [
   ),
 ];
 
+// ignore: non_constant_identifier_names
 List<ResizeAttribute> LIST_RESIZE_MODE = [
   ResizeAttribute(
     title: "Aspect Fit",
@@ -111,8 +111,6 @@ final Unit INCH = Unit(title: "inch", value: "”");
 final Unit CENTIMET = Unit(title: "centimet", value: "cm");
 final Unit POINT = Unit(title: "point", value: "point");
 final List<Unit> LIST_UNIT = [INCH, CENTIMET, POINT];
-const String LANDSCAPE = "landscape";
-const String PORTRAIT = "portrait";
 const List<Color> ALL_COLORS = [
   Colors.amber,
   Colors.amberAccent,
@@ -156,29 +154,64 @@ const List<Color> ALL_COLORS = [
 // TẤT CẢ CÁC TỈ LỆ NÀY ĐỀU ĐƯỢC SO SÁNH VỚI WIDTH CỦA MÀN HÌNH
 
 /// Ratio of changeable placement board: width, height
-const List<double> LIST_RATIO_PLACEMENT_BOARD = [0.6, 0.8];
+const List<double> LIST_RATIO_PLACEMENT_BOARD = [0.7, 0.9];
 
 /// Ratio of changeable project item: width, height
-const List<double> LIST_RATIO_PROJECT_ITEM = [0.3, 0.4];
+const List<double> LIST_RATIO_PROJECT_ITEM = [0.35, 0.45];
 
 /// Ratio of changeable preview item: width, height
-const List<double> LIST_RATIO_PREVIEW = [0.75, 1.1];
+const List<double> LIST_RATIO_PREVIEW = [0.875, 1.125];
 
 /// Ratio of changeable preview item: width, height
-const List<double> LIST_RATIO_PDF = [1.2, 1.6];
+const List<double> LIST_RATIO_PDF = [1.4, 1.8];
 
 const thumbColorSegments = CupertinoDynamicColor.withBrightness(
   color: Color(0xFFFFFFFF),
   darkColor: Color.fromRGBO(255, 255, 255, 1),
 );
 
-const PDF_PAGE_FORMAT = <String, PdfPageFormat>{
-  "A3": PdfPageFormat.a3,
-  'A4': PdfPageFormat.a4,
-  "B5": PdfPageFormat.a5,
-  "JIS B5": PdfPageFormat.roll57,
-  "Legal": PdfPageFormat.legal,
-  'Letter': PdfPageFormat.letter,
-  "Tabloid": PdfPageFormat.roll80,
-  "Custom": PdfPageFormat.undefined
+const String LANDSCAPE = "landscape";
+const String PORTRAIT = "portrait";
+
+final PDF_PAGE_FORMAT = <String, Map<String, PdfPageFormat>>{
+  "A3": {
+    LANDSCAPE: PdfPageFormat.a3.landscape,
+    PORTRAIT: PdfPageFormat.a3.portrait,
+    "natural": PdfPageFormat.a3,
+  },
+  "A4": {
+    LANDSCAPE: PdfPageFormat.a4.landscape,
+    PORTRAIT: PdfPageFormat.a4.portrait,
+    "natural": PdfPageFormat.a4,
+  },
+  "B5": {
+    LANDSCAPE: PdfPageFormat.a5.landscape,
+    PORTRAIT: PdfPageFormat.a5.portrait,
+    "natural": PdfPageFormat.a5,
+  },
+  // "JIS B5": {
+  //   LANDSCAPE: PdfPageFormat.roll57.landscape,
+  //   PORTRAIT: PdfPageFormat.roll57.portrait,
+  //   "natural": PdfPageFormat.roll57,
+  // },
+  "Legal": {
+    LANDSCAPE: PdfPageFormat.legal.landscape,
+    PORTRAIT: PdfPageFormat.legal.portrait,
+    "natural": PdfPageFormat.legal,
+  },
+  "Letter": {
+    LANDSCAPE: PdfPageFormat.letter.landscape,
+    PORTRAIT: PdfPageFormat.letter.portrait,
+    'natural': PdfPageFormat.letter,
+  },
+  // "Tabloid": {
+  //   LANDSCAPE: PdfPageFormat.roll80.landscape,
+  //   PORTRAIT: PdfPageFormat.roll80.portrait,
+  //   "natural": PdfPageFormat.roll80,
+  // },
+  // "Custom": {
+  //   LANDSCAPE: PdfPageFormat.undefined.landscape,
+  //   PORTRAIT: PdfPageFormat.undefined.portrait,
+  //   "natural": PdfPageFormat.undefined
+  // },
 };

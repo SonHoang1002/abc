@@ -1,10 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/commons/themes.dart';
-import 'package:photo_to_pdf/widgets/w_divider.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 import 'package:provider/provider.dart';
@@ -14,20 +11,9 @@ class Setting extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
+    // final size = MediaQuery.sizeOf(context);
     return SafeArea(
       child: Column(children: [
-        // Container(
-        //   alignment: Alignment.centerLeft,
-        //   margin: const EdgeInsets.only(left: 20, top: 50),
-        //   child: WTextContent(
-        //     value: "Settings",
-        //     textSize: 32,
-        //     textLineHeight: 38,
-        //     textColor: Theme.of(context).textTheme.bodyLarge!.color,
-        //     textAlign: TextAlign.start,
-        //   ),
-        // ),
         Container(
           margin: const EdgeInsets.only(top: 50),
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -62,8 +48,8 @@ class Setting extends StatelessWidget {
                           color: Theme.of(context).canvasColor),
                       child: Icon(
                           Provider.of<ThemeManager>(context).isDarkMode
-                              ? FontAwesomeIcons.moon
-                              : FontAwesomeIcons.sun,
+                              ? FontAwesomeIcons.sun
+                              : FontAwesomeIcons.moon,
                           size: 15,
                           color: Theme.of(context)
                               .textTheme
@@ -140,8 +126,7 @@ class Setting extends StatelessWidget {
     required String title,
   }) {
     return GestureDetector(
-      onTap: () {
-      },
+      onTap: () {},
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -166,7 +151,7 @@ class Setting extends StatelessWidget {
               ),
             ],
           ),
-           Icon(
+          Icon(
             FontAwesomeIcons.chevronRight,
             size: 20,
             color: Theme.of(context).textTheme.displayLarge!.color,

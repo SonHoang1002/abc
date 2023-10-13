@@ -37,12 +37,11 @@ class ThemeManager with ChangeNotifier {
 class MyThemes {
   static final darkTheme = ThemeData(
       sliderTheme: const SliderThemeData(),
-      scaffoldBackgroundColor: const Color.fromRGBO(34,34,34,1),
+      scaffoldBackgroundColor: const Color.fromRGBO(34, 34, 34, 1),
       // mau nen cac nut
       cardColor: const Color.fromRGBO(255, 255, 255, 0.1),
       // mau nen block navigator
       canvasColor: const Color.fromRGBO(0, 0, 0, 0.1),
-      // canvasColor: Colors.red,
       primaryColor: Colors.grey.withOpacity(0.6),
       appBarTheme: AppBarTheme(backgroundColor: Colors.grey.shade900),
       textTheme: const TextTheme(
@@ -67,11 +66,11 @@ class MyThemes {
         unselectedLabelColor: Color.fromRGBO(255, 255, 255, 0.04),
       ),
       dividerColor: const Color.fromRGBO(255, 255, 255, 0.1),
-      inputDecorationTheme: const InputDecorationTheme(fillColor: Color.fromRGBO(0,0,0,1))
-      );
+      inputDecorationTheme:
+          const InputDecorationTheme(fillColor: Color.fromRGBO(0, 0, 0, 1)));
 
   static final lightTheme = ThemeData(
-      scaffoldBackgroundColor:const Color.fromRGBO(250,250,250,1),
+      scaffoldBackgroundColor: colorWhite,
       cardColor: const Color.fromRGBO(0, 0, 0, 0.03),
       canvasColor: const Color.fromRGBO(250, 250, 250, 1),
       primaryColor: colorWhite,
@@ -98,6 +97,6 @@ class MyThemes {
         unselectedLabelColor: Color.fromRGBO(0, 0, 0, 0.04),
       ),
       dividerColor: const Color.fromRGBO(0, 0, 0, 0.1),
-      inputDecorationTheme: const InputDecorationTheme(fillColor: Color.fromRGBO(255,255,255,1))
-      );
+      inputDecorationTheme: const InputDecorationTheme(
+          fillColor: Color.fromRGBO(255, 255, 255, 1)));
 }
