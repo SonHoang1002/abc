@@ -43,8 +43,8 @@ Future<double> getPdfFileSize(
   final file = File(filePath);
   await file.writeAsBytes(result);
   int fileSizeInBytes = await file.length();
-  double fileSizeInMB = (fileSizeInBytes / 1024) / 1024;
-  return fileSizeInMB;
+  double fileSizeInKB = (fileSizeInBytes / 1024);
+  return fileSizeInKB;
 }
 
 Future<void> createAndPreviewPdf(
@@ -126,10 +126,8 @@ Future<Uint8List> createPdfFile(
         PDF_PAGE_FORMAT[project.paper?.title]?[pageOrientationValue];
   }
   // check height==width to render
-  if (project.paper?.height != null &&
-      project.paper?.height == project.paper?.width) {
-    pdfPageFormat = PdfPageFormat(
-        MediaQuery.sizeOf(context).width, MediaQuery.sizeOf(context).width);
+  if (project.paper?.height != null && project.paper?.width != null) {
+    pdfPageFormat = PdfPageFormat(project.paper!.width, project.paper!.height);
   }
   if (compressValue != null) {
     final compressImages =
@@ -277,8 +275,6 @@ pw.Widget _buildCorePDFLayoutMedia(
                 child: _buildImageWidget(
               project,
               layoutExtractList[1],
-              // width: double.infinity,
-              // height: double.infinity,
             )),
           ],
         );
@@ -290,8 +286,6 @@ pw.Widget _buildCorePDFLayoutMedia(
                 child: _buildImageWidget(
               project,
               layoutExtractList[0],
-              // width: double.infinity,
-              // height: double.infinity,
             )),
             _buildSpacer(height: spacingVerticalValue),
             pw.Flexible(
@@ -303,17 +297,14 @@ pw.Widget _buildCorePDFLayoutMedia(
                       child: _buildImageWidget(
                     project,
                     layoutExtractList[1],
-                    // width: double.infinity,
-                    // height: double.infinity,
                   )),
                   _buildSpacer(
                     width: spacingHorizontalValue,
                   ),
                   pw.Flexible(
                     child: _buildImageWidget(
-                      project, layoutExtractList[2],
-                      // width: double.infinity,
-                      // height: double.infinity,
+                      project,
+                      layoutExtractList[2],
                     ),
                   ),
                 ],
@@ -332,16 +323,14 @@ pw.Widget _buildCorePDFLayoutMedia(
                 children: [
                   pw.Flexible(
                       child: _buildImageWidget(
-                    project, layoutExtractList[0],
-                    // width: double.infinity,
-                    // height: double.infinity,
+                    project,
+                    layoutExtractList[0],
                   )),
                   _buildSpacer(width: spacingHorizontalValue),
                   pw.Flexible(
                     child: _buildImageWidget(
-                      project, layoutExtractList[1],
-                      // width: double.infinity,
-                      // height: double.infinity,
+                      project,
+                      layoutExtractList[1],
                     ),
                   ),
                 ],
@@ -352,8 +341,6 @@ pw.Widget _buildCorePDFLayoutMedia(
                 child: _buildImageWidget(
               project,
               layoutExtractList[2],
-              // width: double.infinity,
-              // height: double.infinity,,
             )),
           ],
         );

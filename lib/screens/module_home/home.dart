@@ -86,6 +86,14 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
     return oldRatioTarget;
   }
 
+  void _disableReOrderFocus() {
+    setState(
+      () {
+        _isFocusProjectList = false;
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     _listProject = ref.watch(projectControllerProvider).listProject;
@@ -112,26 +120,18 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                               textSize: 15,
                               textLineHeight: 17.9,
                               onTap: () {
-                                setState(
-                                  () {
-                                    _isFocusProjectList = false;
-                                  },
-                                );
+                                _disableReOrderFocus();
                               }),
                         )
                       : const SizedBox()
                 ],
                 backgroundColor: Theme.of(context).canvasColor)
             : null,
-        body: SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                  child: Container(
-                      alignment: Alignment.center, child: _buildBody())),
-              _buildBottomNavigatorButtons()
-            ],
-          ),
+        body: Column(
+          children: [
+            Expanded(child: _buildBody()),
+            _buildBottomNavigatorButtons()
+          ],
         ));
   }
 
@@ -157,14 +157,22 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                 textColor: Theme.of(context).textTheme.displayLarge!.color,
                 textLineHeight: 16.71),
             WSpacer(height: 20),
-            WButtonElevated(
+            WButtonFilled(
               message: "Select Photos",
               height: 60,
-              width: 255,
+              width: MediaQuery.sizeOf(context).width * 0.6,
               backgroundColor: colorBlue,
               textColor: colorWhite,
+              boxShadow: const [
+                BoxShadow(
+                    color: Color.fromRGBO(28, 91, 255, 0.3),
+                    spreadRadius: 5,
+                    offset: Offset(0, 8),
+                    blurRadius: 40)
+              ],
+              shadowColor: const Color.fromRGBO(28, 91, 255, 0.3),
               elevation: 10,
-              shadowColor: Colors.blue,
+              borderRadius: 25,
               onPressed: () {
                 setState(() {
                   _currentProject =
@@ -176,61 +184,71 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
           ],
         );
       } else {
-        return ReorderableGridView.count(
-          padding: const EdgeInsets.only(
-            top: 10,
-            bottom: 120,
+        return GestureDetector(
+          onTap: () {
+            _disableReOrderFocus();
+          },
+          child: ReorderableGridView.count(
+            padding: const EdgeInsets.only(
+              top: 10,
+              bottom: 120,
+            ),
+            shrinkWrap: true,
+            crossAxisSpacing: 5,
+            mainAxisSpacing: 10,
+            crossAxisCount: 2,
+            onReorder: (oldIndex, newIndex) {
+              setState(() {
+                final tempListProject = _listProject;
+                final element = tempListProject.removeAt(oldIndex);
+                tempListProject.insert(newIndex, element);
+                ref
+                    .read(projectControllerProvider.notifier)
+                    .setProject(tempListProject);
+              });
+            },
+            onDragStart: (dragIndex) {
+              setState(() {
+                _isFocusProjectList = true;
+              });
+            },
+            dragWidgetBuilderV2: DragWidgetBuilderV2.createByOldBuilder9(
+                (index, child) => _buildProjectItemHome(index)),
+            children: _listProject.map((e) {
+              final index = _listProject.indexOf(e);
+              return _buildProjectItemHome(index);
+            }).toList(),
           ),
-          shrinkWrap: true,
-          crossAxisSpacing: 5,
-          mainAxisSpacing: 10,
-          crossAxisCount: 2,
-          onReorder: (oldIndex, newIndex) {
-            setState(() {
-              final tempListProject = _listProject;
-              final element = tempListProject.removeAt(oldIndex);
-              tempListProject.insert(newIndex, element);
-              ref
-                  .read(projectControllerProvider.notifier)
-                  .setProject(tempListProject);
-            });
-          },
-          onDragStart: (dragIndex) {
-            setState(() {
-              _isFocusProjectList = true;
-            });
-          },
-          children: _listProject.map((e) {
-            final index = _listProject.indexOf(e);
-            return Container(
-              key: ValueKey(_listProject[index]),
-              child: WProjectItemHome(
-                key: ValueKey(_listProject[index]),
-                project: _listProject[index],
-                isFocusByLongPress: _isFocusProjectList,
-                index: index,
-                layoutExtractList: _listProject[index].useAvailableLayout &&
-                            _listProject[index].layoutIndex == 0 ||
-                        (_listProject[index].layoutIndex != 0 &&
-                            _listProject[index].listMedia.isEmpty)
-                    ? null
-                    : extractList(getLayoutImageNumber(_listProject[index]),
-                        _listProject[index].listMedia)[0],
-                onTap: () {
-                  pushCustomMaterialPageRoute(
-                      context, Editor(project: _listProject[index]));
-                },
-                ratioTarget: _getRatioProject(
-                    _listProject[index], LIST_RATIO_PROJECT_ITEM),
-              ),
-            );
-          }).toList(),
         );
       }
     } else if (_naviSelected == 2) {
       return const Setting();
     }
     return const SizedBox();
+  }
+
+  Widget _buildProjectItemHome(int index) {
+    return Container(
+      key: ValueKey(_listProject[index]),
+      child: WProjectItemHome(
+        key: ValueKey(_listProject[index]),
+        project: _listProject[index],
+        isFocusByLongPress: _isFocusProjectList,
+        index: index,
+        layoutExtractList: _listProject[index].useAvailableLayout &&
+                    _listProject[index].layoutIndex == 0 ||
+                (_listProject[index].layoutIndex != 0 &&
+                    _listProject[index].listMedia.isEmpty)
+            ? null
+            : extractList(getLayoutImageNumber(_listProject[index]),
+                _listProject[index].listMedia)[0],
+        onTap: () {
+          pushNavigator(context, Editor(project: _listProject[index]));
+        },
+        ratioTarget:
+            _getRatioProject(_listProject[index], LIST_RATIO_PROJECT_ITEM),
+      ),
+    );
   }
 
   Widget _buildBottomNavigatorButtons() {
@@ -243,6 +261,8 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
         children: [
           _buildButtonNavi(
               iconValue: "${pathPrefixIcon}icon_union_files.png",
+              iconValueSelected:
+                  "${pathPrefixIcon}icon_union_files_selected.png",
               name: "All Files",
               isSelected: _naviSelected == 0,
               onTap: () {
@@ -253,6 +273,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
           _buildButtonNaviPlus(),
           _buildButtonNavi(
               iconValue: "${pathPrefixIcon}icon_setting.png",
+              iconValueSelected: "${pathPrefixIcon}icon_setting_selected.png",
               name: "Settings",
               isSelected: _naviSelected == 2,
               onTap: () {
@@ -266,9 +287,10 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
   }
 
   Widget _buildButtonNavi(
-      {String? iconValue,
+      {required String iconValue,
       String? name,
       bool? isSelected = false,
+      required String iconValueSelected,
       Function()? onTap}) {
     return Container(
       constraints: const BoxConstraints(minHeight: 50, maxHeight: 65),
@@ -277,16 +299,12 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            iconValue != null
-                ? Image.asset(
-                    iconValue,
-                    color: isSelected == true
-                        ? colorBlue
-                        : Theme.of(context).textTheme.titleMedium!.color,
-                    height: 32.76,
-                    width: 26.63,
-                  )
-                : const SizedBox(),
+            Image.asset(isSelected == true ? iconValueSelected : iconValue,
+                height: 32.76,
+                width: 26.63,
+                color: isSelected != true
+                    ? Theme.of(context).textTheme.bodyMedium!.color
+                    : null),
             name != null
                 ? WTextContent(
                     value: name,
@@ -308,6 +326,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
       onPressed: () {
         setState(() {
           _currentProject = Project(id: getRandomNumber(), listMedia: []);
+          _isFocusProjectList = false;
         });
         _buildBottomSheetCreatePdf();
       },
@@ -315,21 +334,28 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
         shape: const CircleBorder(),
         elevation: 10,
         shadowColor: const Color(0xFFB250FF),
+        // shadowColor: const Color.fromRGBO(160, 85, 255, 0.4),
       ),
       child: Container(
         width: 50.0,
         height: 50.0,
         decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: LinearGradient(
-            colors: [
-              Color(0xFF4378FF),
-              Color(0xFFB250FF),
-            ],
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
-          ),
-        ),
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF4378FF),
+                Color(0xFFB250FF),
+              ],
+              begin: Alignment.topRight,
+              end: Alignment.bottomLeft,
+            ),
+            boxShadow: [
+              BoxShadow(
+                  blurRadius: 20,
+                  spreadRadius: 0,
+                  offset: Offset(0, 8),
+                  color: Color.fromRGBO(160, 85, 255, 0.4))
+            ]),
         child: Container(
           padding: const EdgeInsets.only(top: 7),
           child: Image.asset(
@@ -431,27 +457,17 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                               _isFocusProjectListBottom = true;
                             });
                           },
+                          dragWidgetBuilderV2:
+                              DragWidgetBuilderV2.createByOldBuilder9(
+                                  (index, child) =>
+                                      _buildProjectBottomItem(index, () {
+                                        setStatefull(() {});
+                                      })),
                           children: _currentProject.listMedia.map((e) {
                             final index = _currentProject.listMedia.indexOf(e);
-                            return WProjectItemHomeBottom(
-                              key: ValueKey(_currentProject.listMedia[index]),
-                              project: _currentProject,
-                              isFocusByLongPress: _isFocusProjectListBottom,
-                              index: index,
-                              onRemove: (srcMedia) {
-                                setState(() {
-                                  _currentProject = _currentProject.copyWith(
-                                      listMedia: _currentProject.listMedia
-                                          .where(
-                                              (element) => element != srcMedia)
-                                          .toList());
-                                });
-                                setStatefull(() {});
-                                ref
-                                    .read(projectControllerProvider.notifier)
-                                    .updateProject(_currentProject);
-                              },
-                            );
+                            return _buildProjectBottomItem(index, () {
+                              setStatefull(() {});
+                            });
                           }).toList(),
                         ),
                       ),
@@ -528,7 +544,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                           WSpacer(
                             height: 20,
                           ),
-                          WButtonElevated(
+                          WButtonFilled(
                             message: "Continue",
                             height: 60,
                             width: MediaQuery.sizeOf(context).width * 0.85,
@@ -553,7 +569,28 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
           });
         },
         isScrollControlled: true,
-        // enableDrag: false,
         backgroundColor: transparent);
+  }
+
+  Widget _buildProjectBottomItem(int index, Function()? reRenderFunction) {
+    return WProjectItemHomeBottom(
+      key: ValueKey(_currentProject.listMedia[index]),
+      project: _currentProject,
+      isFocusByLongPress: _isFocusProjectListBottom,
+      index: index,
+      onRemove: (srcMedia) {
+        setState(() {
+          _currentProject = _currentProject.copyWith(
+              listMedia: _currentProject.listMedia
+                  .where((element) => element != srcMedia)
+                  .toList());
+        });
+        reRenderFunction;
+
+        ref
+            .read(projectControllerProvider.notifier)
+            .updateProject(_currentProject);
+      },
+    );
   }
 }

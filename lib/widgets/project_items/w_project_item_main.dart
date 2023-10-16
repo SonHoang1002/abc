@@ -86,8 +86,7 @@ class WProjectItemEditor extends StatelessWidget {
                       indexImage: indexImage,
                       project: project,
                       layoutExtractList: layoutExtractList,
-                      ratioTarget:
-                          ratioTarget! ,
+                      ratioTarget: ratioTarget!,
                     ),
                     isFocusByLongPress
                         ? Positioned(

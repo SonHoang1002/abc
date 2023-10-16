@@ -21,7 +21,6 @@ class PaperBody extends StatefulWidget {
       required this.reRenderFunction,
       required this.indexPageSizeSelectionWidget,
       required this.paperConfig,
-      // required this.values,
       required this.onApply});
 
   @override
@@ -36,6 +35,8 @@ class _PaperBodyState extends State<PaperBody> {
       TextEditingController(text: "");
   final TextEditingController _paperSizeHeightController =
       TextEditingController(text: "");
+  late String _paperWidthValue = '';
+  late String _paperHeightValue = '';
   late bool _pageSizeIsPortrait = true;
 
   @override
@@ -55,8 +56,10 @@ class _PaperBodyState extends State<PaperBody> {
     }
     _indexPageSizeSelectionWidget = widget.indexPageSizeSelectionWidget;
     _paperConfig = widget.paperConfig;
-    _paperSizeWidthController.text = (_project.paper?.width).toString();
-    _paperSizeHeightController.text = (_project.paper?.height).toString();
+    _paperSizeWidthController.text =
+        _paperWidthValue = (_project.paper?.width).toString();
+    _paperSizeHeightController.text =
+        _paperHeightValue = (_project.paper?.height).toString();
     _pageSizeIsPortrait = _project.paper?.isPortrait ?? true;
     super.initState();
   }
@@ -143,13 +146,13 @@ class _PaperBodyState extends State<PaperBody> {
                                 });
                               }
                               setState(() {});
+                              widget.reRenderFunction();
                             },
                             suffixValue: _paperConfig['content'].unit.value,
                             isFocus: _indexPageSizeSelectionWidget == 1),
                         WSpacer(
                           height: 10,
                         ),
-                        // height
                         buildCupertinoInput(
                             context: context,
                             controller: _paperSizeHeightController,
@@ -168,6 +171,7 @@ class _PaperBodyState extends State<PaperBody> {
                                 _paperConfig['content'] = LIST_PAGE_SIZE[7];
                               }
                               setState(() {});
+                              widget.reRenderFunction();
                             },
                             suffixValue: _paperConfig['content'].unit.value,
                             isFocus: _indexPageSizeSelectionWidget == 2),
@@ -189,48 +193,39 @@ class _PaperBodyState extends State<PaperBody> {
                       child: Stack(
                         alignment: Alignment.topCenter,
                         children: [
-                          AnimatedContainer(
-                            alignment: Alignment.topCenter,
-                            duration: const Duration(milliseconds: 400),
-                            constraints: const BoxConstraints(
-                                maxHeight: 150, maxWidth: 150),
-                            height: _renderPreviewHeight(),
-                            width: _renderPreviewWidth(),
-                            decoration: BoxDecoration(
-                                color: colorWhite,
-                                border: _overWHValue()
-                                    ? null
-                                    : Border.all(
+                          SizedBox(
+                            height: 150,
+                            width: 150,
+                            child: Center(
+                              child: AnimatedContainer(
+                                alignment: Alignment.topCenter,
+                                duration: const Duration(milliseconds: 400),
+                                constraints: const BoxConstraints(
+                                    maxHeight: 150, maxWidth: 150),
+                                height: _renderPreviewHeight(),
+                                width: _renderPreviewWidth(),
+                                decoration: BoxDecoration(
+                                    color: colorWhite,
+                                    border: Border.all(
                                         color:
                                             const Color.fromRGBO(0, 0, 0, 0.1),
                                         width: 2)),
-                            padding: const EdgeInsets.all(10),
+                                padding: const EdgeInsets.all(10),
+                              ),
+                            ),
                           ),
-                          !_overWHValue()
-                              ? Positioned.fill(
-                                  child: Container(
-                                      alignment: Alignment.center,
-                                      child: WTextContent(
-                                        value: _renderPreviewContent(),
-                                        textSize: 16,
-                                        textLineHeight: 19.09,
-                                        textFontWeight: FontWeight.w600,
-                                        textColor:
-                                            const Color.fromRGBO(0, 0, 0, 0.5),
-                                        textOverflow: TextOverflow.ellipsis,
-                                      )),
-                                )
-                              : Container(
-                                  alignment: Alignment.topCenter,
-                                  child: WTextContent(
-                                    value: _renderPreviewContent(),
-                                    textSize: 16,
-                                    textLineHeight: 19.09,
-                                    textFontWeight: FontWeight.w600,
-                                    textColor:
-                                        const Color.fromRGBO(0, 0, 0, 0.5),
-                                    textOverflow: TextOverflow.ellipsis,
-                                  ))
+                          Positioned.fill(
+                            child: Container(
+                                alignment: Alignment.center,
+                                child: WTextContent(
+                                  value: _renderPreviewContent(),
+                                  textSize: 14,
+                                  textLineHeight: 16.04,
+                                  textFontWeight: FontWeight.w600,
+                                  textColor: const Color.fromRGBO(0, 0, 0, 0.5),
+                                  textOverflow: TextOverflow.ellipsis,
+                                )),
+                          )
                         ],
                       ),
                     ),
@@ -289,12 +284,24 @@ class _PaperBodyState extends State<PaperBody> {
                         if (widthValue.isEmpty ||
                             double.parse(widthValue) == 0.0) {
                           _paperSizeWidthController.text = "1.0";
+                        } else {
+                          _paperWidthValue =
+                              _paperSizeWidthController.text.trim();
                         }
                         if (heightValue.isEmpty ||
                             double.parse(heightValue) == 0.0) {
                           _paperSizeHeightController.text = "1.0";
+                        } else {
+                          _paperHeightValue =
+                              _paperSizeHeightController.text.trim();
                         }
-
+                        if (_paperHeightValue !=
+                                _paperConfig['content'].height ||
+                            _paperWidthValue != _paperConfig['content'].width) {
+                          setState(() {
+                            _paperConfig['content'] = LIST_PAGE_SIZE[7];
+                          });
+                        }
                         setState(() {});
                         widget.reRenderFunction();
                       },
@@ -307,14 +314,14 @@ class _PaperBodyState extends State<PaperBody> {
     );
   }
 
-  bool _overWHValue() {
-    if (_paperSizeWidthController.text.trim().isEmpty ||
-        _paperSizeHeightController.text.trim().isEmpty) {
-      return true;
-    }
-    return ((double.parse(_paperSizeHeightController.text.trim()) > 50.0) ||
-        (double.parse(_paperSizeWidthController.text.trim()) > 50.0));
-  }
+  // bool _overWHValue() {
+  //   if (_paperSizeWidthController.text.trim().isEmpty ||
+  //       _paperSizeHeightController.text.trim().isEmpty) {
+  //     return true;
+  //   }
+  //   return ((double.parse(_paperSizeHeightController.text.trim()) > 50.0) ||
+  //       (double.parse(_paperSizeWidthController.text.trim()) > 50.0));
+  // }
 
   String _renderPreviewContent() {
     if (_paperSizeWidthController.text.trim().isEmpty ||
@@ -325,21 +332,15 @@ class _PaperBodyState extends State<PaperBody> {
   }
 
   double _renderPreviewHeight() {
-    if (_overWHValue()) {
-      return 0;
-    }
     return (_pageSizeIsPortrait ? 220 : 170) *
-        double.parse(_paperSizeHeightController.text.trim()) /
-        double.parse(_paperSizeWidthController.text.trim());
+        double.parse(_paperHeightValue) /
+        double.parse(_paperWidthValue);
   }
 
   double _renderPreviewWidth() {
-    if (_overWHValue()) {
-      return 0;
-    }
     return (_pageSizeIsPortrait ? 170 : 220) *
-        double.parse(_paperSizeWidthController.text.trim()) /
-        double.parse(_paperSizeHeightController.text.trim());
+        double.parse(_paperWidthValue) /
+        double.parse(_paperHeightValue);
   }
 
   _tranferValuePageSize() {
@@ -359,34 +360,40 @@ class _PaperBodyState extends State<PaperBody> {
   Widget _buildOrientation(
     Function() rerenderFunc,
   ) {
-    return _paperConfig['content'].title != "Custom" && !_overWHValue()
+    return _paperConfig['content'].title != "Custom"
+        // && !_overWHValue()
         ? Flexible(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               height: 70,
-              width: 200,
+              width: 200 / 390 * MediaQuery.sizeOf(context).width,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
                 color: Theme.of(context).cardColor,
               ),
-              child: Row(children: [
-                Container(
-                  constraints: const BoxConstraints(minWidth: 50, maxWidth: 70),
-                  padding: const EdgeInsets.only(left: 5),
-                  child: WTextContent(
-                    value: "Orientation",
-                    textSize: 14,
-                    textLineHeight: 16.71,
-                    textColor: Theme.of(context).textTheme.bodyMedium!.color,
-                    textFontWeight: FontWeight.w600,
+              child: Flex(direction: Axis.horizontal, children: [
+                Flexible(
+                  flex: 4,
+                  child: Container(
+                    // constraints:
+                    // const BoxConstraints(minWidth: 70, maxWidth: 100),
+                    padding: const EdgeInsets.only(left: 5),
+                    child: WTextContent(
+                      value: "Orientation",
+                      textSize: 14,
+                      textLineHeight: 16.71,
+                      textColor: Theme.of(context).textTheme.bodyMedium!.color,
+                      textFontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
                 WSpacer(
                   width: 10,
                 ),
-                Expanded(
+                Flexible(
+                  flex: 4,
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       buildPageSizeOrientationItem(
                           mediaSrc: "${pathPrefixIcon}icon_portrait.png",
@@ -399,7 +406,10 @@ class _PaperBodyState extends State<PaperBody> {
                               _pageSizeIsPortrait = true;
                             });
                             rerenderFunc();
-                          }),
+                          },
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 9, vertical: 6)),
+                      const SizedBox(width: 10),
                       buildPageSizeOrientationItem(
                           mediaSrc: "${pathPrefixIcon}icon_landscape.png",
                           isSelected: !_pageSizeIsPortrait,
@@ -411,13 +421,15 @@ class _PaperBodyState extends State<PaperBody> {
                               _pageSizeIsPortrait = false;
                             });
                             rerenderFunc();
-                          }),
+                          },
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 9)),
                     ],
                   ),
                 )
               ]),
             ),
           )
-        : SizedBox();
+        : const SizedBox();
   }
 }

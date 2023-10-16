@@ -111,6 +111,9 @@ class _CoverBodyState extends State<CoverBody> {
             onApply: () {
               widget.onUpdatePhoto(_coverPhoto);
             },
+            onCancel: () {
+              popNavigator(context);
+            },
           )
         ],
       ),

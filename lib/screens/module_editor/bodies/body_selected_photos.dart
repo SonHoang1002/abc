@@ -1,8 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/helpers/convert_byte_unit.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/helpers/create_pdf.dart';
 import 'package:photo_to_pdf/helpers/pick_media.dart';
@@ -20,8 +20,8 @@ class SelectedPhotosBody extends StatefulWidget {
   final double sliderCompressionLevelValue;
   final Function(double)? onChangedSlider;
   final Function() reRenderFunction;
-  final Function(Project project, double size, double sliderValue) onApply;
-  final double sizeOfFile;
+  final Function(Project project, String sizeValue, double sliderValue) onApply;
+  final String sizeOfFileValue;
   const SelectedPhotosBody(
       {super.key,
       required this.project,
@@ -29,7 +29,7 @@ class SelectedPhotosBody extends StatefulWidget {
       required this.onChangedSlider,
       required this.reRenderFunction,
       required this.onApply,
-      required this.sizeOfFile});
+      required this.sizeOfFileValue});
 
   @override
   State<SelectedPhotosBody> createState() => _SelectedPhotosBodyState();
@@ -38,14 +38,14 @@ class SelectedPhotosBody extends StatefulWidget {
 class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
   late bool _isFocusProject;
   late Project _project;
-  late double _sizeOfFile;
+  late String _sizeOfFileValue;
   late double _sliderValue;
   @override
   void initState() {
     super.initState();
     _isFocusProject = false;
     _project = widget.project;
-    _sizeOfFile = widget.sizeOfFile;
+    _sizeOfFileValue = widget.sizeOfFileValue;
     _sliderValue = widget.sliderCompressionLevelValue;
   }
 
@@ -65,25 +65,25 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
   Future<void> _getFileSize(double value) async {
     Future.delayed(Duration.zero, () async {
       // ignore: use_build_context_synchronously
-      final pdfUint8List = await createPdfFile(_project, context,_getRatioProject(LIST_RATIO_PDF),
+      final pdfUint8List = await createPdfFile(
+          _project, context, _getRatioProject(LIST_RATIO_PDF),
           compressValue: widget.sliderCompressionLevelValue);
       // render to file
       final pdfFile = await convertUint8ListToFile(pdfUint8List);
-      _sizeOfFile = ((await pdfFile.length()) / 1024) / 1024;
+      _sizeOfFileValue = convertByteUnit((await pdfFile.length()) / 1024);
       setState(() {});
       widget.reRenderFunction();
     });
   }
-    List<double> _getRatioProject(List<double> oldRatioTarget) {
+
+  List<double> _getRatioProject(List<double> oldRatioTarget) {
     if (_project.paper?.width != null &&
         _project.paper?.width != 0 &&
         _project.paper?.height != null &&
         _project.paper?.height != 0) {
       final heightForWidth = (_project.paper!.height / _project.paper!.width);
 
-      final result = [
-        oldRatioTarget[0], oldRatioTarget[0] * heightForWidth
-      ];
+      final result = [oldRatioTarget[0], oldRatioTarget[0] * heightForWidth];
       return result;
     }
     return oldRatioTarget;
@@ -165,6 +165,21 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
                     _isFocusProject = true;
                   });
                 },
+                dragWidgetBuilderV2: DragWidgetBuilderV2.createByOldBuilder9(
+                    (index, child) => WProjectItemHomeBottom(
+                          key: ValueKey(_project.listMedia[index]),
+                          project: _project,
+                          isFocusByLongPress: _isFocusProject,
+                          index: index,
+                          onRemove: (value) {
+                            setState(() {
+                              _project = _project.copyWith(
+                                  listMedia: _project.listMedia
+                                      .where((element) => element != value)
+                                      .toList());
+                            });
+                          },
+                        )),
                 children: _project.listMedia.map((e) {
                   final index = _project.listMedia.indexOf(e);
                   return WProjectItemHomeBottom(
@@ -300,8 +315,7 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
                   ],
                 ),
                 WTextContent(
-                  value:
-                      "Estimated Total Size: ${_sizeOfFile.toStringAsFixed(2)} MB",
+                  value: "Estimated Total Size: ${_sizeOfFileValue}",
                   textSize: 14,
                   textLineHeight: 16.71,
                   textColor: Theme.of(context).textTheme.bodyMedium!.color,
@@ -312,7 +326,7 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
           buildBottomButton(
             context: context,
             onApply: () async {
-              widget.onApply(_project, _sizeOfFile, _sliderValue);
+              widget.onApply(_project, _sizeOfFileValue, _sliderValue);
               widget.reRenderFunction();
               popNavigator(context);
             },

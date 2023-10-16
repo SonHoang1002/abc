@@ -57,6 +57,7 @@ dependencies:
   isar_flutter_libs: ^3.1.0+1
   flutter_image_compress: ^2.0.4
   easy_debounce: ^2.0.3
+  flutter_email_sender: ^6.0.2
 
 dev_dependencies:
   flutter_test:

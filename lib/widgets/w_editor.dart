@@ -118,7 +118,7 @@ Widget buildPageSizePreset(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(14),
                 color: pv.Provider.of<ThemeManager>(context).isDarkMode
-                    ? const Color.fromRGBO(34,34,34,0.8)
+                    ? const Color.fromRGBO(34, 34, 34, 0.8)
                     : Theme.of(context).canvasColor,
               ),
               offset: const Offset(5, -5),
@@ -205,7 +205,8 @@ Widget buildCupertinoInput(
 Widget buildPageSizeOrientationItem(
     {required String mediaSrc,
     required bool isSelected,
-    required Function() onTap}) {
+    required Function() onTap,
+    EdgeInsets? padding}) {
   return GestureDetector(
     onTap: onTap,
     child: Container(
@@ -217,16 +218,15 @@ Widget buildPageSizeOrientationItem(
               0,
               0.03,
             ),
-            border: isSelected
-                ? Border.all(
-                    color: isSelected ? colorBlue : transparent, width: 2)
-                : null),
+            border: Border.all(
+                color: isSelected ? colorBlue : transparent, width: 2)),
         height: 40,
         width: 40,
-        padding: const EdgeInsets.all(10),
+        padding: padding,
         child: Image.asset(
           mediaSrc,
-          fit: BoxFit.cover,
+          fit: BoxFit.fill,
+          width: 35,
         )),
   );
 }
@@ -727,9 +727,9 @@ Widget buildDialogResizeMode(
         color: Theme.of(context).dialogBackgroundColor,
       ),
     ),
-    WDivider(
+    const WDivider(
       height: 1,
-      color: const Color.fromRGBO(0, 0, 0, 0.1),
+      color: Color.fromRGBO(0, 0, 0, 0.1),
     ),
     _buildDialogInformationItem(
         context,
@@ -740,9 +740,9 @@ Widget buildDialogResizeMode(
             ),
         boxDecoration:
             BoxDecoration(color: Theme.of(context).dialogBackgroundColor)),
-    WDivider(
+    const WDivider(
       height: 1,
-      color: const Color.fromRGBO(0, 0, 0, 0.3),
+      color: Color.fromRGBO(0, 0, 0, 0.3),
     ),
     _buildDialogInformationItem(
       context,

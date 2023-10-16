@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/commons/themes.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
@@ -11,7 +14,6 @@ class Setting extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // final size = MediaQuery.sizeOf(context);
     return SafeArea(
       child: Column(children: [
         Container(
@@ -78,16 +80,33 @@ class Setting extends StatelessWidget {
                   width: 1, color: const Color.fromRGBO(0, 0, 0, 0.05))),
           child: Column(children: [
             _buildSettingItem(
-                context: context,
-                prefixMediaSrc: "${pathPrefixIcon}icon_feedback.png",
-                title: "Write a feedback"),
+              context: context,
+              prefixMediaSrc: "${pathPrefixIcon}icon_feedback.png",
+              title: "Write a feedback",
+              onTap: () async {
+                final Email email = Email(
+                  body: 'Feedback',
+                  subject: 'Email subject',
+                  // receiver
+                  recipients: ['hoangtrungson07012001@gmail.com'],
+                  cc: ['abc@gmail.com'],
+                  bcc: ['abc@gmail.com'],
+                  isHTML: false,
+                );
+                await FlutterEmailSender.send(email);
+              },
+            ),
             WSpacer(
               height: 30,
             ),
             _buildSettingItem(
-                context: context,
-                prefixMediaSrc: "${pathPrefixIcon}icon_share.png",
-                title: "Share this app"),
+              context: context,
+              prefixMediaSrc: "${pathPrefixIcon}icon_share.png",
+              title: "Share this app",
+              onTap: () {
+                // share link app
+              },
+            ),
           ]),
         ),
         WSpacer(
@@ -113,20 +132,24 @@ class Setting extends StatelessWidget {
               ),
             ),
             child: _buildSettingItem(
-                context: context,
-                prefixMediaSrc: "${pathPrefixIcon}icon_access_setting.png",
-                title: "Photo Access Settings"))
+              context: context,
+              prefixMediaSrc: "${pathPrefixIcon}icon_access_setting.png",
+              title: "Photo Access Settings",
+              onTap: () async {
+                openAppSettings();
+              },
+            ))
       ]),
     );
   }
 
-  Widget _buildSettingItem({
-    required BuildContext context,
-    required String prefixMediaSrc,
-    required String title,
-  }) {
+  Widget _buildSettingItem(
+      {required BuildContext context,
+      required String prefixMediaSrc,
+      required String title,
+      Function()? onTap}) {
     return GestureDetector(
-      onTap: () {},
+      onTap: onTap,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

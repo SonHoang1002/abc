@@ -1,3 +1,4 @@
+import 'package:photo_to_pdf/helpers/convert_byte_unit.dart';
 import 'package:photo_to_pdf/helpers/create_pdf.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_layout.dart';
 import 'package:flutter/material.dart';
@@ -41,7 +42,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   // selected photos
   late double _sliderCompressionValue;
   late bool _autofocusFileName;
-  late double _sizeOfFile;
+  late String _sizeOfFileValue;
   late int _segmentCurrentIndex;
   late int? _lengthOfProjectList;
   @override
@@ -121,7 +122,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     }
     _sliderCompressionValue = _project.compression;
     _autofocusFileName = _project.title == "Untitled" || _project.title == "";
-    _sizeOfFile = 0.0;
+    _sizeOfFileValue = "0.0 MB";
     _segmentCurrentIndex = _project.useAvailableLayout == true ? 0 : 1;
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       await _getFileSize();
@@ -130,9 +131,9 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
 
   Future<void> _getFileSize() async {
     Future.delayed(Duration.zero, () async {
-      _sizeOfFile = await getPdfFileSize(
+      _sizeOfFileValue = convertByteUnit(await getPdfFileSize(
           _project, context, _getRatioProject(LIST_RATIO_PDF),
-          compressValue: _sliderCompressionValue);
+          compressValue: _sliderCompressionValue));
       setState(() {});
     });
   }
@@ -232,8 +233,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                 margin:
                                     const EdgeInsets.symmetric(horizontal: 10)),
                             WTextContent(
-                              value:
-                                  "File Size: ${_sizeOfFile.toStringAsFixed(2)} MB",
+                              value: "File Size: ${_sizeOfFileValue}",
                               textColor:
                                   Theme.of(context).textTheme.bodyMedium!.color,
                               textLineHeight: 14.32,
@@ -431,7 +431,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
               reRenderFunction: () {
                 setStatefull(() {});
               },
-              sizeOfFile: _sizeOfFile,
+              sizeOfFileValue: _sizeOfFileValue,
               project: _project,
               sliderCompressionLevelValue: sliderCompressionLevelValue,
               onChangedSlider: (value) {
@@ -449,7 +449,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                     ..._photosConfig,
                     "content": "${_project.listMedia.length} Photos"
                   };
-                  _sizeOfFile = size;
+                  _sizeOfFileValue = size;
                   _sliderCompressionValue = sliderValue;
                 });
                 setStatefull(() {});
@@ -483,8 +483,6 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                       _project = _project.copyWith(coverPhoto: newCoverPhoto);
                       setState(() {});
                       setStatefull(() {});
-                      print(
-                          "_project from cover photo body ${_project.coverPhoto?.getInfor()}");
                       await IsarProjectService().updateProject(_project);
                       // ignore: use_build_context_synchronously
                       popNavigator(context);

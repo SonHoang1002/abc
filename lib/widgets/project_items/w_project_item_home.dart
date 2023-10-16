@@ -59,6 +59,14 @@ class _WProjectItemHomeState extends ConsumerState<WProjectItemHome> {
               height: _getHeight(context),
               width: _getWidth(context) - 20,
               padding: const EdgeInsets.only(bottom: 25),
+              decoration: BoxDecoration(boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  spreadRadius: 0,
+                  blurRadius: 25,
+                  offset: const Offset(0, 1),
+                ),
+              ]),
               child: Center(
                 child: Stack(
                   alignment: !widget.isFocusByLongPress
@@ -71,9 +79,11 @@ class _WProjectItemHomeState extends ConsumerState<WProjectItemHome> {
                             color: widget.project.backgroundColor,
                             boxShadow: const [
                               BoxShadow(
-                                  blurRadius: 20,
-                                  spreadRadius: 0,
-                                  color: Color.fromRGBO(0, 0, 0, 0.1))
+                                color: Color.fromRGBO(0, 0, 0, 0.1),
+                                spreadRadius: 0,
+                                blurRadius: 20,
+                                offset: Offset(0, 1),
+                              ),
                             ]),
                       ),
                     ),
@@ -81,14 +91,6 @@ class _WProjectItemHomeState extends ConsumerState<WProjectItemHome> {
                         ? Container(
                             key: keyTest,
                             padding: const EdgeInsets.all(1),
-                            decoration: BoxDecoration(boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                spreadRadius: 0.5,
-                                blurRadius: 5,
-                                offset: const Offset(0, 1),
-                              ),
-                            ]),
                             child: LayoutMedia(
                                 indexImage: 0,
                                 project: widget.project,
@@ -97,8 +99,8 @@ class _WProjectItemHomeState extends ConsumerState<WProjectItemHome> {
                         : Image.asset("${pathPrefixImage}blank_page.jpg"),
                     widget.isFocusByLongPress
                         ? Positioned(
-                            top: -20,
-                            left: -20,
+                            top: -17,
+                            left: -17,
                             child: GestureDetector(
                               onTap: () async {
                                 final listProject = ref

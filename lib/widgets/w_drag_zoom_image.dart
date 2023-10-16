@@ -204,7 +204,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                                       color: colorBlue),
                                   child: Center(
                                       child: WTextContent(
-                                    value: index.toString(),
+                                    value: (index+1).toString(),
                                     textColor: colorWhite,
                                   )),
                                 ),

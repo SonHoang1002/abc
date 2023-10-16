@@ -29,8 +29,6 @@ class PreviewProject extends StatefulWidget {
 class _PreviewState extends State<PreviewProject> {
   late Project _project;
   late List _previewExtractList;
-  
-
 
   @override
   void initState() {
@@ -315,6 +313,10 @@ class WProjectItemPreview extends StatelessWidget {
           child: Column(
             children: [
               Container(
+                  constraints: BoxConstraints(
+                      maxHeight: MediaQuery.sizeOf(context).height *
+                          (589 / 844) *
+                          0.95),
                   width: MediaQuery.sizeOf(context).width * ratioTarget[0],
                   height: MediaQuery.sizeOf(context).width * ratioTarget[1],
                   decoration:

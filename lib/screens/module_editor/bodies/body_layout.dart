@@ -55,7 +55,7 @@ class _LayoutBodyState extends State<LayoutBody> {
 
   // background variable
   late Color _currentLayoutColor;
-
+  late List<double> _ratioTarget;
   @override
   void dispose() {
     super.dispose();
@@ -94,6 +94,15 @@ class _LayoutBodyState extends State<LayoutBody> {
     _listPlacement.forEach((element) {
       _matrix4Notifiers.add(ValueNotifier<Matrix4>(Matrix4.identity()));
     });
+    _ratioTarget = LIST_RATIO_PLACEMENT_BOARD;
+    if (_project.paper != null &&
+        _project.paper?.height != 0 &&
+        _project.paper?.width != 0) {
+      _ratioTarget = [
+        _ratioTarget[0],
+        _project.paper!.height / _project.paper!.width * _ratioTarget[0]
+      ];
+    }
   }
 
   void _resetLayoutSelections() {
@@ -444,7 +453,7 @@ class _LayoutBodyState extends State<LayoutBody> {
   Widget _buildCustomArea(
     Function rerenderFunction,
   ) {
-    void disablePlacement() {
+    void _disablePlacement() {
       setState(() {
         _seletedPlacement = null;
       });
@@ -453,7 +462,7 @@ class _LayoutBodyState extends State<LayoutBody> {
 
     return GestureDetector(
       onTap: () {
-        disablePlacement();
+        _disablePlacement();
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
@@ -465,7 +474,7 @@ class _LayoutBodyState extends State<LayoutBody> {
         margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         child: GestureDetector(
           onTap: () {
-            disablePlacement();
+            _disablePlacement();
           },
           child: Column(children: [
             Expanded(
@@ -527,14 +536,8 @@ class _LayoutBodyState extends State<LayoutBody> {
                               width: 70,
                               height: 70,
                               offset: Offset(
-                                  _size.width *
-                                          LIST_RATIO_PLACEMENT_BOARD[0] /
-                                          2 -
-                                      35,
-                                  _size.width *
-                                          LIST_RATIO_PLACEMENT_BOARD[1] /
-                                          2 -
-                                      35),
+                                  _size.width * _ratioTarget[0] / 2 - 35,
+                                  _size.width * _ratioTarget[1] / 2 - 35),
                               placementAttribute: PLACEMENT_ATTRIBUTE));
                           _seletedPlacement = _listPlacement.last;
                         });
@@ -588,17 +591,19 @@ class _LayoutBodyState extends State<LayoutBody> {
                                           .placementAttribute!.bottom
                                           .toString(),
                                     ],
-                                    onChanged: (index, value) {
-                                      // _onChangedEditPlacement(index, value);
-                                    },
+                                    onChanged: (index, value) {},
                                     onDone: (newData) {
-                                      setState(() {
-                                        _seletedPlacement = _seletedPlacement!
-                                            .copyWith(
-                                                placementAttribute:
-                                                    newData.placementAttribute);
-                                      });
-                                      widget.reRenderFunction();
+                                      for (var placement in _listPlacement) {
+                                        if (placement.id == newData.id) {
+                                          final index =
+                                              _listPlacement.indexOf(placement);
+                                          _listPlacement[index] =
+                                              _listPlacement[index].copyWith(
+                                                  placementAttribute: newData
+                                                      .placementAttribute);
+                                        }
+                                      }
+                                      _disablePlacement();
                                     },
                                   ));
                             },
