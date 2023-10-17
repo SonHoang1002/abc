@@ -61,6 +61,33 @@ class LayoutMedia extends StatelessWidget {
         }).toList(),
       );
     } else {
+      // final List<int> layoutSuggestion =
+      //     LIST_LAYOUT_SUGGESTION[project.layoutIndex];
+      // return Column(
+      //   mainAxisAlignment: MainAxisAlignment.center,
+      //   crossAxisAlignment: CrossAxisAlignment.center,
+      //   children: layoutSuggestion.map((indexColumn) {
+      //     return Flexible(
+      //       child: Row(
+      //           mainAxisAlignment: MainAxisAlignment.center,
+      //           crossAxisAlignment: CrossAxisAlignment.center,
+      //           children: List.generate(indexColumn, (index) => index)
+      //               .map((indexRow) => Flexible(
+      //                     fit: FlexFit.tight,
+      //                     child: _buildImageWidget(
+      //                       project,
+      //                       project.layoutIndex == 0
+      //                           ? project.listMedia[indexImage]
+      //                           : layoutExtractList![indexRow],
+      //                       width: double.infinity,
+      //                       height: double.infinity,
+      //                     ),
+      //                   ))
+      //               .toList()),
+      //     );
+      //   }).toList(),
+      // );
+
       if (project.layoutIndex == 0 && layoutExtractList == null) {
         return _buildImageWidget(
           project,

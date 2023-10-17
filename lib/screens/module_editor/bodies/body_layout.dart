@@ -2,6 +2,7 @@ import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_background.dart';
+import 'package:photo_to_pdf/screens/module_editor/bodies/body_dialogs.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
@@ -10,6 +11,7 @@ import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/screens/module_editor/editor_padding_spacing.dart';
 import 'package:photo_to_pdf/widgets/w_drag_zoom_image.dart';
 import 'package:photo_to_pdf/widgets/w_editor.dart';
+import 'package:photo_to_pdf/widgets/w_layout_suggestion.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 
@@ -71,8 +73,8 @@ class _LayoutBodyState extends State<LayoutBody> {
     _project = widget.project;
     _resizeModeSelectedValue = _project.resizeAttribute ?? LIST_RESIZE_MODE[0];
     _segmentCurrentIndex = widget.segmentCurrentIndex;
-    _listLayoutStatus = LIST_LAYOUT.map((e) {
-      return {"mediaSrc": e, "isFocus": false};
+    _listLayoutStatus = LIST_LAYOUT_SUGGESTION.map((e) {
+      return {"layout": e, "isFocus": false};
     }).toList();
     _listLayoutStatus[_project.layoutIndex]['isFocus'] = true;
     _listAlignment = LIST_ALIGNMENT.map((e) {
@@ -106,8 +108,8 @@ class _LayoutBodyState extends State<LayoutBody> {
   }
 
   void _resetLayoutSelections() {
-    _listLayoutStatus = _listLayoutStatus = LIST_LAYOUT.map((e) {
-      return {"mediaSrc": e, "isFocus": false};
+    _listLayoutStatus = LIST_LAYOUT_SUGGESTION.map((e) {
+      return {"layout": e, "isFocus": false};
     }).toList();
   }
 
@@ -174,11 +176,12 @@ class _LayoutBodyState extends State<LayoutBody> {
                                         horizontal: 10),
                                     child: buildLayoutWidget(
                                       context: context,
-                                      mediaSrc: e['mediaSrc'],
+                                      // mediaSrc: e['mediaSrc'],
                                       title: "Layout ${index + 1}",
                                       isFocus: e['isFocus'],
                                       backgroundColor: _currentLayoutColor,
-                                      indexLayoutItem: index,
+                                      layoutSuggestion: e["layout"],
+                                      // indexLayoutItem: index,
                                       onTap: () {
                                         _resetLayoutSelections();
                                         setState(() {
@@ -197,10 +200,8 @@ class _LayoutBodyState extends State<LayoutBody> {
                           Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
-                              children: _listLayoutStatus
-                                  .sublist(2, _listLayoutStatus.length)
-                                  .toList()
-                                  .map(
+                              children:
+                                  _listLayoutStatus.sublist(2, _listLayoutStatus.length).toList().map(
                                 (e) {
                                   final index = _listLayoutStatus.indexOf(e);
                                   return Container(
@@ -208,10 +209,9 @@ class _LayoutBodyState extends State<LayoutBody> {
                                         horizontal: 10),
                                     child: buildLayoutWidget(
                                       context: context,
-                                      mediaSrc: e['mediaSrc'],
                                       title: "Layout ${index + 1}",
                                       isFocus: e['isFocus'],
-                                      indexLayoutItem: index,
+                                      layoutSuggestion: e['layout'],
                                       backgroundColor: _currentLayoutColor,
                                       onTap: () {
                                         setState(() {
@@ -224,7 +224,8 @@ class _LayoutBodyState extends State<LayoutBody> {
                                     ),
                                   );
                                 },
-                              ).toList())
+                              ).toList()),
+                         
                         ],
                       )))
               : _buildCustomArea(() {
@@ -296,7 +297,8 @@ class _LayoutBodyState extends State<LayoutBody> {
                       final widgetPosition =
                           renderBoxResize.localToGlobal(Offset.zero);
                       showLayoutDialogWithOffset(
-                          context: context,
+                        context: context,
+                        newScreen: BodyDialogCustom(
                           offset: widgetPosition,
                           dialogWidget: buildDialogResizeMode(
                             context,
@@ -307,7 +309,10 @@ class _LayoutBodyState extends State<LayoutBody> {
                               widget.reRenderFunction();
                               popNavigator(context);
                             },
-                          ));
+                          ),
+                          scaleAlignment: Alignment.bottomLeft,
+                        ),
+                      );
                     }),
               ),
               Flexible(
@@ -328,20 +333,23 @@ class _LayoutBodyState extends State<LayoutBody> {
                             renderBoxAlignment.localToGlobal(Offset.zero);
                         showLayoutDialogWithOffset(
                             context: context,
-                            offset: Offset(_size.width * (1 - (200 / 390)) / 2,
-                                widgetOffset.dy),
-                            dialogWidget:
-                                buildDialogAlignment(context, _listAlignment,
-                                    onSelected: (index, value) {
-                              setState(() {
-                                _listAlignment = LIST_ALIGNMENT.map((e) {
-                                  return {'alignment': e, "isFocus": false};
-                                }).toList();
-                                _listAlignment[index]["isFocus"] = true;
-                              });
-                              widget.reRenderFunction();
-                              popNavigator(context);
-                            }));
+                            newScreen: BodyDialogCustom(
+                              offset: Offset(
+                                  _size.width * (1 - (200 / 390)) / 2,
+                                  widgetOffset.dy),
+                              dialogWidget:
+                                  buildDialogAlignment(context, _listAlignment,
+                                      onSelected: (index, value) {
+                                setState(() {
+                                  _listAlignment = LIST_ALIGNMENT.map((e) {
+                                    return {'alignment': e, "isFocus": false};
+                                  }).toList();
+                                  _listAlignment[index]["isFocus"] = true;
+                                });
+                                widget.reRenderFunction();
+                                popNavigator(context);
+                              }),
+                            ));
                       })),
               Flexible(
                 child: buildLayoutConfigItem(

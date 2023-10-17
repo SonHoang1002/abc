@@ -414,62 +414,6 @@ Widget buildSegmentControl(
 }
 
 // general
-Widget buildLayoutWidget({
-  required BuildContext context,
-  required String mediaSrc,
-  required String title,
-  required Color backgroundColor,
-  required bool isFocus,
-  required Function() onTap,
-  required int indexLayoutItem,
-}) {
-  return Column(
-    children: [
-      GestureDetector(
-        onTap: onTap,
-        child: Container(
-          decoration: BoxDecoration(
-              border: Border.all(
-                  width: 2,
-                  color: isFocus
-                      ? const Color.fromRGBO(22, 115, 255, 1)
-                      : transparent)),
-          child: indexLayoutItem == 0
-              ? _buildLayoutItem1(backgroundColor)
-              : indexLayoutItem == 1
-                  ? _buildLayoutItem2(backgroundColor)
-                  : indexLayoutItem == 2
-                      ? _buildLayoutItem34(backgroundColor)
-                      : _buildLayoutItem34(backgroundColor, reverse: true),
-        ),
-      ),
-      WSpacer(
-        height: 15,
-      ),
-      GestureDetector(
-        onTap: onTap,
-        child: Container(
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              color: isFocus ? const Color.fromRGBO(22, 115, 255, 1) : null),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          width: 80,
-          child: Center(
-            child: WTextContent(
-              value: title,
-              textLineHeight: 14.32,
-              textSize: 12,
-              textColor: isFocus
-                  ? colorWhite
-                  : Theme.of(context).textTheme.bodyMedium!.color,
-              textFontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      )
-    ],
-  );
-}
 
 Widget buildLayoutConfigItem(
     {required BuildContext context,
@@ -537,177 +481,12 @@ Widget buildLayoutConfigItem(
   );
 }
 
-Widget _buildLayoutItem1(Color backgroundColor) {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-    decoration: BoxDecoration(color: backgroundColor, boxShadow: [
-      BoxShadow(
-        color: Colors.black.withOpacity(0.2),
-        spreadRadius: 0.5,
-        blurRadius: 5,
-        offset: const Offset(0, 1),
-      ),
-    ]),
-    child: Center(
-      child: Image.asset(
-        "${pathPrefixIcon}icon_layout_11.png",
-        fit: BoxFit.cover,
-        height: 125,
-      ),
-    ),
-  );
-}
-
-Widget _buildLayoutItem2(Color backgroundColor) {
-  return Container(
-    // height: 185,
-    // width: 150,
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-    decoration: BoxDecoration(color: backgroundColor, boxShadow: [
-      BoxShadow(
-        color: Colors.black.withOpacity(0.2),
-        spreadRadius: 0.5,
-        blurRadius: 5,
-        offset: const Offset(0, 1),
-      ),
-    ]),
-    child: Center(
-      child: Column(
-        children: [
-          Image.asset(
-            "${pathPrefixIcon}icon_layout_21.png",
-            fit: BoxFit.cover,
-            height: 60,
-          ),
-          WSpacer(
-            height: 5,
-          ),
-          Image.asset(
-            "${pathPrefixIcon}icon_layout_21.png",
-            fit: BoxFit.cover,
-            height: 60,
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-Widget _buildLayoutItem34(Color backgroundColor, {bool reverse = false}) {
-  return Container(
-    // height: 185,
-    // width: 150,
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-    decoration: BoxDecoration(color: backgroundColor, boxShadow: [
-      BoxShadow(
-        color: Colors.black.withOpacity(0.2),
-        spreadRadius: 0.5,
-        blurRadius: 5,
-        offset: const Offset(0, 1),
-      ),
-    ]),
-    child: Center(
-      child: !reverse
-          ? Column(
-              children: [
-                Image.asset(
-                  "${pathPrefixIcon}icon_layout_21.png",
-                  fit: BoxFit.cover,
-                  height: 60,
-                ),
-                WSpacer(
-                  height: 5,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      "${pathPrefixIcon}icon_layout_31.png",
-                      fit: BoxFit.cover,
-                      height: 60,
-                    ),
-                    WSpacer(
-                      width: 5,
-                    ),
-                    Image.asset(
-                      "${pathPrefixIcon}icon_layout_31.png",
-                      fit: BoxFit.cover,
-                      height: 60,
-                    ),
-                  ],
-                )
-              ],
-            )
-          : Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      "${pathPrefixIcon}icon_layout_31.png",
-                      fit: BoxFit.cover,
-                      height: 60,
-                    ),
-                    WSpacer(
-                      width: 5,
-                    ),
-                    Image.asset(
-                      "${pathPrefixIcon}icon_layout_31.png",
-                      fit: BoxFit.cover,
-                      height: 60,
-                    ),
-                  ],
-                ),
-                WSpacer(
-                  height: 5,
-                ),
-                Image.asset(
-                  "${pathPrefixIcon}icon_layout_21.png",
-                  fit: BoxFit.cover,
-                  height: 60,
-                ),
-              ],
-            ),
-    ),
-  );
-}
-
-// resize mode
 void showLayoutDialogWithOffset(
-    {required BuildContext context,
-    required Offset offset,
-    required Widget dialogWidget}) {
-  final size = MediaQuery.sizeOf(context);
+    {required BuildContext context, required Widget newScreen}) {
   showGeneralDialog(
     context: context,
     pageBuilder: (context, animation, secondaryAnimation) {
-      return Material(
-        color: transparent,
-        child: Stack(children: [
-          Positioned.fill(
-              child: GestureDetector(
-            onTap: () {
-              popNavigator(context);
-            },
-            child: Container(color: const Color.fromRGBO(0, 0, 0, 0.03)),
-          )),
-          Positioned(
-              bottom: size.height - offset.dy,
-              left: offset.dx,
-              child: Container(
-                  decoration: BoxDecoration(boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      spreadRadius: 0,
-                      blurRadius: 20,
-                      offset: const Offset(0, 5),
-                    ),
-                  ]),
-                  child: dialogWidget))
-        ]),
-      );
+      return newScreen;
     },
   );
 }
@@ -915,7 +694,7 @@ Widget buildDialogAddCover(
       () => onSelected(
         LIST_ADD_COVER[2],
       ),
-      textColor: const Color.fromRGBO(0, 0, 0, 0.5),
+      textColor: Theme.of(context).textTheme.bodyMedium!.color,
       boxDecoration: BoxDecoration(
           borderRadius:
               const BorderRadius.vertical(bottom: Radius.circular(20)),
@@ -970,6 +749,7 @@ Widget _buildDialogInformationItem(
             mediaSrc,
             height: 14,
             width: 14,
+            color: textColor,
           ),
           WSpacer(
             width: 10,

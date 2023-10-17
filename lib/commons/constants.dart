@@ -19,11 +19,18 @@ List<PaperAttribute> LIST_PAGE_SIZE = [
   PaperAttribute(title: "Custom", width: 1.0, height: 1.0, unit: INCH),
 ];
 
-List<dynamic> LIST_LAYOUT = [
-  "${pathPrefixIcon}icon_layout_1.png",
-  "${pathPrefixIcon}icon_layout_2.png",
-  "${pathPrefixIcon}icon_layout_3.png",
-  "${pathPrefixIcon}icon_layout_4.png"
+// List<dynamic> LIST_LAYOUT = [
+//   "${pathPrefixIcon}icon_layout_1.png",
+//   "${pathPrefixIcon}icon_layout_2.png",
+//   "${pathPrefixIcon}icon_layout_3.png",
+//   "${pathPrefixIcon}icon_layout_4.png"
+// ];
+// NUMBER OF ICON IN ROW
+List<List<int>> LIST_LAYOUT_SUGGESTION = [
+  [1],
+  [1,1],
+  [1,2],
+  [2,1],
 ];
 
 List<AlignmentAttribute> LIST_ALIGNMENT = [

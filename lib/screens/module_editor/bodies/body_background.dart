@@ -47,6 +47,7 @@ class BackgroundBody extends StatelessWidget {
               onColorChanged: (color) {
                 onColorChanged(color);
               },
+              
               displayThumbColor: true,
               paletteType: PaletteType.hsvWithHue,
               enableAlpha: true,

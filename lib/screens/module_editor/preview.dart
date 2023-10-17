@@ -46,6 +46,7 @@ class _PreviewState extends State<PreviewProject> {
       _previewExtractList =
           extractList(_project.placements!.length, _project.listMedia);
     }
+
     if (_project.coverPhoto?.frontPhoto != null) {
       _previewExtractList
           .insert(0, {"front_cover": _project.coverPhoto!.frontPhoto});
@@ -65,6 +66,8 @@ class _PreviewState extends State<PreviewProject> {
 
   @override
   Widget build(BuildContext context) {
+    print(
+        "extractList1(LIST_LAYOUT_SUGGESTION[0], _project.listMedia) ${extractList1(LIST_LAYOUT_SUGGESTION[0], _project.listMedia)}");
     final size = MediaQuery.sizeOf(context);
     return Scaffold(
       body: SafeArea(

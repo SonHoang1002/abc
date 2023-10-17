@@ -7,6 +7,7 @@ import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/helpers/pick_media.dart';
 import 'package:photo_to_pdf/models/cover_photo.dart';
 import 'package:photo_to_pdf/models/project.dart';
+import 'package:photo_to_pdf/screens/module_editor/bodies/body_dialogs.dart';
 import 'package:photo_to_pdf/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
@@ -89,6 +90,7 @@ class _CoverBodyState extends State<CoverBody> {
                       child: _buildCoverItem(
                           context: context,
                           label: "frontPhoto",
+                          scaleAlignment: Alignment.bottomLeft,
                           key: _frontKey,
                           src: _coverPhoto.frontPhoto,
                           onSelectedCoverImage: updatePhoto)),
@@ -100,6 +102,7 @@ class _CoverBodyState extends State<CoverBody> {
                           context: context,
                           label: "backPhoto",
                           key: _backKey,
+                          scaleAlignment: Alignment.bottomRight,
                           src: _coverPhoto.backPhoto,
                           onSelectedCoverImage: updatePhoto))
                 ],
@@ -120,7 +123,8 @@ class _CoverBodyState extends State<CoverBody> {
     );
   }
 
-  _onTap(BuildContext context, String label, dynamic src, GlobalKey key) async {
+  _onTap(BuildContext context, String label, dynamic src, GlobalKey key,
+      Alignment scaleAlignment) async {
     if (src != null) {
       final renderBox = key.currentContext!.findRenderObject() as RenderBox;
       final originOffset = renderBox.localToGlobal(Offset.zero);
@@ -133,21 +137,27 @@ class _CoverBodyState extends State<CoverBody> {
       }
       showLayoutDialogWithOffset(
           context: context,
-          offset: offset,
-          dialogWidget: buildDialogAddCover(context, (value) async {
-            final listKeyAddCover = LIST_ADD_COVER.map((element) {
-              return element['key'];
-            }).toList();
-            if (value['key'] == listKeyAddCover[0]) {
-              final result = await pickImage(ImageSource.gallery, false);
-              if (result.isNotEmpty) {
-                updatePhoto(label, result[0]);
-              }
-            } else if (value['key'] == listKeyAddCover[1]) {
-              updatePhoto(label, null);
-            }
-            popNavigator(context);
-          }));
+          newScreen: BodyDialogCustom(
+            offset: offset,
+            dialogWidget: buildDialogAddCover(
+              context,
+              (value) async {
+                final listKeyAddCover = LIST_ADD_COVER.map((element) {
+                  return element['key'];
+                }).toList();
+                if (value['key'] == listKeyAddCover[0]) {
+                  final result = await pickImage(ImageSource.gallery, false);
+                  if (result.isNotEmpty) {
+                    updatePhoto(label, result[0]);
+                  }
+                } else if (value['key'] == listKeyAddCover[1]) {
+                  updatePhoto(label, null);
+                }
+                popNavigator(context);
+              },
+            ),
+            scaleAlignment: scaleAlignment,
+          ));
     } else {
       final result = await pickImage(ImageSource.gallery, false);
       if (result.isNotEmpty) {
@@ -160,12 +170,13 @@ class _CoverBodyState extends State<CoverBody> {
       {required BuildContext context,
       required String label,
       required GlobalKey key,
+      required Alignment scaleAlignment,
       dynamic src,
       double? width,
       void Function(String label, String? src)? onSelectedCoverImage}) {
     return GestureDetector(
       onTap: () async {
-        await _onTap(context, label, src, key);
+        await _onTap(context, label, src, key, scaleAlignment);
       },
       child: Container(
         width: width,

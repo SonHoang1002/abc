@@ -121,14 +121,14 @@ Future<Uint8List> createPdfFile(
   }
 
   PdfPageFormat? pdfPageFormat;
-  if (project.paper?.title != null) {
-    pdfPageFormat =
-        PDF_PAGE_FORMAT[project.paper?.title]?[pageOrientationValue];
-  }
-  // check height==width to render
-  if (project.paper?.height != null && project.paper?.width != null) {
-    pdfPageFormat = PdfPageFormat(project.paper!.width, project.paper!.height);
-  }
+  // if (project.paper?.title != null) {
+  //   pdfPageFormat =
+  //       PDF_PAGE_FORMAT[project.paper?.title]?[pageOrientationValue];
+  // }
+  // // check height==width to render
+  // if (project.paper?.height != null && project.paper?.width != null) {
+  //   pdfPageFormat = PdfPageFormat(project.paper!.width, project.paper!.height);
+  // }
   if (compressValue != null) {
     final compressImages =
         await compressImageFile(project.listMedia, compressValue);
