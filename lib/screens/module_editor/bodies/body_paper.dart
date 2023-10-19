@@ -396,9 +396,11 @@ class _PaperBodyState extends State<PaperBody> {
                     // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       buildPageSizeOrientationItem(
+                          context: context,
                           mediaSrc: "${pathPrefixIcon}icon_portrait.png",
                           isSelected: _pageSizeIsPortrait,
                           onTap: () {
+                            // thay doi offset neu co
                             setState(() {
                               if (_pageSizeIsPortrait == false) {
                                 _tranferValuePageSize();
@@ -411,6 +413,7 @@ class _PaperBodyState extends State<PaperBody> {
                               horizontal: 9, vertical: 6)),
                       const SizedBox(width: 10),
                       buildPageSizeOrientationItem(
+                          context: context,
                           mediaSrc: "${pathPrefixIcon}icon_landscape.png",
                           isSelected: !_pageSizeIsPortrait,
                           onTap: () {

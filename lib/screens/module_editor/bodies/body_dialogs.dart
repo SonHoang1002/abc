@@ -8,11 +8,13 @@ class BodyDialogCustom extends StatefulWidget {
   final Offset offset;
   final Widget dialogWidget;
   final Alignment scaleAlignment;
+  final Function()? onTapBackground;
   const BodyDialogCustom(
       {super.key,
       required this.offset,
       required this.dialogWidget,
-      this.scaleAlignment = Alignment.center});
+      this.scaleAlignment = Alignment.center,
+      this.onTapBackground});
 
   @override
   State<BodyDialogCustom> createState() => _BodyDialogCustomState();
@@ -51,7 +53,11 @@ class _BodyDialogCustomState extends State<BodyDialogCustom>
             child: GestureDetector(
           onTap: () {
             controller.reverse().then((_) {
-              popNavigator(context);
+              if (widget.onTapBackground != null) {
+                widget.onTapBackground!();
+              } else {
+                popNavigator(context);
+              }
             });
           },
           child: Container(color: const Color.fromRGBO(0, 0, 0, 0.03)),

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:isar/isar.dart';
 import 'package:photo_to_pdf/services/isar_project_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
@@ -13,7 +14,7 @@ import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/providers/project_provider.dart';
 import 'package:photo_to_pdf/screens/module_editor/editor.dart';
 import 'package:photo_to_pdf/screens/module_setting/setting.dart';
-import 'package:photo_to_pdf/widgets/project_items/w_project_item_home.dart';
+import 'package:photo_to_pdf/widgets/project_items/w_project_item_main.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/project_items/w_project_item_bottom.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
@@ -57,29 +58,12 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
     _isFocusProjectListBottom = true;
   }
 
-  int getLayoutImageNumber(
-    Project project,
-  ) {
-    if (project.useAvailableLayout) {
-      if (project.layoutIndex == 0) {
-        return 1;
-      } else if (project.layoutIndex == 1) {
-        return 2;
-      } else {
-        return 3;
-      }
-    } else {
-      return (project.placements?.length) ?? 0;
-    }
-  }
-
   List<double> _getRatioProject(Project project, List<double> oldRatioTarget) {
     if (project.paper?.width != null &&
         project.paper?.width != 0 &&
         project.paper?.height != null &&
         project.paper?.height != 0) {
       final heightForWidth = (project.paper!.height / project.paper!.width);
-
       final result = [oldRatioTarget[0], oldRatioTarget[0] * heightForWidth];
       return result;
     }
@@ -154,7 +138,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                 textAlign: TextAlign.center,
                 textSize: 14,
                 textFontWeight: FontWeight.w500,
-                textColor: Theme.of(context).textTheme.displayLarge!.color,
+                textColor: Theme.of(context).textTheme.titleLarge!.color,
                 textLineHeight: 16.71),
             WSpacer(height: 20),
             WButtonFilled(
@@ -190,13 +174,12 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
           },
           child: ReorderableGridView.count(
             padding: const EdgeInsets.only(
-              top: 10,
-              bottom: 120,
-            ),
+                top: 10, left: 7, right: 7),
             shrinkWrap: true,
             crossAxisSpacing: 5,
             mainAxisSpacing: 10,
             crossAxisCount: 2,
+            childAspectRatio: 9 / 12,
             onReorder: (oldIndex, newIndex) {
               setState(() {
                 final tempListProject = _listProject;
@@ -227,27 +210,43 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
     return const SizedBox();
   }
 
+  List? _getEtractList(int index) {
+    var result;
+    if (_listProject[index].useAvailableLayout) {
+      if (_listProject[index].listMedia.isNotEmpty) {
+        result = extractList1(
+            LIST_LAYOUT_SUGGESTION[_listProject[index].layoutIndex],
+            _listProject[index].listMedia)[0];
+      }
+    } else {
+      if (_listProject[index].placements != null) {
+        result = extractList(_listProject[index].placements!.length,
+            _listProject[index].listMedia)[0];
+      }
+    }
+    return result;
+  }
+
   Widget _buildProjectItemHome(int index) {
-    return Container(
+    return WProjectItemEditor1(
       key: ValueKey(_listProject[index]),
-      child: WProjectItemHome(
-        key: ValueKey(_listProject[index]),
-        project: _listProject[index],
-        isFocusByLongPress: _isFocusProjectList,
-        index: index,
-        layoutExtractList: _listProject[index].useAvailableLayout &&
-                    _listProject[index].layoutIndex == 0 ||
-                (_listProject[index].layoutIndex != 0 &&
-                    _listProject[index].listMedia.isEmpty)
-            ? null
-            : extractList(getLayoutImageNumber(_listProject[index]),
-                _listProject[index].listMedia)[0],
-        onTap: () {
-          pushNavigator(context, Editor(project: _listProject[index]));
-        },
-        ratioTarget:
-            _getRatioProject(_listProject[index], LIST_RATIO_PROJECT_ITEM),
-      ),
+      project: _listProject[index],
+      isFocusByLongPress: _isFocusProjectList,
+      indexImage: index,
+      layoutExtractList: _getEtractList(index),
+      title: _listProject[index].title,
+      onTap: () {
+        pushNavigator(context, Editor(project: _listProject[index]));
+      },
+      onRemove: () async {
+        final listProject = ref.watch(projectControllerProvider).listProject;
+        final deleteItem = listProject[index];
+        listProject.removeAt(index);
+        ref.read(projectControllerProvider.notifier).setProject(listProject);
+        await IsarProjectService().deletePostIsar(deleteItem);
+      },
+      ratioTarget:
+          _getRatioProject(_listProject[index], LIST_RATIO_PROJECT_ITEM),
     );
   }
 
@@ -550,15 +549,18 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                             width: MediaQuery.sizeOf(context).width * 0.85,
                             backgroundColor: colorBlue,
                             textColor: colorWhite,
-                            onPressed: () {
+                            onPressed: () async {
+                              _currentProject = _currentProject.copyWith(
+                                  paper: LIST_PAGE_SIZE[5]);
                               ref
                                   .read(projectControllerProvider.notifier)
                                   .addProject(_currentProject);
                               // data on database
-                              IsarProjectService().addProject(_currentProject);
                               popNavigator(context);
                               pushNavigator(
                                   context, Editor(project: _currentProject));
+                              await IsarProjectService()
+                                  .addProject(_currentProject);
                             },
                           )
                         ],

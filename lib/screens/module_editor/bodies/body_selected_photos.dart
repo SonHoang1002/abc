@@ -145,58 +145,65 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
               decoration: BoxDecoration(
                   color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(10)),
-              child: ReorderableGridView.count(
-                padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
-                shrinkWrap: true,
-                crossAxisSpacing: 5,
-                mainAxisSpacing: 5,
-                crossAxisCount: 3,
-                onReorder: (oldIndex, newIndex) {
+              child: GestureDetector(
+                onTap: () {
                   setState(() {
-                    final tempListProject = _project.listMedia;
-                    final element = tempListProject.removeAt(oldIndex);
-                    tempListProject.insert(newIndex, element);
-                    _project = _project.copyWith(listMedia: tempListProject);
-                  });
-                  widget.reRenderFunction();
-                },
-                onDragStart: (dragIndex) {
-                  setState(() {
-                    _isFocusProject = true;
+                    _isFocusProject = false;
                   });
                 },
-                dragWidgetBuilderV2: DragWidgetBuilderV2.createByOldBuilder9(
-                    (index, child) => WProjectItemHomeBottom(
-                          key: ValueKey(_project.listMedia[index]),
-                          project: _project,
-                          isFocusByLongPress: _isFocusProject,
-                          index: index,
-                          onRemove: (value) {
-                            setState(() {
-                              _project = _project.copyWith(
-                                  listMedia: _project.listMedia
-                                      .where((element) => element != value)
-                                      .toList());
-                            });
-                          },
-                        )),
-                children: _project.listMedia.map((e) {
-                  final index = _project.listMedia.indexOf(e);
-                  return WProjectItemHomeBottom(
-                    key: ValueKey(_project.listMedia[index]),
-                    project: _project,
-                    isFocusByLongPress: _isFocusProject,
-                    index: index,
-                    onRemove: (value) {
-                      setState(() {
-                        _project = _project.copyWith(
-                            listMedia: _project.listMedia
-                                .where((element) => element != value)
-                                .toList());
-                      });
-                    },
-                  );
-                }).toList(),
+                child: ReorderableGridView.count(
+                  padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
+                  shrinkWrap: true,
+                  crossAxisSpacing: 5,
+                  mainAxisSpacing: 5,
+                  crossAxisCount: 3,
+                  onReorder: (oldIndex, newIndex) {
+                    setState(() {
+                      final tempListProject = _project.listMedia;
+                      final element = tempListProject.removeAt(oldIndex);
+                      tempListProject.insert(newIndex, element);
+                      _project = _project.copyWith(listMedia: tempListProject);
+                    });
+                    widget.reRenderFunction();
+                  },
+                  onDragStart: (dragIndex) {
+                    setState(() {
+                      _isFocusProject = true;
+                    });
+                  },
+                  dragWidgetBuilderV2: DragWidgetBuilderV2.createByOldBuilder9(
+                      (index, child) => WProjectItemHomeBottom(
+                            key: ValueKey(_project.listMedia[index]),
+                            project: _project,
+                            isFocusByLongPress: _isFocusProject,
+                            index: index,
+                            onRemove: (value) {
+                              setState(() {
+                                _project = _project.copyWith(
+                                    listMedia: _project.listMedia
+                                        .where((element) => element != value)
+                                        .toList());
+                              });
+                            },
+                          )),
+                  children: _project.listMedia.map((e) {
+                    final index = _project.listMedia.indexOf(e);
+                    return WProjectItemHomeBottom(
+                      key: ValueKey(_project.listMedia[index]),
+                      project: _project,
+                      isFocusByLongPress: _isFocusProject,
+                      index: index,
+                      onRemove: (value) {
+                        setState(() {
+                          _project = _project.copyWith(
+                              listMedia: _project.listMedia
+                                  .where((element) => element != value)
+                                  .toList());
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
               ),
             ),
           ),

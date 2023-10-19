@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
@@ -16,32 +17,34 @@ class PreviewProject extends StatefulWidget {
   final Project project;
   final int indexPage;
   final List<double>? ratioTarget;
+  final Function()? onClose;
   const PreviewProject(
       {super.key,
       required this.project,
       required this.indexPage,
-      this.ratioTarget = LIST_RATIO_PREVIEW});
+      this.ratioTarget = LIST_RATIO_PREVIEW,
+      this.onClose});
 
   @override
   State<PreviewProject> createState() => _PreviewState();
 }
 
-class _PreviewState extends State<PreviewProject> {
+class _PreviewState extends State<PreviewProject>
+    with SingleTickerProviderStateMixin {
   late Project _project;
   late List _previewExtractList;
+  late AnimationController controller;
+  late Animation<double> scaleAnimation;
+
+  late int _currentCarouselIndex;
 
   @override
   void initState() {
     _project = widget.project;
     _previewExtractList = [];
     if (_project.useAvailableLayout == true) {
-      if (_project.layoutIndex == 0) {
-        _previewExtractList = _project.listMedia;
-      } else if (_project.layoutIndex == 1) {
-        _previewExtractList = extractList(2, _project.listMedia);
-      } else if ([2, 3].contains(_project.layoutIndex)) {
-        _previewExtractList = extractList(3, _project.listMedia);
-      }
+      _previewExtractList = extractList1(
+          LIST_LAYOUT_SUGGESTION[_project.layoutIndex], _project.listMedia);
     } else {
       _previewExtractList =
           extractList(_project.placements!.length, _project.listMedia);
@@ -53,6 +56,18 @@ class _PreviewState extends State<PreviewProject> {
     }
     if (_project.coverPhoto?.backPhoto != null) {
       _previewExtractList.add({"back_cover": _project.coverPhoto!.backPhoto});
+    }
+
+    controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 150));
+    scaleAnimation = CurvedAnimation(parent: controller, curve: Curves.ease);
+    controller.addListener(() {
+      setState(() {});
+    });
+    controller.forward();
+    _currentCarouselIndex = widget.indexPage;
+    if (_project.coverPhoto?.frontPhoto != null) {
+      _currentCarouselIndex = widget.indexPage + 1;
     }
     super.initState();
   }
@@ -66,28 +81,31 @@ class _PreviewState extends State<PreviewProject> {
 
   @override
   Widget build(BuildContext context) {
-    print(
-        "extractList1(LIST_LAYOUT_SUGGESTION[0], _project.listMedia) ${extractList1(LIST_LAYOUT_SUGGESTION[0], _project.listMedia)}");
     final size = MediaQuery.sizeOf(context);
-    return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Container(
-              color: const Color.fromRGBO(0, 0, 0, 0.1),
-            ),
-            Column(
-              children: [
-                Container(
-                  margin: const EdgeInsets.only(top: 20),
-                  child: WTextContent(
-                    value: "Preview",
-                    textSize: 16,
-                    textLineHeight: 19.09,
-                    textColor: Theme.of(context).textTheme.displayLarge!.color,
-                  ),
+    return Stack(
+      children: [
+        BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            color: const Color.fromRGBO(0, 0, 0, 0.1),
+          ),
+        ),
+        ScaleTransition(
+          scale: scaleAnimation,
+          child: Column(
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 20),
+                child: WTextContent(
+                  value: "Preview",
+                  textSize: 16,
+                  textLineHeight: 19.09,
+                  textColor: Theme.of(context).textTheme.displayLarge!.color,
                 ),
-                Expanded(
+              ),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7),
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
@@ -126,9 +144,9 @@ class _PreviewState extends State<PreviewProject> {
                           );
                         },
                         options: CarouselOptions(
-                          height: size.height * 0.8,
+                          height: size.height * 0.9,
                           aspectRatio: size.height / size.width + 1,
-                          initialPage: 0,
+                          initialPage: _currentCarouselIndex,
                           scrollPhysics: const BouncingScrollPhysics(),
                           enableInfiniteScroll: false,
                           autoPlayCurve: Curves.fastOutSlowIn,
@@ -139,41 +157,43 @@ class _PreviewState extends State<PreviewProject> {
                     ],
                   ),
                 ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const SizedBox(),
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 30),
-                      width: size.width * 0.8,
-                      child: WButtonFilled(
-                        message: "Close",
-                        textColor: colorBlue,
-                        height: 60,
-                        backgroundColor: colorWhite,
-                        onPressed: () {
-                          /// không hiểu tại sao lại data binding 2 chiều ??
-                          setState(() {
-                            if (_project.coverPhoto?.frontPhoto != null) {
-                              _previewExtractList.removeAt(
-                                0,
-                              );
-                            }
-                            if (_project.coverPhoto?.backPhoto != null) {
-                              _previewExtractList.removeLast();
-                            }
-                          });
-                          Navigator.of(context).pop();
-                        },
-                      ),
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SizedBox(),
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 30),
+                    width: size.width * 0.8,
+                    child: WButtonFilled(
+                      message: "Close",
+                      textColor: colorBlue,
+                      height: 60,
+                      backgroundColor: colorWhite,
+                      onPressed: () {
+                        /// không hiểu tại sao lại data binding 2 chiều ??
+                        setState(() {
+                          if (_project.coverPhoto?.frontPhoto != null) {
+                            _previewExtractList.removeAt(
+                              0,
+                            );
+                          }
+                          if (_project.coverPhoto?.backPhoto != null) {
+                            _previewExtractList.removeLast();
+                          }
+                        });
+                        controller.reverse().then((value) {
+                          widget.onClose != null ? widget.onClose!() : null;
+                        });
+                      },
                     ),
-                  ],
-                )
-              ],
-            ),
-          ],
+                  ),
+                ],
+              )
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -231,9 +251,7 @@ class _PreviewState extends State<PreviewProject> {
       );
     } else {
       if (_project.listMedia.isEmpty) {
-        final blankProject = Project(
-            id: getRandomNumber(),
-            listMedia: ["${pathPrefixImage}blank_page.jpg"]);
+        final blankProject = Project(id: getRandomNumber(), listMedia: []);
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 10),
           child: WProjectItemPreview(
@@ -244,41 +262,16 @@ class _PreviewState extends State<PreviewProject> {
           ),
         );
       } else {
-        if (_project.layoutIndex == 0) {
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 10),
-            child: WProjectItemPreview(
-              project: _project,
-              indexImage: indexExtract,
-              title: "",
-              ratioTarget: ratioTarget,
-            ),
-          );
-        } else if (_project.layoutIndex == 1) {
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 10),
-            child: WProjectItemPreview(
-              project: _project,
-              indexImage: indexExtract,
-              layoutExtractList: _previewExtractList[indexExtract],
-              title: "",
-              ratioTarget: ratioTarget,
-            ),
-          );
-        } else if ([2, 3].contains(_project.layoutIndex)) {
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 10),
-            child: WProjectItemPreview(
-              project: _project,
-              indexImage: indexExtract,
-              layoutExtractList: _previewExtractList[indexExtract],
-              title: "",
-              ratioTarget: ratioTarget,
-            ),
-          );
-        } else {
-          return Container();
-        }
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 10),
+          child: WProjectItemPreview(
+            project: _project,
+            indexImage: indexExtract,
+            layoutExtractList: _previewExtractList[indexExtract],
+            title: "",
+            ratioTarget: ratioTarget,
+          ),
+        );
       }
     }
   }
@@ -319,7 +312,7 @@ class WProjectItemPreview extends StatelessWidget {
                   constraints: BoxConstraints(
                       maxHeight: MediaQuery.sizeOf(context).height *
                           (589 / 844) *
-                          0.95),
+                          0.8),
                   width: MediaQuery.sizeOf(context).width * ratioTarget[0],
                   height: MediaQuery.sizeOf(context).width * ratioTarget[1],
                   decoration:
@@ -333,11 +326,12 @@ class WProjectItemPreview extends StatelessWidget {
                   ]),
                   child: coverFile != null
                       ? const SizedBox()
-                      : LayoutMedia(
+                      : LayoutMedia1(
                           indexImage: indexImage,
                           project: project,
                           layoutExtractList: layoutExtractList,
                           ratioTarget: ratioTarget,
+                          // ratioTarget: [0.54, 0.72],
                         )),
               WSpacer(
                 height: 10,

@@ -27,23 +27,23 @@ popToPreviousScreen(BuildContext context) {
   Navigator.of(context).pop();
 }
 
-pushCustomMaterialPageRoute(
-  BuildContext context,
-  Widget newScreen, {
-  RouteSettings? settings,
-  bool maintainState = true,
-  bool fullscreenDialog = false,
-  bool allowSnapshotting = true,
-}) {
-  Navigator.push(
-      context,
-      CustomOpaqueCupertinoPageRoute(
-          builder: (context) => newScreen,
-          settings: settings,
-          maintainState: maintainState,
-          fullscreenDialog: fullscreenDialog,
-          allowSnapshotting: allowSnapshotting));
-}
+// pushCustomMaterialPageRoute(
+//   BuildContext context,
+//   Widget newScreen, {
+//   RouteSettings? settings,
+//   bool maintainState = true,
+//   bool fullscreenDialog = false,
+//   bool allowSnapshotting = true,
+// }) {
+//   Navigator.push(
+//       context,
+//       CustomOpaqueCupertinoPageRoute(
+//           builder: (context) => newScreen,
+//           settings: settings,
+//           maintainState: maintainState,
+//           fullscreenDialog: fullscreenDialog,
+//           allowSnapshotting: allowSnapshotting));
+// }
 
 /// drive from bottom to top screen
 pushCustomVerticalMaterialPageRoute(BuildContext context, Widget newScreen,

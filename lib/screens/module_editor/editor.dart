@@ -1,5 +1,6 @@
 import 'package:photo_to_pdf/helpers/convert_byte_unit.dart';
 import 'package:photo_to_pdf/helpers/create_pdf.dart';
+import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
@@ -12,6 +13,7 @@ import 'package:photo_to_pdf/providers/project_provider.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_paper.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_cover_photos.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_selected_photos.dart';
+import 'package:photo_to_pdf/screens/module_editor/preview.dart';
 import 'package:photo_to_pdf/services/isar_project_service.dart';
 import 'package:photo_to_pdf/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_divider.dart';
@@ -45,6 +47,9 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   late String _sizeOfFileValue;
   late int _segmentCurrentIndex;
   late int? _lengthOfProjectList;
+  late bool _isShowPreview;
+  late List<double> _previewRatio;
+  late int? _currentCarouselIndex;
   @override
   void dispose() {
     super.dispose();
@@ -124,6 +129,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     _autofocusFileName = _project.title == "Untitled" || _project.title == "";
     _sizeOfFileValue = "0.0 MB";
     _segmentCurrentIndex = _project.useAvailableLayout == true ? 0 : 1;
+    _isShowPreview = false;
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       await _getFileSize();
     });
@@ -162,180 +168,201 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
 
   @override
   Widget build(BuildContext context) {
+    // print("_currentCarouselIndex ${_currentCarouselIndex}");
     _size = MediaQuery.sizeOf(context);
-
     return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         resizeToAvoidBottomInset: false,
         body: SafeArea(
-          child: Container(
-            padding: const EdgeInsets.only(top: 10),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                // input
-                buildFileNameInput(
-                  context,
-                  _project,
-                  _fileNameController,
-                  (value) async {
-                    _project = _project.copyWith(title: value.trim());
-                    ref
-                        .read(projectControllerProvider.notifier)
-                        .updateProject(_project);
-                    await IsarProjectService().updateProject(_project);
-                  },
-                  autofocus: _autofocusFileName,
-                  onTap: () {
-                    _onTapFileNameInput();
-                  },
-                ),
-                WSpacer(
-                  height: 10,
-                ),
-                // list image
-                Expanded(
-                    child: Container(
-                        width: _size.width * 0.9,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: Theme.of(context).cardColor,
-                        ),
-                        child: SingleChildScrollView(
-                            padding: const EdgeInsets.only(top: 15),
-                            child: _buildPreviewProjectBody()))),
-                // page size and bottom buttons
-                SizedBox(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(children: [
-                        WSpacer(height: 10),
-                        // information
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            WTextContent(
-                              value: "$_lengthOfProjectList Pages",
-                              textColor:
-                                  Theme.of(context).textTheme.bodyMedium!.color,
-                              textLineHeight: 14.32,
-                              textSize: 12,
-                              textFontWeight: FontWeight.w600,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.only(top: 10),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    // input
+                    buildFileNameInput(
+                      context,
+                      _project,
+                      _fileNameController,
+                      (value) async {
+                        _project = _project.copyWith(title: value.trim());
+                        ref
+                            .read(projectControllerProvider.notifier)
+                            .updateProject(_project);
+                        await IsarProjectService().updateProject(_project);
+                      },
+                      autofocus: _autofocusFileName,
+                      onTap: () {
+                        _onTapFileNameInput();
+                      },
+                    ),
+                    WSpacer(
+                      height: 10,
+                    ),
+                    // list image
+                    Expanded(
+                        child: Container(
+                            width: _size.width * 0.9,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: Theme.of(context).cardColor,
                             ),
-                            WDivider(
-                                width: 2,
-                                height: 14,
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium!
-                                    .color,
-                                margin:
-                                    const EdgeInsets.symmetric(horizontal: 10)),
-                            WTextContent(
-                              value: "File Size: ${_sizeOfFileValue}",
-                              textColor:
-                                  Theme.of(context).textTheme.bodyMedium!.color,
-                              textLineHeight: 14.32,
-                              textSize: 12,
-                              textFontWeight: FontWeight.w600,
+                            child: SingleChildScrollView(
+                                padding: const EdgeInsets.only(top: 15),
+                                child: _buildPreviewProjectBody1()))),
+                    // page size and bottom buttons
+                    SizedBox(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(children: [
+                            WSpacer(height: 10),
+                            // information
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                WTextContent(
+                                  value: "$_lengthOfProjectList Pages",
+                                  textColor: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium!
+                                      .color,
+                                  textLineHeight: 14.32,
+                                  textSize: 12,
+                                  textFontWeight: FontWeight.w600,
+                                ),
+                                WDivider(
+                                    width: 2,
+                                    height: 14,
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium!
+                                        .color,
+                                    margin: const EdgeInsets.symmetric(
+                                        horizontal: 10)),
+                                WTextContent(
+                                  value: "File Size: ${_sizeOfFileValue}",
+                                  textColor: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium!
+                                      .color,
+                                  textLineHeight: 14.32,
+                                  textSize: 12,
+                                  textFontWeight: FontWeight.w600,
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        //
-                        WSpacer(
-                          height: 20,
-                        ),
-                        // selections
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            buildSelection(
-                              context,
-                              _paperConfig['mediaSrc'],
-                              _paperConfig['title'],
-                              _paperConfig['content'].title,
-                              onTap: () {
-                                _showBottomSheetPaperSize();
-                              },
-                            ),
+                            //
                             WSpacer(
-                              width: 10,
+                              height: 20,
                             ),
-                            buildSelection(
-                              context,
-                              _layoutConfig['mediaSrc'],
-                              _layoutConfig['title'],
-                              _layoutConfig['content'],
-                              onTap: () {
-                                _showBottomSheetLayout();
-                              },
-                            ),
-                          ],
-                        ),
-                        WSpacer(
-                          height: 10,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            buildSelection(
-                              context,
-                              _photosConfig['mediaSrc'],
-                              _photosConfig['title'],
-                              _photosConfig['content'],
-                              onTap: () {
-                                _showBottomSheetSelectedPhotos(
-                                  context: context,
-                                  size: _size,
-                                  project: _project,
-                                  onSliderChanged: (value) {
-                                    setState(() {
-                                      _sliderCompressionValue = value;
-                                    });
+                            // selections
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                buildSelection(
+                                  context,
+                                  _paperConfig['mediaSrc'],
+                                  _paperConfig['title'],
+                                  _paperConfig['content'].title,
+                                  onTap: () {
+                                    _showBottomSheetPaperSize();
                                   },
-                                  sliderCompressionLevelValue:
-                                      _sliderCompressionValue,
-                                );
-                              },
+                                ),
+                                WSpacer(
+                                  width: 10,
+                                ),
+                                buildSelection(
+                                  context,
+                                  _layoutConfig['mediaSrc'],
+                                  _layoutConfig['title'],
+                                  _layoutConfig['content'],
+                                  onTap: () {
+                                    _showBottomSheetLayout();
+                                  },
+                                ),
+                              ],
                             ),
                             WSpacer(
-                              width: 10,
+                              height: 10,
                             ),
-                            buildSelection(
-                              context,
-                              _coverConfig['mediaSrc'],
-                              _coverConfig['title'],
-                              _coverConfig['content'],
-                              onTap: () {
-                                _showBottomSheetCoveredPhotos(
-                                  context: context,
-                                  size: _size,
-                                );
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                buildSelection(
+                                  context,
+                                  _photosConfig['mediaSrc'],
+                                  _photosConfig['title'],
+                                  _photosConfig['content'],
+                                  onTap: () {
+                                    _showBottomSheetSelectedPhotos(
+                                      context: context,
+                                      size: _size,
+                                      project: _project,
+                                      onSliderChanged: (value) {
+                                        setState(() {
+                                          _sliderCompressionValue = value;
+                                        });
+                                      },
+                                      sliderCompressionLevelValue:
+                                          _sliderCompressionValue,
+                                    );
+                                  },
+                                ),
+                                WSpacer(
+                                  width: 10,
+                                ),
+                                buildSelection(
+                                  context,
+                                  _coverConfig['mediaSrc'],
+                                  _coverConfig['title'],
+                                  _coverConfig['content'],
+                                  onTap: () {
+                                    _showBottomSheetCoveredPhotos(
+                                      context: context,
+                                      size: _size,
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ]),
+                          buildBottomButton(
+                              context: context,
+                              onApply: () async {
+                                await createAndPreviewPdf(_project, context,
+                                    _getRatioProject(LIST_RATIO_PDF),
+                                    compressValue: _sliderCompressionValue);
                               },
-                            ),
-                          ],
-                        ),
-                      ]),
-                      buildBottomButton(
-                          context: context,
-                          onApply: () async {
-                            await createAndPreviewPdf(_project, context,
-                                _getRatioProject(LIST_RATIO_PDF),
-                                compressValue: _sliderCompressionValue);
-                          },
-                          onCancel: () {
-                            ref
-                                .read(projectControllerProvider.notifier)
-                                .updateProject(_project);
-                            popNavigator(context);
-                          },
-                          titleApply: "Save to...")
-                    ],
-                  ),
-                )
-              ],
-            ),
+                              onCancel: () {
+                                ref
+                                    .read(projectControllerProvider.notifier)
+                                    .updateProject(_project);
+                                popNavigator(context);
+                              },
+                              titleApply: "Save to...")
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              _isShowPreview
+                  ? PreviewProject(
+                      project: _project,
+                      indexPage: _currentCarouselIndex!,
+                      ratioTarget: _previewRatio,
+                      onClose: () {
+                        setState(() {
+                          _isShowPreview = false;
+                          _currentCarouselIndex = null;
+                        });
+                      })
+                  : const SizedBox()
+            ],
           ),
         ));
   }
@@ -377,6 +404,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                     _segmentCurrentIndex = newSegmentIndex;
                     setState(() {});
                     await _getFileSize();
+                    // ignore: use_build_context_synchronously
                     popNavigator(context);
                     await IsarProjectService().updateProject(project);
                   },
@@ -404,7 +432,35 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                   indexPageSizeSelectionWidget: _indexPageSizeSelectionWidget,
                   paperConfig: _paperConfig,
                   onApply: (newPaper, pageSizeIsPortrait) async {
-                    _project = _project.copyWith(paper: newPaper);
+                    final oldPaper = _project.paper;
+                    if (oldPaper != null && oldPaper != newPaper) {
+                      List<Placement> newPlacements = [];
+                      // tinh lai offset neu co placement
+                      if (!_project.useAvailableLayout &&
+                          _project.placements != null) {
+                        var oldPlacements = _project.placements!;
+                        oldPlacements.forEach((element) {
+                          element.getInfor();
+                        });
+                        newPlacements = oldPlacements;
+                        for (var item in oldPlacements) {
+                          final index = oldPlacements.indexOf(item);
+                          newPlacements[index] = newPlacements[index].copyWith(
+                              offset: Offset(
+                                  item.offset.dx /
+                                      oldPaper.width *
+                                      newPaper.width,
+                                  item.offset.dy /
+                                      oldPaper.height *
+                                      newPaper.height));
+                        }
+                      }
+                      _project = _project.copyWith(
+                          paper: newPaper, placements: newPlacements);
+                    } else {
+                      _project = _project.copyWith(paper: newPaper);
+                    }
+
                     setState(() {});
                     popNavigator(context);
                     await IsarProjectService().updateProject(_project);
@@ -500,7 +556,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     });
   }
 
-  Widget _buildPreviewProjectBody() {
+  Widget _buildPreviewProjectBody1() {
     if (_project.useAvailableLayout != true &&
         _project.placements != null &&
         _project.placements!.isNotEmpty) {
@@ -514,13 +570,30 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
           final index = list.indexOf(e);
           return Container(
             margin: const EdgeInsets.symmetric(horizontal: 10),
-            child: WProjectItemEditor(
+            child: WProjectItemEditor1(
                 key: ValueKey(_project.listMedia[index]),
                 project: _project,
                 isFocusByLongPress: false,
                 indexImage: index,
                 layoutExtractList: list[index],
                 title: "Page ${index + 1}",
+                onTap: () {
+                  _previewRatio = LIST_RATIO_PREVIEW;
+                  if (_project.paper != null &&
+                      _project.paper!.height != 0 &&
+                      _project.paper!.width != 0) {
+                    _previewRatio = [
+                      LIST_RATIO_PREVIEW[0],
+                      LIST_RATIO_PREVIEW[0] *
+                          _project.paper!.height /
+                          _project.paper!.width
+                    ];
+                  }
+                  setState(() {
+                    _currentCarouselIndex = index;
+                    _isShowPreview = true;
+                  });
+                },
                 ratioTarget: _getRatioProject(LIST_RATIO_PROJECT_ITEM)),
           );
         }).toList(),
@@ -541,79 +614,69 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                     .copyWith(listMedia: ["${pathPrefixImage}blank_page.jpg"]),
                 indexImage: 0,
                 title: "Page ${1}",
+                onTap: () {
+                  _previewRatio = LIST_RATIO_PREVIEW;
+                  if (_project.paper != null &&
+                      _project.paper!.height != 0 &&
+                      _project.paper!.width != 0) {
+                    _previewRatio = [
+                      LIST_RATIO_PREVIEW[0],
+                      LIST_RATIO_PREVIEW[0] *
+                          _project.paper!.height /
+                          _project.paper!.width
+                    ];
+                  }
+                  setState(() {
+                    _currentCarouselIndex = 0;
+                    _isShowPreview = true;
+                  });
+                },
                 ratioTarget: _getRatioProject(LIST_RATIO_PROJECT_ITEM),
               ),
             )
           ],
         );
       } else {
-        if (_project.layoutIndex == 0) {
-          setState(() {
-            _lengthOfProjectList = _project.listMedia.length;
-          });
-          return Wrap(
-            alignment: WrapAlignment.center,
-            children: _project.listMedia.map((e) {
-              final index = _project.listMedia.indexOf(e);
-              return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 10),
-                child: WProjectItemEditor(
-                  key: ValueKey(_project.listMedia[index]),
-                  project: _project,
-                  indexImage: index,
-                  title: "Page ${index + 1}",
-                  ratioTarget: _getRatioProject(LIST_RATIO_PROJECT_ITEM),
-                ),
-              );
-            }).toList(),
-          );
-        } else if (_project.layoutIndex == 1) {
-          List list = extractList(2, _project.listMedia);
-          setState(() {
-            _lengthOfProjectList = list.length;
-          });
-          return Wrap(
-            alignment: WrapAlignment.center,
-            children: list.map((e) {
-              final index = list.indexOf(e);
-              return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 10),
-                child: WProjectItemEditor(
-                  key: ValueKey(_project.listMedia[index]),
-                  project: _project,
-                  indexImage: index,
-                  layoutExtractList: list[index],
-                  title: "Page ${index + 1}",
-                  ratioTarget: _getRatioProject(LIST_RATIO_PROJECT_ITEM),
-                ),
-              );
-            }).toList(),
-          );
-        } else if ([2, 3].contains(_project.layoutIndex)) {
-          List list = extractList(3, _project.listMedia);
-          setState(() {
-            _lengthOfProjectList = list.length;
-          });
-          return Wrap(
-            alignment: WrapAlignment.center,
-            children: list.map((e) {
-              final index = list.indexOf(e);
-              return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 10),
-                child: WProjectItemEditor(
-                  key: ValueKey(_project.listMedia[index]),
-                  project: _project,
-                  indexImage: index,
-                  layoutExtractList: list[index],
-                  title: "Page ${index + 1}",
-                  ratioTarget: _getRatioProject(LIST_RATIO_PROJECT_ITEM),
-                ),
-              );
-            }).toList(),
-          );
-        } else {
-          return const SizedBox();
-        }
+        final abc = extractList1(
+            LIST_LAYOUT_SUGGESTION[_project.layoutIndex], _project.listMedia);
+        setState(() {
+          _lengthOfProjectList = abc.length;
+        });
+        return Wrap(
+          alignment: WrapAlignment.center,
+          children: abc.map((e) {
+            final index = abc.indexOf(e);
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 10),
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: WProjectItemEditor1(
+                key: ValueKey(_project.listMedia[index]),
+                project: _project,
+                indexImage: index,
+                layoutExtractList: abc[index],
+                title: "Page ${index + 1}",
+                onTap: () {
+                  _previewRatio = LIST_RATIO_PREVIEW;
+                  if (_project.paper != null &&
+                      _project.paper!.height != 0 &&
+                      _project.paper!.width != 0) {
+                    _previewRatio = [
+                      LIST_RATIO_PREVIEW[0],
+                      LIST_RATIO_PREVIEW[0] *
+                          _project.paper!.height /
+                          _project.paper!.width
+                    ];
+                  }
+                  setState(() {
+                    _currentCarouselIndex = 0;
+                    _isShowPreview = true;
+                  });
+                },
+                ratioTarget: _getRatioProject(LIST_RATIO_PROJECT_ITEM),
+              ),
+            );
+          }).toList(),
+        );
       }
     }
   }

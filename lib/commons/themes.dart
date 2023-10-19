@@ -42,6 +42,7 @@ class MyThemes {
       cardColor: const Color.fromRGBO(255, 255, 255, 0.1),
       // mau nen block navigator
       canvasColor: const Color.fromRGBO(0, 0, 0, 0.1),
+      dividerTheme: DividerThemeData(color: Colors.black),
       primaryColor: Colors.grey.withOpacity(0.6),
       appBarTheme: AppBarTheme(backgroundColor: Colors.grey.shade900),
       textTheme: const TextTheme(
@@ -73,6 +74,7 @@ class MyThemes {
       scaffoldBackgroundColor: colorWhite,
       cardColor: const Color.fromRGBO(0, 0, 0, 0.03),
       canvasColor: const Color.fromRGBO(250, 250, 250, 1),
+      dividerTheme: DividerThemeData(color: Colors.grey.shade200),
       primaryColor: colorWhite,
       appBarTheme: const AppBarTheme(backgroundColor: colorWhite),
       textTheme: const TextTheme(

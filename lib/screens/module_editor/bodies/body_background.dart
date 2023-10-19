@@ -47,10 +47,10 @@ class BackgroundBody extends StatelessWidget {
               onColorChanged: (color) {
                 onColorChanged(color);
               },
-              
-              displayThumbColor: true,
+              // 2 property below to disable opacity of color
+              displayThumbColor: false,
+              enableAlpha: false,
               paletteType: PaletteType.hsvWithHue,
-              enableAlpha: true,
               labelTypes: const [
                 ColorLabelType.rgb,
                 ColorLabelType.hsv,

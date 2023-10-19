@@ -1,38 +1,37 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/render_boxfit.dart';
 import 'package:photo_to_pdf/models/project.dart';
-import 'package:photo_to_pdf/widgets/w_spacer.dart';
 
-class LayoutMedia extends StatelessWidget {
+class LayoutMedia1 extends ConsumerStatefulWidget {
   final int indexImage;
   final Project project;
   final List<dynamic>? layoutExtractList;
   final List<double> ratioTarget;
-  const LayoutMedia(
+  final List<double>? listWH;
+  const LayoutMedia1(
       {super.key,
       required this.project,
       required this.indexImage,
       required this.layoutExtractList,
-      required this.ratioTarget});
+      required this.ratioTarget,
+      this.listWH});
 
-  double ratioTargetWithHeightPlacement() {
-    return ratioTarget[0] / LIST_RATIO_PLACEMENT_BOARD[0];
-  }
+  @override
+  ConsumerState<LayoutMedia1> createState() => _LayoutMedia1State();
+}
 
-  double ratioTargetWithWidthPlacement() {
-    return ratioTarget[1] / LIST_RATIO_PLACEMENT_BOARD[1];
-  }
-
+class _LayoutMedia1State extends ConsumerState<LayoutMedia1> {
   Widget buildCoreLayoutMedia(
     int indexImage,
     Project project,
     List<dynamic>? layoutExtractList,
     List<double> ratioTarget,
   ) {
-    const double spaceWidth = 3;
-    const double spaceheight = 3;
+    // const double spaceWidth = 3;
+    // const double spaceheight = 3;
     if (project.useAvailableLayout != true &&
         project.placements != null &&
         project.placements!.isNotEmpty) {
@@ -61,145 +60,45 @@ class LayoutMedia extends StatelessWidget {
         }).toList(),
       );
     } else {
-      // final List<int> layoutSuggestion =
-      //     LIST_LAYOUT_SUGGESTION[project.layoutIndex];
-      // return Column(
-      //   mainAxisAlignment: MainAxisAlignment.center,
-      //   crossAxisAlignment: CrossAxisAlignment.center,
-      //   children: layoutSuggestion.map((indexColumn) {
-      //     return Flexible(
-      //       child: Row(
-      //           mainAxisAlignment: MainAxisAlignment.center,
-      //           crossAxisAlignment: CrossAxisAlignment.center,
-      //           children: List.generate(indexColumn, (index) => index)
-      //               .map((indexRow) => Flexible(
-      //                     fit: FlexFit.tight,
-      //                     child: _buildImageWidget(
-      //                       project,
-      //                       project.layoutIndex == 0
-      //                           ? project.listMedia[indexImage]
-      //                           : layoutExtractList![indexRow],
-      //                       width: double.infinity,
-      //                       height: double.infinity,
-      //                     ),
-      //                   ))
-      //               .toList()),
-      //     );
-      //   }).toList(),
-      // );
-
-      if (project.layoutIndex == 0 && layoutExtractList == null) {
+      if (project.listMedia.length == 1 && project.listMedia[0] is String) {
         return _buildImageWidget(
           project,
-          project.listMedia[indexImage],
+          (layoutExtractList?[0]) ?? "${pathPrefixImage}blank_page.jpg",
           width: double.infinity,
           height: double.infinity,
         );
-      } else if (layoutExtractList != null && layoutExtractList.isNotEmpty) {
-        if (project.layoutIndex == 1) {
-          return Column(
-            children: [
-              Flexible(
-                  child: _buildImageWidget(
-                project,
-                layoutExtractList[0],
-                width: double.infinity,
-                height: double.infinity,
-              )),
-              WSpacer(
-                height: spaceheight,
-              ),
-              Flexible(
-                  child: _buildImageWidget(
-                project,
-                layoutExtractList[1],
-                width: double.infinity,
-                height: double.infinity,
-              )),
-            ],
-          );
-        } else if (project.layoutIndex == 2) {
-          return Flex(
-            direction: Axis.vertical,
-            children: [
-              Flexible(
-                  child: _buildImageWidget(
-                project,
-                layoutExtractList[0],
-                width: double.infinity,
-                height: double.infinity,
-              )),
-              WSpacer(height: spaceheight),
-              Flexible(
-                child: Flex(
-                  direction: Axis.horizontal,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Flexible(
-                        child: _buildImageWidget(
+      } else {
+        final List<int> layoutSuggestion =
+            LIST_LAYOUT_SUGGESTION[project.layoutIndex];
+        List<Widget> widgetColumn = [];
+        for (int indexColumn = 0;
+            indexColumn < layoutSuggestion.length;
+            indexColumn++) {
+          final rows =
+              List.generate(layoutSuggestion[indexColumn], (index) => index);
+          widgetColumn.add(Flexible(
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: rows.map((childRow) {
+                  final indexRow = rows.indexOf(childRow);
+                  return Flexible(
+                    fit: FlexFit.tight,
+                    child: _buildImageWidget(
                       project,
-                      layoutExtractList[1],
+                      layoutExtractList?[indexColumn]![indexRow],
                       width: double.infinity,
                       height: double.infinity,
-                    )),
-                    WSpacer(
-                      width: spaceWidth,
                     ),
-                    Flexible(
-                      child: _buildImageWidget(
-                        project,
-                        layoutExtractList[2],
-                        width: double.infinity,
-                        height: double.infinity,
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            ],
-          );
-        } else {
-          return Flex(
-            direction: Axis.vertical,
-            children: [
-              Flexible(
-                child: Flex(
-                  direction: Axis.horizontal,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Flexible(
-                      child: _buildImageWidget(
-                        project,
-                        layoutExtractList[0],
-                        width: double.infinity,
-                        height: double.infinity,
-                      ),
-                    ),
-                    WSpacer(width: spaceWidth),
-                    Flexible(
-                      child: _buildImageWidget(
-                        project,
-                        layoutExtractList[1],
-                        width: double.infinity,
-                        height: double.infinity,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              WSpacer(height: spaceheight),
-              Flexible(
-                  child: _buildImageWidget(
-                project,
-                layoutExtractList[2],
-                width: double.infinity,
-                height: double.infinity,
-              )),
-            ],
-          );
+                  );
+                }).toList()),
+          ));
         }
-      } else {
-        return const SizedBox();
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: widgetColumn,
+        );
       }
     }
   }
@@ -252,34 +151,59 @@ class LayoutMedia extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.only(
-          top: 2 + (project.paddingAttribute?.verticalPadding ?? 0.0),
-          left: 3 + (project.paddingAttribute?.horizontalPadding ?? 0.0),
-          right: 3 + (project.paddingAttribute?.horizontalPadding ?? 0.0),
-          bottom: 3 + (project.paddingAttribute?.verticalPadding ?? 0.0)),
-      alignment: project.alignmentAttribute?.alignmentMode,
-      color: project.backgroundColor,
-      child: buildCoreLayoutMedia(
-          indexImage, project, layoutExtractList, ratioTarget),
+          top: 2 + (widget.project.paddingAttribute?.verticalPadding ?? 0.0),
+          left: 3 + (widget.project.paddingAttribute?.horizontalPadding ?? 0.0),
+          right:
+              3 + (widget.project.paddingAttribute?.horizontalPadding ?? 0.0),
+          bottom:
+              3 + (widget.project.paddingAttribute?.verticalPadding ?? 0.0)),
+      alignment: widget.project.alignmentAttribute?.alignmentMode,
+      color: widget.project.backgroundColor,
+      child: buildCoreLayoutMedia(widget.indexImage, widget.project,
+          widget.layoutExtractList, widget.ratioTarget),
     );
   }
 
   double getRealHeight(int extractIndex) {
     return ratioTargetWithHeightPlacement() *
-        (project.placements![extractIndex].height);
+        (widget.project.placements![extractIndex].height);
   }
 
   double getRealWidth(int extractIndex) {
     return ratioTargetWithWidthPlacement() *
-        (project.placements![extractIndex].width);
+        (widget.project.placements![extractIndex].width);
+  }
+
+  double ratioTargetWithHeightPlacement() {
+    return widget.ratioTarget[0] / LIST_RATIO_PLACEMENT_BOARD[0];
+  }
+
+  double ratioTargetWithWidthPlacement() {
+    return widget.ratioTarget[1] / LIST_RATIO_PLACEMENT_BOARD[1];
   }
 
   double getPositionWithTop(int extractIndex) {
-    return (project.placements![extractIndex].offset.dy) *
+    var result;
+    result = (widget.project.placements![extractIndex].offset.dy) *
         ratioTargetWithHeightPlacement();
+    return result;
   }
 
   double getPositionWithLeft(int extractIndex) {
-    return (project.placements![extractIndex].offset.dx) *
+    var result;
+    // if (widget.listWH != null &&
+    //     widget.project.placements![extractIndex].listWHBoard[0] != 0) {
+    //   result = (widget.project.placements![extractIndex].offset.dx /
+    //           widget.project.placements![extractIndex].listWHBoard[0] *
+    //           widget.listWH![0]) *
+    //       ratioTargetWithWidthPlacement();
+    //        print(
+    //     "result getPositionWithLeft ${widget.project.placements![extractIndex].offset.dx} / ${widget.project.placements![extractIndex].listWHBoard[0]} -  ${result} / ${widget.listWH![0]}");
+
+    // } else {
+    result = (widget.project.placements![extractIndex].offset.dx) *
         ratioTargetWithWidthPlacement();
+    // }
+    return result;
   }
 }

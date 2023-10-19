@@ -22,7 +22,8 @@ Future<String> savePdf(Uint8List uint8list, Project project) async {
   final pdfFile = File(
       '${outputDirectory?.path}/${project.title != "" ? project.title : "Untitled"}.pdf');
   await pdfFile.writeAsBytes(uint8list);
-  return ('Tệp PDF đã được lưu tại: ${pdfFile.path}');
+  final message =('Tệp PDF đã được lưu tại: ${pdfFile.path}');
+  return  message;
 }
 
 Future<File> convertUint8ListToFile(Uint8List uint8list) async {
@@ -121,21 +122,29 @@ Future<Uint8List> createPdfFile(
   }
 
   PdfPageFormat? pdfPageFormat;
-  // if (project.paper?.title != null) {
-  //   pdfPageFormat =
-  //       PDF_PAGE_FORMAT[project.paper?.title]?[pageOrientationValue];
-  // }
-  // // check height==width to render
-  // if (project.paper?.height != null && project.paper?.width != null) {
-  //   pdfPageFormat = PdfPageFormat(project.paper!.width, project.paper!.height);
-  // }
+  if (project.paper?.title != null) {
+    pdfPageFormat =
+        PDF_PAGE_FORMAT[project.paper?.title]?[pageOrientationValue];
+  }
+  // check height==width to render
+  if (project.paper?.height != null && project.paper?.width != null) {
+    // print(" project.paper? ${project.paper?.getInfor()}");
+    
+    // pdfPageFormat = PdfPageFormat(project.paper!.width, project.paper!.height);
+  }
   if (compressValue != null) {
     final compressImages =
         await compressImageFile(project.listMedia, compressValue);
     _project = project.copyWith(listMedia: compressImages);
   }
-  List listExtract =
-      extractList(checkNumberExtractList(_project), _project.listMedia);
+  List listExtract = [];
+  if (project.useAvailableLayout) {
+    listExtract = extractList1(
+        LIST_LAYOUT_SUGGESTION[_project.layoutIndex], _project.listMedia);
+  } else {
+    listExtract =
+        extractList((_project.placements?.length) ?? 0, _project.listMedia);
+  }
 
   // add front cover photo
   if (_project.coverPhoto?.frontPhoto != null) {
@@ -160,6 +169,7 @@ Future<Uint8List> createPdfFile(
       ),
     ));
   }
+
   // add body page
   for (var element in listExtract) {
     int index = listExtract.indexOf(element);
@@ -254,100 +264,39 @@ pw.Widget _buildCorePDFLayoutMedia(
         );
       }).toList(),
     ));
-  } else {
-    if (project.layoutIndex == 0 && layoutExtractList != null) {
-      return _buildImageWidget(project, project.listMedia[indexPage]);
-    } else if (layoutExtractList != null && layoutExtractList.isNotEmpty) {
-      if (project.layoutIndex == 1) {
-        return pw.Column(
-          children: [
-            pw.Flexible(
+  } else { 
+    final List<int> layoutSuggestion =
+        LIST_LAYOUT_SUGGESTION[project.layoutIndex];
+    List<pw.Widget> columnWidgets = [];
+    for (int indexColumn = 0;
+        indexColumn < layoutSuggestion.length;
+        indexColumn++) {
+      final rows =
+          List.generate(layoutSuggestion[indexColumn], (index) => index);
+      columnWidgets.add(pw.Flexible(
+        child: pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.center,
+            crossAxisAlignment: pw.CrossAxisAlignment.center,
+            children: rows.map((childRow) {
+              final indexRow = rows.indexOf(childRow);
+              final imageData = layoutExtractList![indexColumn]![indexRow];
+              return pw.Flexible(
+                fit: pw.FlexFit.tight,
                 child: _buildImageWidget(
-              project,
-              layoutExtractList[0],
-              // width: double.infinity,
-              // height: double.infinity,
-            )),
-            _buildSpacer(
-              height: spacingVerticalValue,
-            ),
-            pw.Flexible(
-                child: _buildImageWidget(
-              project,
-              layoutExtractList[1],
-            )),
-          ],
-        );
-      } else if (project.layoutIndex == 2) {
-        return pw.Flex(
-          direction: pw.Axis.vertical,
-          children: [
-            pw.Flexible(
-                child: _buildImageWidget(
-              project,
-              layoutExtractList[0],
-            )),
-            _buildSpacer(height: spacingVerticalValue),
-            pw.Flexible(
-              child: pw.Flex(
-                direction: pw.Axis.horizontal,
-                mainAxisAlignment: pw.MainAxisAlignment.center,
-                children: [
-                  pw.Flexible(
-                      child: _buildImageWidget(
-                    project,
-                    layoutExtractList[1],
-                  )),
-                  _buildSpacer(
-                    width: spacingHorizontalValue,
-                  ),
-                  pw.Flexible(
-                    child: _buildImageWidget(
-                      project,
-                      layoutExtractList[2],
-                    ),
-                  ),
-                ],
-              ),
-            )
-          ],
-        );
-      } else {
-        return pw.Flex(
-          direction: pw.Axis.vertical,
-          children: [
-            pw.Flexible(
-              child: pw.Flex(
-                direction: pw.Axis.horizontal,
-                mainAxisAlignment: pw.MainAxisAlignment.center,
-                children: [
-                  pw.Flexible(
-                      child: _buildImageWidget(
-                    project,
-                    layoutExtractList[0],
-                  )),
-                  _buildSpacer(width: spacingHorizontalValue),
-                  pw.Flexible(
-                    child: _buildImageWidget(
-                      project,
-                      layoutExtractList[1],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            _buildSpacer(height: spacingVerticalValue),
-            pw.Flexible(
-                child: _buildImageWidget(
-              project,
-              layoutExtractList[2],
-            )),
-          ],
-        );
-      }
-    } else {
-      return pw.SizedBox();
+                  project,
+                  imageData,
+                  width: double.infinity,
+                  height: double.infinity,
+                ),
+              );
+            }).toList()),
+      ));
     }
+    return pw.Column(
+      mainAxisAlignment: pw.MainAxisAlignment.start,
+      crossAxisAlignment: pw.CrossAxisAlignment.center,
+      children: columnWidgets,
+    );
   }
 }
 
@@ -355,7 +304,7 @@ pw.Widget _buildImageWidget(Project project, dynamic imageData,
     {double? width, double? height}) {
   final fit = renderPdfWidgetImageBoxfit(project.resizeAttribute);
   if (imageData == null) {
-    return pw.Container();
+    return pw.SizedBox();
   } else {
     return pw.Container(
         margin: pw.EdgeInsets.only(
@@ -367,24 +316,13 @@ pw.Widget _buildImageWidget(Project project, dynamic imageData,
           bottom:
               1.5 * (3 + (project.spacingAttribute?.verticalSpacing ?? 0.0)),
         ),
-        child: pw.Image(pw.MemoryImage(File(imageData.path).readAsBytesSync()),
-            fit: fit, height: height, width: width));
-  }
-}
-
-int checkNumberExtractList(Project project) {
-  if (project.useAvailableLayout) {
-    if (project.layoutIndex == 0) {
-      return 1;
-    } else if (project.layoutIndex == 1) {
-      return 2;
-    } else if ([2, 3].contains(project.layoutIndex)) {
-      return 3;
-    } else {
-      return 1;
-    }
-  } else {
-    return (project.placements?.length) ?? 0;
+        child: pw.Image(
+          pw.MemoryImage(File(imageData.path).readAsBytesSync()),
+          fit: fit,
+          // width: 200,
+          // height: 200
+        )
+        );
   }
 }
 
@@ -429,6 +367,4 @@ double getPositionWithLeft(
       getDrawBoardWithPreviewBoardWidth(ratioTarget);
 }
 
-pw.Widget _buildSpacer({double? height, double? width}) {
-  return pw.Container(height: height, width: width);
-}
+

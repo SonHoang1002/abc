@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 
-class WDragZoomImage extends StatefulWidget {
+class WDragZoomImage extends ConsumerStatefulWidget {
   final Color backgroundColor;
   final Function reRenerFunction;
   final List<Placement> listPlacement;
@@ -29,10 +30,10 @@ class WDragZoomImage extends StatefulWidget {
       this.paperAttribute});
 
   @override
-  State<WDragZoomImage> createState() => _WDragZoomImageState();
+  ConsumerState<WDragZoomImage> createState() => _WDragZoomImageState();
 }
 
-class _WDragZoomImageState extends State<WDragZoomImage> {
+class _WDragZoomImageState extends ConsumerState<WDragZoomImage> {
   late Size _size;
   List<ValueNotifier<Matrix4>> _matrix4Notifiers = [];
   List<Placement> _listPlacement = [];
@@ -127,8 +128,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                     double maxAreaHeight = _size.width * _ratioTarget[1];
                     double maxAreaWidth = _size.width * _ratioTarget[0];
                     if (areaBox != null) {
-                      if (areaBox.size.height <
-                          _size.width * _ratioTarget[1]) {
+                      if (areaBox.size.height < _size.width * _ratioTarget[1]) {
                         maxAreaHeight = areaBox.size.height - 2;
                       }
                     }
@@ -161,6 +161,11 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                           _listPlacement[index].offset.dx,
                           maxAreaHeight - _listPlacement[index].height);
                     }
+                    _listPlacement[index] = _listPlacement[index].copyWith(
+                        listWHBoard: [
+                          areaBox!.size.width,
+                          areaBox.size.height
+                        ]);
                     widget.updatePlacement(_listPlacement);
                     setState(() {});
                   },
@@ -204,7 +209,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                                       color: colorBlue),
                                   child: Center(
                                       child: WTextContent(
-                                    value: (index+1).toString(),
+                                    value: (index + 1).toString(),
                                     textColor: colorWhite,
                                   )),
                                 ),

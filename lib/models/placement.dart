@@ -6,27 +6,29 @@ class Placement {
   double width;
   double height;
   Offset offset;
+  List<double> listWHBoard;
   PlacementAttribute? placementAttribute;
   Placement(
       {required this.id,
       required this.width,
       required this.height,
       required this.offset,
-      required this.placementAttribute});
+      required this.placementAttribute,
+      required this.listWHBoard});
 
-  Placement copyWith({
-    double? width,
-    double? height,
-    Offset? offset,
-    PlacementAttribute? placementAttribute,
-  }) {
+  Placement copyWith(
+      {double? width,
+      double? height,
+      Offset? offset,
+      PlacementAttribute? placementAttribute,
+      List<double>? listWHBoard}) {
     return Placement(
-      id: id,
-      width: width ?? this.width,
-      height: height ?? this.height,
-      offset: offset ?? this.offset,
-      placementAttribute: placementAttribute ?? this.placementAttribute,
-    );
+        id: id,
+        width: width ?? this.width,
+        height: height ?? this.height,
+        offset: offset ?? this.offset,
+        placementAttribute: placementAttribute ?? this.placementAttribute,
+        listWHBoard: listWHBoard ?? this.listWHBoard);
   }
 
   Map<String, dynamic> toJson() {
@@ -40,24 +42,25 @@ class Placement {
       },
       'placementAttribute':
           placementAttribute != null ? placementAttribute!.toJson() : null,
+      'listWHBoard': listWHBoard
     };
   }
 
   factory Placement.fromJson(Map<String, dynamic> json) {
     return Placement(
-      id: json['id'],
-      width: json['width'],
-      height: json['height'],
-      offset: Offset(json['offset']['dx'], json['offset']['dy']),
-      placementAttribute: json['placementAttribute'] != null
-          ? PlacementAttribute.fromJson(json['placementAttribute'])
-          : null,
-    );
+        id: json['id'],
+        width: json['width'],
+        height: json['height'],
+        offset: Offset(json['offset']['dx'], json['offset']['dy']),
+        placementAttribute: json['placementAttribute'] != null
+            ? PlacementAttribute.fromJson(json['placementAttribute'])
+            : null,
+        listWHBoard: [json['listWHBoard'][0],json['listWHBoard'][1]]);
   }
 
   void getInfor() {
     print(
-        "Placement id: ${this.id}, Placement height: ${this.height}, Placement width: ${this.width}, Placement offset: ${this.offset}, Placement placementAttribute: ${this.placementAttribute?.getInfor()} ");
+        "Placement id: ${this.id}, Placement height: ${this.height}, Placement width: ${this.width}, Placement offset: ${this.offset},Placement listWHBoard: ${this.listWHBoard}, Placement placementAttribute: ${this.placementAttribute?.getInfor()} ");
   }
 }
 
@@ -105,7 +108,6 @@ class PlacementAttribute {
       'unit': unit != null ? unit!.toJson() : null,
     };
   }
-  
 
   factory PlacementAttribute.fromJson(Map<String, dynamic> json) {
     return PlacementAttribute(
@@ -123,68 +125,3 @@ class PlacementAttribute {
     return "PlacementAttribute horizontal: ${this.horizontal}, PlacementAttribute vertical: ${this.vertical}, PlacementAttribute top: ${this.top}, PlacementAttribute left: ${this.left}, PlacementAttribute right: ${this.right}, PlacementAttribute bottom: ${this.bottom}, PlacementAttribute unit: ${this.unit?.getInfor()}";
   }
 }
-
-// class Placement {
-//   int id;
-//   double width;
-//   double height;
-//   Offset offset;
-//   PlacementAttribute? placementAttribute;
-//   Placement(
-//       {required this.id,
-//       required this.width,
-//       required this.height,
-//       required this.offset,
-//       required this.placementAttribute});
-//   Placement copyWith(
-//       {double? width,
-//       double? height,
-//       Offset? offset,
-//       PlacementAttribute? placementAttribute}) {
-//     return Placement(
-//         id: id,
-//         width: width ?? this.width,
-//         height: height ?? this.height,
-//         offset: offset ?? this.offset,
-//         placementAttribute: placementAttribute ?? this.placementAttribute);
-//   }
-
-//   void getInfor() {
-//     print(
-//         "Placement id: ${this.id}, Placement height: ${this.height}, Placement width: ${this.width}, Placement offset: ${this.offset}, Placement placementAttribute: ${this.placementAttribute} ");
-//   }
-// }
-
-// class PlacementAttribute {
-//   double horizontal, vertical, top, left, right, bottom;
-//   Unit? unit;
-//   PlacementAttribute(
-//       {this.horizontal = 0.0,
-//       this.vertical = 0.0,
-//       this.top = 0.0,
-//       this.left = 0.0,
-//       this.right = 0.0,
-//       this.bottom = 0.0,
-//       this.unit});
-//   PlacementAttribute copyWith(
-//       {double? horizontal,
-//       double? vertical,
-//       double? top,
-//       double? left,
-//       double? right,
-//       double? bottom,
-//       Unit? unit}) {
-//     return PlacementAttribute(
-//         horizontal: horizontal ?? this.horizontal,
-//         vertical: vertical ?? this.vertical,
-//         top: top ?? this.top,
-//         left: left ?? this.left,
-//         right: right ?? this.right,
-//         bottom: bottom ?? this.bottom,
-//         unit: unit ?? this.unit);
-//   }
-
-//   String getInfor() {
-//     return "PlacementAttribute horizontal: ${this.horizontal}, PlacementAttribute vertical: ${this.vertical}, PlacementAttribute top: ${this.top}, PlacementAttribute top: ${this.top}, PlacementAttribute top: ${this.top}, PlacementAttribute left: ${this.left}, PlacementAttribute right: ${this.right}, PlacementAttribute bottom: ${this.bottom}";
-//   }
-// }

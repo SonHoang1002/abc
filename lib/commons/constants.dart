@@ -19,18 +19,14 @@ List<PaperAttribute> LIST_PAGE_SIZE = [
   PaperAttribute(title: "Custom", width: 1.0, height: 1.0, unit: INCH),
 ];
 
-// List<dynamic> LIST_LAYOUT = [
-//   "${pathPrefixIcon}icon_layout_1.png",
-//   "${pathPrefixIcon}icon_layout_2.png",
-//   "${pathPrefixIcon}icon_layout_3.png",
-//   "${pathPrefixIcon}icon_layout_4.png"
-// ];
 // NUMBER OF ICON IN ROW
 List<List<int>> LIST_LAYOUT_SUGGESTION = [
   [1],
   [1,1],
   [1,2],
   [2,1],
+  [1,2,3],
+  [1,2,3,4]
 ];
 
 List<AlignmentAttribute> LIST_ALIGNMENT = [
@@ -118,6 +114,58 @@ final Unit INCH = Unit(title: "inch", value: "”");
 final Unit CENTIMET = Unit(title: "centimet", value: "cm");
 final Unit POINT = Unit(title: "point", value: "point");
 final List<Unit> LIST_UNIT = [INCH, CENTIMET, POINT];
+
+// TẤT CẢ CÁC TỈ LỆ NÀY ĐỀU ĐƯỢC SO SÁNH VỚI WIDTH CỦA MÀN HÌNH
+
+/// Ratio of changeable placement board: width, height
+const List<double> LIST_RATIO_PLACEMENT_BOARD = [0.7, 0.9];
+
+/// Ratio of changeable project item: width, height
+const List<double> LIST_RATIO_PROJECT_ITEM = [0.35, 0.45];
+
+/// Ratio of changeable preview item: width, height
+const List<double> LIST_RATIO_PREVIEW = [0.875, 1.125];
+
+/// Ratio of changeable preview item: width, height
+const List<double> LIST_RATIO_PDF = [1.4, 1.8];
+
+const thumbColorSegments = CupertinoDynamicColor.withBrightness(
+  color: Color(0xFFFFFFFF),
+  darkColor: Color.fromRGBO(255, 255, 255, 1),
+);
+
+const String LANDSCAPE = "landscape";
+const String PORTRAIT = "portrait";
+
+final PDF_PAGE_FORMAT = <String, Map<String, PdfPageFormat>>{
+  "A3": {
+    LANDSCAPE: PdfPageFormat.a3.landscape,
+    PORTRAIT: PdfPageFormat.a3.portrait,
+    "natural": PdfPageFormat.a3,
+  },
+  "A4": {
+    LANDSCAPE: PdfPageFormat.a4.landscape,
+    PORTRAIT: PdfPageFormat.a4.portrait,
+    "natural": PdfPageFormat.a4,
+  },
+  "B5": {
+    LANDSCAPE: PdfPageFormat.a5.landscape,
+    PORTRAIT: PdfPageFormat.a5.portrait,
+    "natural": PdfPageFormat.a5,
+  },
+  "Legal": {
+    LANDSCAPE: PdfPageFormat.legal.landscape,
+    PORTRAIT: PdfPageFormat.legal.portrait,
+    "natural": PdfPageFormat.legal,
+  },
+  "Letter": {
+    LANDSCAPE: PdfPageFormat.letter.landscape,
+    PORTRAIT: PdfPageFormat.letter.portrait,
+    'natural': PdfPageFormat.letter,
+  },
+};
+
+
 const List<Color> ALL_COLORS = [
   Colors.amber,
   Colors.amberAccent,
@@ -158,67 +206,3 @@ const List<Color> ALL_COLORS = [
   Colors.white,
 ];
 
-// TẤT CẢ CÁC TỈ LỆ NÀY ĐỀU ĐƯỢC SO SÁNH VỚI WIDTH CỦA MÀN HÌNH
-
-/// Ratio of changeable placement board: width, height
-const List<double> LIST_RATIO_PLACEMENT_BOARD = [0.7, 0.9];
-
-/// Ratio of changeable project item: width, height
-const List<double> LIST_RATIO_PROJECT_ITEM = [0.35, 0.45];
-
-/// Ratio of changeable preview item: width, height
-const List<double> LIST_RATIO_PREVIEW = [0.875, 1.125];
-
-/// Ratio of changeable preview item: width, height
-const List<double> LIST_RATIO_PDF = [1.4, 1.8];
-
-const thumbColorSegments = CupertinoDynamicColor.withBrightness(
-  color: Color(0xFFFFFFFF),
-  darkColor: Color.fromRGBO(255, 255, 255, 1),
-);
-
-const String LANDSCAPE = "landscape";
-const String PORTRAIT = "portrait";
-
-final PDF_PAGE_FORMAT = <String, Map<String, PdfPageFormat>>{
-  "A3": {
-    LANDSCAPE: PdfPageFormat.a3.landscape,
-    PORTRAIT: PdfPageFormat.a3.portrait,
-    "natural": PdfPageFormat.a3,
-  },
-  "A4": {
-    LANDSCAPE: PdfPageFormat.a4.landscape,
-    PORTRAIT: PdfPageFormat.a4.portrait,
-    "natural": PdfPageFormat.a4,
-  },
-  "B5": {
-    LANDSCAPE: PdfPageFormat.a5.landscape,
-    PORTRAIT: PdfPageFormat.a5.portrait,
-    "natural": PdfPageFormat.a5,
-  },
-  // "JIS B5": {
-  //   LANDSCAPE: PdfPageFormat.roll57.landscape,
-  //   PORTRAIT: PdfPageFormat.roll57.portrait,
-  //   "natural": PdfPageFormat.roll57,
-  // },
-  "Legal": {
-    LANDSCAPE: PdfPageFormat.legal.landscape,
-    PORTRAIT: PdfPageFormat.legal.portrait,
-    "natural": PdfPageFormat.legal,
-  },
-  "Letter": {
-    LANDSCAPE: PdfPageFormat.letter.landscape,
-    PORTRAIT: PdfPageFormat.letter.portrait,
-    'natural': PdfPageFormat.letter,
-  },
-  // "Tabloid": {
-  //   LANDSCAPE: PdfPageFormat.roll80.landscape,
-  //   PORTRAIT: PdfPageFormat.roll80.portrait,
-  //   "natural": PdfPageFormat.roll80,
-  // },
-  // "Custom": {
-  //   LANDSCAPE: PdfPageFormat.undefined.landscape,
-  //   PORTRAIT: PdfPageFormat.undefined.portrait,
-  //   "natural": PdfPageFormat.undefined
-  // },
-};

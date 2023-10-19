@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -35,6 +37,7 @@ Widget buildPageSizePreset(
                 width: 2)),
         child: DropdownButtonHideUnderline(
           child: DropdownButton2<dynamic>(
+            barrierColor: transparent,
             isExpanded: true,
             hint: Row(children: [
               Container(
@@ -66,25 +69,37 @@ Widget buildPageSizePreset(
               return DropdownMenuItem<dynamic>(
                   value: item,
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(),
-                      WTextContent(
-                        value: item.title,
-                        textColor: const Color.fromRGBO(10, 132, 255, 1),
-                        textSize: 14,
-                        textLineHeight: 19.09,
+                      BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                        // child: Container(
+                        //   height: 60,
+                        //   width: 100,
+                        // ),
                       ),
-                      index != LIST_PAGE_SIZE.length - 1
-                          ? WDivider(
-                              color: const Color.fromRGBO(0, 0, 0, 0.3),
-                              width:
-                                  200 / 390 * MediaQuery.sizeOf(context).width,
-                              height: 1,
-                              margin: EdgeInsets.zero,
-                            )
-                          : const SizedBox()
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(),
+                          WTextContent(
+                            value: item.title,
+                            textColor: const Color.fromRGBO(10, 132, 255, 1),
+                            textSize: 14,
+                            textLineHeight: 19.09,
+                          ),
+                          index != LIST_PAGE_SIZE.length - 1
+                              ? WDivider(
+                                  color: const Color.fromRGBO(0, 0, 0, 0.3),
+                                  width: 200 /
+                                      390 *
+                                      MediaQuery.sizeOf(context).width,
+                                  height: 1,
+                                  margin: EdgeInsets.zero,
+                                )
+                              : const SizedBox()
+                        ],
+                      )
                     ],
                   ));
             }).toList(),
@@ -118,7 +133,7 @@ Widget buildPageSizePreset(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(14),
                 color: pv.Provider.of<ThemeManager>(context).isDarkMode
-                    ? const Color.fromRGBO(34, 34, 34, 0.8)
+                    ? Colors.black.withOpacity(0.9)
                     : Theme.of(context).canvasColor,
               ),
               offset: const Offset(5, -5),
@@ -203,7 +218,8 @@ Widget buildCupertinoInput(
 }
 
 Widget buildPageSizeOrientationItem(
-    {required String mediaSrc,
+    {required BuildContext context,
+    required String mediaSrc,
     required bool isSelected,
     required Function() onTap,
     EdgeInsets? padding}) {
@@ -212,12 +228,9 @@ Widget buildPageSizeOrientationItem(
     child: Container(
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),
-            color: const Color.fromRGBO(
-              0,
-              0,
-              0,
-              0.03,
-            ),
+            color: isSelected
+                ? const Color.fromRGBO(22, 115, 255, 0.16)
+                : Theme.of(context).cardColor,
             border: Border.all(
                 color: isSelected ? colorBlue : transparent, width: 2)),
         height: 40,
@@ -484,11 +497,11 @@ Widget buildLayoutConfigItem(
 void showLayoutDialogWithOffset(
     {required BuildContext context, required Widget newScreen}) {
   showGeneralDialog(
-    context: context,
-    pageBuilder: (context, animation, secondaryAnimation) {
-      return newScreen;
-    },
-  );
+      context: context,
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return newScreen;
+      },
+      barrierColor: transparent);
 }
 
 Widget buildDialogResizeMode(
@@ -507,9 +520,9 @@ Widget buildDialogResizeMode(
       ),
     ),
     const WDivider(
-      height: 1,
-      color: Color.fromRGBO(0, 0, 0, 0.1),
-    ),
+        height: 1,
+        // color: Color.fromRGBO(0, 0, 0, 0.1),
+        color: Colors.black),
     _buildDialogInformationItem(
         context,
         LIST_RESIZE_MODE[1].mediaSrc,
@@ -519,10 +532,7 @@ Widget buildDialogResizeMode(
             ),
         boxDecoration:
             BoxDecoration(color: Theme.of(context).dialogBackgroundColor)),
-    const WDivider(
-      height: 1,
-      color: Color.fromRGBO(0, 0, 0, 0.3),
-    ),
+    const WDivider(height: 1, color: Colors.black),
     _buildDialogInformationItem(
       context,
       LIST_RESIZE_MODE[2].mediaSrc,

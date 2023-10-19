@@ -58,6 +58,8 @@ class _LayoutBodyState extends State<LayoutBody> {
   // background variable
   late Color _currentLayoutColor;
   late List<double> _ratioTarget;
+  late Offset _alignmentDialogOffset;
+  late bool _isShowAlignmentDialog;
   @override
   void dispose() {
     super.dispose();
@@ -105,6 +107,7 @@ class _LayoutBodyState extends State<LayoutBody> {
         _project.paper!.height / _project.paper!.width * _ratioTarget[0]
       ];
     }
+    _isShowAlignmentDialog = false;
   }
 
   void _resetLayoutSelections() {
@@ -124,154 +127,158 @@ class _LayoutBodyState extends State<LayoutBody> {
   @override
   Widget build(BuildContext context) {
     _size = MediaQuery.sizeOf(context);
-    return Column(
+    return Stack(
       children: [
-        Container(
-          margin: const EdgeInsets.only(top: 20),
-          child: WTextContent(
-            value: "Layout",
-            textSize: 14,
-            textLineHeight: 16.71,
-            textColor: Theme.of(context).textTheme.bodyMedium!.color,
-          ),
+        Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.only(top: 20),
+              child: WTextContent(
+                value: "Layout",
+                textSize: 14,
+                textLineHeight: 16.71,
+                textColor: Theme.of(context).textTheme.bodyMedium!.color,
+              ),
+            ),
+            WSpacer(
+              height: 20,
+            ),
+            buildSegmentControl(
+              context: context,
+              groupValue: _segmentCurrentIndex,
+              onValueChanged: (value) {
+                setState(() {
+                  _segmentCurrentIndex = value!;
+                });
+                widget.reRenderFunction();
+              },
+            ),
+            Expanded(
+              child: _segmentCurrentIndex == 0
+                  ? Container(
+                      height: _size.height * 404 / 791 * 0.9,
+                      decoration: BoxDecoration(
+                          color: Theme.of(context).cardColor,
+                          borderRadius: BorderRadius.circular(10)),
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 10),
+                      child: SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 20, horizontal: 20),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              _buildLayoutSuggestion(0, 2),
+                              WSpacer(
+                                height: 20,
+                              ),
+                              _buildLayoutSuggestion(2, 4),
+                              WSpacer(
+                                height: 20,
+                              ),
+                              _buildLayoutSuggestion(
+                                  4, _listLayoutStatus.length),
+                            ],
+                          )))
+                  : _buildCustomArea(() {
+                      widget.reRenderFunction();
+                    }),
+            ),
+            _buildLayoutConfigs(() {
+              widget.reRenderFunction();
+            }, _segmentCurrentIndex == 0),
+            buildBottomButton(
+              context: context,
+              onApply: () {
+                if (_segmentCurrentIndex == 0) {
+                  _project = _project.copyWith(
+                      layoutIndex: _listLayoutStatus
+                          .indexWhere((element) => element['isFocus'] == true),
+                      resizeAttribute: _resizeModeSelectedValue,
+                      alignmentAttribute: _listAlignment
+                          .where((element) => element['isFocus'] == true)
+                          .toList()
+                          .first['alignment'],
+                      backgroundColor: _currentLayoutColor,
+                      paddingAttribute: _paddingOptions,
+                      spacingAttribute: _spacingOptions,
+                      placements: _listPlacement,
+                      useAvailableLayout: true);
+                } else if (_segmentCurrentIndex == 1) {
+                  _project = _project.copyWith(
+                      layoutIndex: null,
+                      resizeAttribute: _resizeModeSelectedValue,
+                      alignmentAttribute: _listAlignment
+                          .where((element) => element['isFocus'] == true)
+                          .toList()
+                          .first['alignment'],
+                      backgroundColor: _currentLayoutColor,
+                      placements: _listPlacement,
+                      useAvailableLayout: false);
+                }
+                widget.onApply(_project, _segmentCurrentIndex);
+              },
+              onCancel: () {
+                popNavigator(context);
+              },
+            )
+          ],
         ),
-        WSpacer(
-          height: 20,
-        ),
-        buildSegmentControl(
-          context: context,
-          groupValue: _segmentCurrentIndex,
-          onValueChanged: (value) {
-            setState(() {
-              _segmentCurrentIndex = value!;
-            });
-            widget.reRenderFunction();
-          },
-        ),
-        Expanded(
-          child: _segmentCurrentIndex == 0
-              ? Container(
-                  height: _size.height * 404 / 791 * 0.9,
-                  decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(10)),
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                  child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 20, horizontal: 20),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children:
-                                  _listLayoutStatus.sublist(0, 2).toList().map(
-                                (e) {
-                                  final index = _listLayoutStatus.indexOf(e);
-                                  return Container(
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal: 10),
-                                    child: buildLayoutWidget(
-                                      context: context,
-                                      // mediaSrc: e['mediaSrc'],
-                                      title: "Layout ${index + 1}",
-                                      isFocus: e['isFocus'],
-                                      backgroundColor: _currentLayoutColor,
-                                      layoutSuggestion: e["layout"],
-                                      // indexLayoutItem: index,
-                                      onTap: () {
-                                        _resetLayoutSelections();
-                                        setState(() {
-                                          _listLayoutStatus[index]['isFocus'] =
-                                              true;
-                                        });
-                                        widget.reRenderFunction();
-                                      },
-                                    ),
-                                  );
-                                },
-                              ).toList()),
-                          WSpacer(
-                            height: 20,
-                          ),
-                          Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children:
-                                  _listLayoutStatus.sublist(2, _listLayoutStatus.length).toList().map(
-                                (e) {
-                                  final index = _listLayoutStatus.indexOf(e);
-                                  return Container(
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal: 10),
-                                    child: buildLayoutWidget(
-                                      context: context,
-                                      title: "Layout ${index + 1}",
-                                      isFocus: e['isFocus'],
-                                      layoutSuggestion: e['layout'],
-                                      backgroundColor: _currentLayoutColor,
-                                      onTap: () {
-                                        setState(() {
-                                          _resetLayoutSelections();
-                                          _listLayoutStatus[index]['isFocus'] =
-                                              true;
-                                        });
-                                        widget.reRenderFunction();
-                                      },
-                                    ),
-                                  );
-                                },
-                              ).toList()),
-                         
-                        ],
-                      )))
-              : _buildCustomArea(() {
+        _isShowAlignmentDialog
+            ? BodyDialogCustom(
+                offset: Offset(_size.width * (1 - (200 / 390)) / 2,
+                    _alignmentDialogOffset.dy),
+                dialogWidget: buildDialogAlignment(context, _listAlignment,
+                    onSelected: (index, value) {
+                  setState(() {
+                    _listAlignment = LIST_ALIGNMENT.map((e) {
+                      return {'alignment': e, "isFocus": false};
+                    }).toList();
+                    _listAlignment[index]["isFocus"] = true;
+                  });
                   widget.reRenderFunction();
                 }),
-        ),
-        _buildLayoutConfigs(() {
-          widget.reRenderFunction();
-        }, _segmentCurrentIndex == 0),
-        buildBottomButton(
-          context: context,
-          onApply: () {
-            if (_segmentCurrentIndex == 0) {
-              _project = _project.copyWith(
-                  layoutIndex: _listLayoutStatus
-                      .indexWhere((element) => element['isFocus'] == true),
-                  resizeAttribute: _resizeModeSelectedValue,
-                  alignmentAttribute: _listAlignment
-                      .where((element) => element['isFocus'] == true)
-                      .toList()
-                      .first['alignment'],
-                  backgroundColor: _currentLayoutColor,
-                  paddingAttribute: _paddingOptions,
-                  spacingAttribute: _spacingOptions,
-                  placements: _listPlacement,
-                  useAvailableLayout: true);
-            } else if (_segmentCurrentIndex == 1) {
-              _project = _project.copyWith(
-                  layoutIndex: null,
-                  resizeAttribute: _resizeModeSelectedValue,
-                  alignmentAttribute: _listAlignment
-                      .where((element) => element['isFocus'] == true)
-                      .toList()
-                      .first['alignment'],
-                  backgroundColor: _currentLayoutColor,
-                  placements: _listPlacement,
-                  useAvailableLayout: false);
-            }
-            widget.onApply(_project, _segmentCurrentIndex);
-          },
-          onCancel: () {
-            popNavigator(context);
-          },
-        )
+                onTapBackground: () {
+                  setState(() {
+                    _isShowAlignmentDialog = false;
+                  });
+                  widget.reRenderFunction();
+                },
+              )
+            : const SizedBox()
       ],
     );
+  }
+
+  Widget _buildLayoutSuggestion(int start, int end) {
+    return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: _listLayoutStatus.sublist(start, end).toList().map(
+          (e) {
+            final index = _listLayoutStatus.indexOf(e);
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 10),
+              child: buildLayoutWidget(
+                context: context,
+                // mediaSrc: e['mediaSrc'],
+                title: "Layout ${index + 1}",
+                isFocus: e['isFocus'],
+                backgroundColor: _currentLayoutColor,
+                layoutSuggestion: e["layout"],
+                // indexLayoutItem: index,
+                onTap: () {
+                  _resetLayoutSelections();
+                  setState(() {
+                    _listLayoutStatus[index]['isFocus'] = true;
+                  });
+                  widget.reRenderFunction();
+                },
+              ),
+            );
+          },
+        ).toList());
   }
 
   Widget _buildLayoutConfigs(
@@ -331,25 +338,10 @@ class _LayoutBodyState extends State<LayoutBody> {
                             ?.findRenderObject() as RenderBox;
                         final widgetOffset =
                             renderBoxAlignment.localToGlobal(Offset.zero);
-                        showLayoutDialogWithOffset(
-                            context: context,
-                            newScreen: BodyDialogCustom(
-                              offset: Offset(
-                                  _size.width * (1 - (200 / 390)) / 2,
-                                  widgetOffset.dy),
-                              dialogWidget:
-                                  buildDialogAlignment(context, _listAlignment,
-                                      onSelected: (index, value) {
-                                setState(() {
-                                  _listAlignment = LIST_ALIGNMENT.map((e) {
-                                    return {'alignment': e, "isFocus": false};
-                                  }).toList();
-                                  _listAlignment[index]["isFocus"] = true;
-                                });
-                                widget.reRenderFunction();
-                                popNavigator(context);
-                              }),
-                            ));
+                        setState(() {
+                          _isShowAlignmentDialog = true;
+                          _alignmentDialogOffset = widgetOffset;
+                        });
                       })),
               Flexible(
                 child: buildLayoutConfigItem(
@@ -546,8 +538,8 @@ class _LayoutBodyState extends State<LayoutBody> {
                               offset: Offset(
                                   _size.width * _ratioTarget[0] / 2 - 35,
                                   _size.width * _ratioTarget[1] / 2 - 35),
-                              placementAttribute: PLACEMENT_ATTRIBUTE));
-                          _seletedPlacement = _listPlacement.last;
+                              placementAttribute: PLACEMENT_ATTRIBUTE,
+                              listWHBoard: []));
                         });
                         widget.reRenderFunction();
                       },
