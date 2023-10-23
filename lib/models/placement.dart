@@ -1,66 +1,63 @@
-import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/models/project.dart';
 
 class Placement {
   int id;
-  double width;
-  double height;
-  Offset offset;
-  List<double> listWHBoard;
+  double ratioWidth;
+  double ratioHeight;
+  // double ratioWidth;
+  // double ratioHeight;
+  // ratio of width, height
+  List<double> ratioOffset;
   PlacementAttribute? placementAttribute;
-  Placement(
-      {required this.id,
-      required this.width,
-      required this.height,
-      required this.offset,
-      required this.placementAttribute,
-      required this.listWHBoard});
+  Placement({
+    required this.id,
+    required this.ratioWidth,
+    required this.ratioHeight,
+    required this.ratioOffset,
+    required this.placementAttribute,
+  });
 
-  Placement copyWith(
-      {double? width,
-      double? height,
-      Offset? offset,
-      PlacementAttribute? placementAttribute,
-      List<double>? listWHBoard}) {
+  Placement copyWith({
+    double? ratioWidth,
+    double? ratioHeight,
+    List<double>? ratioOffset,
+    PlacementAttribute? placementAttribute,
+  }) {
     return Placement(
-        id: id,
-        width: width ?? this.width,
-        height: height ?? this.height,
-        offset: offset ?? this.offset,
-        placementAttribute: placementAttribute ?? this.placementAttribute,
-        listWHBoard: listWHBoard ?? this.listWHBoard);
+      id: id,
+      ratioWidth: ratioWidth ?? this.ratioWidth,
+      ratioHeight: ratioHeight ?? this.ratioHeight,
+      ratioOffset: ratioOffset ?? this.ratioOffset,
+      placementAttribute: placementAttribute ?? this.placementAttribute,
+    );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'width': width,
-      'height': height,
-      'offset': {
-        'dx': offset.dx,
-        'dy': offset.dy,
-      },
+      'ratioWidth': ratioWidth,
+      'ratioHeight': ratioHeight,
+      'ratioOffset': ratioOffset,
       'placementAttribute':
           placementAttribute != null ? placementAttribute!.toJson() : null,
-      'listWHBoard': listWHBoard
     };
   }
 
   factory Placement.fromJson(Map<String, dynamic> json) {
     return Placement(
-        id: json['id'],
-        width: json['width'],
-        height: json['height'],
-        offset: Offset(json['offset']['dx'], json['offset']['dy']),
-        placementAttribute: json['placementAttribute'] != null
-            ? PlacementAttribute.fromJson(json['placementAttribute'])
-            : null,
-        listWHBoard: [json['listWHBoard'][0],json['listWHBoard'][1]]);
+      id: json['id'],
+      ratioWidth: json['ratioWidth'],
+      ratioHeight: json['ratioHeight'],
+      ratioOffset: [json['ratioOffset'][0], json['ratioOffset'][1]],
+      placementAttribute: json['placementAttribute'] != null
+          ? PlacementAttribute.fromJson(json['placementAttribute'])
+          : null,
+    );
   }
 
   void getInfor() {
     print(
-        "Placement id: ${this.id}, Placement height: ${this.height}, Placement width: ${this.width}, Placement offset: ${this.offset},Placement listWHBoard: ${this.listWHBoard}, Placement placementAttribute: ${this.placementAttribute?.getInfor()} ");
+        "Placement id: ${this.id}, Placement ratioHeight: ${this.ratioHeight}, Placement ratioWidth: ${this.ratioWidth}, Placement ratioOffset: ${this.ratioOffset}, Placement placementAttribute: ${this.placementAttribute?.getInfor()} ");
   }
 }
 

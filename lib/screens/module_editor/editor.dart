@@ -1,5 +1,11 @@
-import 'package:photo_to_pdf/helpers/convert_byte_unit.dart';
-import 'package:photo_to_pdf/helpers/create_pdf.dart';
+import 'dart:typed_data';
+import 'dart:ui';
+
+import 'package:share_plus/share_plus.dart';
+import 'package:photo_to_pdf/helpers/convert.dart';
+import 'package:photo_to_pdf/helpers/pdf/create_pdf.dart';
+import 'package:photo_to_pdf/helpers/pdf/pdf_size.dart';
+import 'package:photo_to_pdf/helpers/pdf/save_pdf.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_layout.dart';
 import 'package:flutter/material.dart';
@@ -50,6 +56,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   late bool _isShowPreview;
   late List<double> _previewRatio;
   late int? _currentCarouselIndex;
+  late bool _isLoading;
   @override
   void dispose() {
     super.dispose();
@@ -130,6 +137,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     _sizeOfFileValue = "0.0 MB";
     _segmentCurrentIndex = _project.useAvailableLayout == true ? 0 : 1;
     _isShowPreview = false;
+    _isLoading = false;
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       await _getFileSize();
     });
@@ -156,11 +164,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         _project.paper?.height != 0) {
       final heightForWidth = (_project.paper!.height / _project.paper!.width);
 
-      final result = [
-        oldRatioTarget[0], oldRatioTarget[0] * heightForWidth
-        // LIST_RATIO_PROJECT_ITEM[0],
-        // heightForWidth/LIST_RATIO_PLACEMENT_BOARD[1] * LIST_RATIO_PLACEMENT_BOARD[0]
-      ];
+      final result = [oldRatioTarget[0], oldRatioTarget[0] * heightForWidth];
       return result;
     }
     return oldRatioTarget;
@@ -168,7 +172,6 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
 
   @override
   Widget build(BuildContext context) {
-    // print("_currentCarouselIndex ${_currentCarouselIndex}");
     _size = MediaQuery.sizeOf(context);
     return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -212,7 +215,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                             ),
                             child: SingleChildScrollView(
                                 padding: const EdgeInsets.only(top: 15),
-                                child: _buildPreviewProjectBody1()))),
+                                child: _buildPreviewProjectBody()))),
                     // page size and bottom buttons
                     SizedBox(
                       child: Column(
@@ -333,9 +336,22 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                           buildBottomButton(
                               context: context,
                               onApply: () async {
-                                await createAndPreviewPdf(_project, context,
-                                    _getRatioProject(LIST_RATIO_PDF),
+                                // await createAndPreviewPdf(_project, context,
+                                //     _getRatioProject(LIST_RATIO_PDF),
+                                //     compressValue: _sliderCompressionValue);
+                                setState(() {
+                                  _isLoading = true;
+                                });
+                                Uint8List data = await createPdfFile(_project,
+                                    context, _getRatioProject(LIST_RATIO_PDF),
                                     compressValue: _sliderCompressionValue);
+                                final result = await savePdf(data, _project);
+                                setState(() {
+                                  _isLoading = false;
+                                });
+                                await Share.shareXFiles([
+                                  XFile(result[0].path),
+                                ]);
                               },
                               onCancel: () {
                                 ref
@@ -361,7 +377,17 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                           _currentCarouselIndex = null;
                         });
                       })
-                  : const SizedBox()
+                  : const SizedBox(),
+              Positioned.fill(
+                  child: _isLoading
+                      ? Container(
+                          color: colorGrey.withOpacity(0.3),
+                          child: const Center(
+                              child: CircularProgressIndicator(
+                            color: colorBlue,
+                          )),
+                        )
+                      : const SizedBox())
             ],
           ),
         ));
@@ -403,9 +429,9 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                         .updateProject(project);
                     _segmentCurrentIndex = newSegmentIndex;
                     setState(() {});
+                    popNavigator(context);
                     await _getFileSize();
                     // ignore: use_build_context_synchronously
-                    popNavigator(context);
                     await IsarProjectService().updateProject(project);
                   },
                 ));
@@ -439,20 +465,16 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                       if (!_project.useAvailableLayout &&
                           _project.placements != null) {
                         var oldPlacements = _project.placements!;
-                        oldPlacements.forEach((element) {
-                          element.getInfor();
-                        });
                         newPlacements = oldPlacements;
                         for (var item in oldPlacements) {
                           final index = oldPlacements.indexOf(item);
                           newPlacements[index] = newPlacements[index].copyWith(
-                              offset: Offset(
-                                  item.offset.dx /
-                                      oldPaper.width *
-                                      newPaper.width,
-                                  item.offset.dy /
-                                      oldPaper.height *
-                                      newPaper.height));
+                              ratioOffset: [
+                                item.ratioOffset[0],
+                                item.ratioOffset[1],
+                              ],
+                              ratioHeight: item.ratioHeight,
+                              ratioWidth: item.ratioWidth);
                         }
                       }
                       _project = _project.copyWith(
@@ -460,7 +482,6 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                     } else {
                       _project = _project.copyWith(paper: newPaper);
                     }
-
                     setState(() {});
                     popNavigator(context);
                     await IsarProjectService().updateProject(_project);
@@ -556,85 +577,87 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     });
   }
 
-  Widget _buildPreviewProjectBody1() {
-    if (_project.useAvailableLayout != true &&
-        _project.placements != null &&
-        _project.placements!.isNotEmpty) {
-      List list = extractList(_project.placements!.length, _project.listMedia);
+  Widget _buildPreviewProjectBody() {
+    if (_project.listMedia.isEmpty ||
+        (_project.listMedia.length == 1 && _project.listMedia[0] is String)) {
       setState(() {
-        _lengthOfProjectList = list.length;
+        _lengthOfProjectList = 0;
       });
       return Wrap(
         alignment: WrapAlignment.center,
-        children: list.map((e) {
-          final index = list.indexOf(e);
-          return Container(
+        children: [
+          Container(
             margin: const EdgeInsets.symmetric(horizontal: 10),
-            child: WProjectItemEditor1(
-                key: ValueKey(_project.listMedia[index]),
-                project: _project,
-                isFocusByLongPress: false,
-                indexImage: index,
-                layoutExtractList: list[index],
-                title: "Page ${index + 1}",
-                onTap: () {
-                  _previewRatio = LIST_RATIO_PREVIEW;
-                  if (_project.paper != null &&
-                      _project.paper!.height != 0 &&
-                      _project.paper!.width != 0) {
-                    _previewRatio = [
-                      LIST_RATIO_PREVIEW[0],
-                      LIST_RATIO_PREVIEW[0] *
-                          _project.paper!.height /
-                          _project.paper!.width
-                    ];
-                  }
-                  setState(() {
-                    _currentCarouselIndex = index;
-                    _isShowPreview = true;
-                  });
-                },
-                ratioTarget: _getRatioProject(LIST_RATIO_PROJECT_ITEM)),
-          );
-        }).toList(),
+            child: WProjectItemEditor(
+              key: ValueKey(_project.id),
+              project: _project
+                  .copyWith(listMedia: ["${pathPrefixImage}blank_page.jpg"]),
+              indexImage: 0,
+              title: "Page ${1}",
+              onTap: () {
+                _previewRatio = LIST_RATIO_PREVIEW;
+                if (_project.paper != null &&
+                    _project.paper!.height != 0 &&
+                    _project.paper!.width != 0) {
+                  _previewRatio = [
+                    LIST_RATIO_PREVIEW[0],
+                    LIST_RATIO_PREVIEW[0] *
+                        _project.paper!.height /
+                        _project.paper!.width
+                  ];
+                }
+                setState(() {
+                  _currentCarouselIndex = 0;
+                  _isShowPreview = true;
+                });
+              },
+              ratioTarget: _getRatioProject(LIST_RATIO_PROJECT_ITEM),
+            ),
+          )
+        ],
       );
     } else {
-      if (_project.listMedia.isEmpty) {
+      if (_project.useAvailableLayout != true &&
+          _project.placements != null &&
+          _project.placements!.isNotEmpty) {
+        List list =
+            extractList(_project.placements!.length, _project.listMedia);
         setState(() {
-          _lengthOfProjectList = 0;
+          _lengthOfProjectList = list.length;
         });
         return Wrap(
           alignment: WrapAlignment.center,
-          children: [
-            Container(
+          children: list.map((e) {
+            final index = list.indexOf(e);
+            return Container(
               margin: const EdgeInsets.symmetric(horizontal: 10),
               child: WProjectItemEditor(
-                key: ValueKey(_project.id),
-                project: _project
-                    .copyWith(listMedia: ["${pathPrefixImage}blank_page.jpg"]),
-                indexImage: 0,
-                title: "Page ${1}",
-                onTap: () {
-                  _previewRatio = LIST_RATIO_PREVIEW;
-                  if (_project.paper != null &&
-                      _project.paper!.height != 0 &&
-                      _project.paper!.width != 0) {
-                    _previewRatio = [
-                      LIST_RATIO_PREVIEW[0],
-                      LIST_RATIO_PREVIEW[0] *
-                          _project.paper!.height /
-                          _project.paper!.width
-                    ];
-                  }
-                  setState(() {
-                    _currentCarouselIndex = 0;
-                    _isShowPreview = true;
-                  });
-                },
-                ratioTarget: _getRatioProject(LIST_RATIO_PROJECT_ITEM),
-              ),
-            )
-          ],
+                  key: ValueKey(_project.listMedia[index]),
+                  project: _project,
+                  isFocusByLongPress: false,
+                  indexImage: index,
+                  layoutExtractList: list[index],
+                  title: "Page ${index + 1}",
+                  onTap: () {
+                    _previewRatio = LIST_RATIO_PREVIEW;
+                    if (_project.paper != null &&
+                        _project.paper!.height != 0 &&
+                        _project.paper!.width != 0) {
+                      _previewRatio = [
+                        LIST_RATIO_PREVIEW[0],
+                        LIST_RATIO_PREVIEW[0] *
+                            _project.paper!.height /
+                            _project.paper!.width
+                      ];
+                    }
+                    setState(() {
+                      _currentCarouselIndex = index;
+                      _isShowPreview = true;
+                    });
+                  },
+                  ratioTarget: _getRatioProject(LIST_RATIO_PROJECT_ITEM)),
+            );
+          }).toList(),
         );
       } else {
         final abc = extractList1(
@@ -648,8 +671,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
             final index = abc.indexOf(e);
             return Container(
               margin: const EdgeInsets.symmetric(horizontal: 10),
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              child: WProjectItemEditor1(
+              child: WProjectItemEditor(
                 key: ValueKey(_project.listMedia[index]),
                 project: _project,
                 indexImage: index,

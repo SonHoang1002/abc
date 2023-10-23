@@ -5,33 +5,42 @@ import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/render_boxfit.dart';
 import 'package:photo_to_pdf/models/project.dart';
 
-class LayoutMedia1 extends ConsumerStatefulWidget {
+class LayoutMedia extends ConsumerStatefulWidget {
   final int indexImage;
   final Project project;
   final List<dynamic>? layoutExtractList;
-  final List<double> ratioTarget;
+  final List<double> widthAndHeight;
   final List<double>? listWH;
-  const LayoutMedia1(
+  const LayoutMedia(
       {super.key,
       required this.project,
       required this.indexImage,
       required this.layoutExtractList,
-      required this.ratioTarget,
+      required this.widthAndHeight,
       this.listWH});
 
   @override
-  ConsumerState<LayoutMedia1> createState() => _LayoutMedia1State();
+  ConsumerState<LayoutMedia> createState() => _LayoutMediaState();
 }
 
-class _LayoutMedia1State extends ConsumerState<LayoutMedia1> {
+class _LayoutMediaState extends ConsumerState<LayoutMedia> {
   Widget buildCoreLayoutMedia(
     int indexImage,
     Project project,
     List<dynamic>? layoutExtractList,
-    List<double> ratioTarget,
+    List<double> widthAndHeight,
   ) {
     // const double spaceWidth = 3;
     // const double spaceheight = 3;
+    if (project.listMedia.isEmpty ||
+        (project.listMedia.length == 1 && project.listMedia[0] is String)) {
+      return _buildImageWidget(
+        project,
+        (layoutExtractList?[0]) ?? "${pathPrefixImage}blank_page.jpg",
+        width: double.infinity,
+        height: double.infinity,
+      );
+    }
     if (project.useAvailableLayout != true &&
         project.placements != null &&
         project.placements!.isNotEmpty) {
@@ -39,8 +48,8 @@ class _LayoutMedia1State extends ConsumerState<LayoutMedia1> {
         children: layoutExtractList!.map((e) {
           final indexExtract = layoutExtractList.indexOf(e);
           return Positioned(
-            top: getPositionWithTop(indexExtract),
-            left: getPositionWithLeft(indexExtract),
+            top: getPositionWithTop(indexExtract, widthAndHeight[1]),
+            left: getPositionWithLeft(indexExtract, widthAndHeight[0]),
             child: Container(
               margin: EdgeInsets.symmetric(
                   horizontal: ((project.placements![indexExtract]
@@ -52,8 +61,8 @@ class _LayoutMedia1State extends ConsumerState<LayoutMedia1> {
               child: _buildImageWidget(
                 project,
                 layoutExtractList[indexExtract],
-                height: getRealHeight(indexExtract),
-                width: getRealWidth(indexExtract),
+                height: getRealHeight(indexExtract, widthAndHeight[1]),
+                width: getRealWidth(indexExtract, widthAndHeight[0]),
               ),
             ),
           );
@@ -160,36 +169,31 @@ class _LayoutMedia1State extends ConsumerState<LayoutMedia1> {
       alignment: widget.project.alignmentAttribute?.alignmentMode,
       color: widget.project.backgroundColor,
       child: buildCoreLayoutMedia(widget.indexImage, widget.project,
-          widget.layoutExtractList, widget.ratioTarget),
+          widget.layoutExtractList, widget.widthAndHeight),
     );
   }
 
-  double getRealHeight(int extractIndex) {
-    return ratioTargetWithHeightPlacement() *
-        (widget.project.placements![extractIndex].height);
-  }
-
-  double getRealWidth(int extractIndex) {
-    return ratioTargetWithWidthPlacement() *
-        (widget.project.placements![extractIndex].width);
-  }
-
-  double ratioTargetWithHeightPlacement() {
-    return widget.ratioTarget[0] / LIST_RATIO_PLACEMENT_BOARD[0];
-  }
-
-  double ratioTargetWithWidthPlacement() {
-    return widget.ratioTarget[1] / LIST_RATIO_PLACEMENT_BOARD[1];
-  }
-
-  double getPositionWithTop(int extractIndex) {
-    var result;
-    result = (widget.project.placements![extractIndex].offset.dy) *
-        ratioTargetWithHeightPlacement();
+  double getRealHeight(int extractIndex, double itemHeight) {
+    // final result = ratioTargetWithHeightPlacement() *
+    //     (widget.project.placements![extractIndex].height);
+    final result =
+        itemHeight * (widget.project.placements![extractIndex].ratioHeight);
     return result;
   }
 
-  double getPositionWithLeft(int extractIndex) {
+  double getRealWidth(int extractIndex, double itemWidth) {
+    final result =
+        itemWidth * (widget.project.placements![extractIndex].ratioWidth);
+    return result;
+  }
+
+  double getPositionWithTop(int extractIndex, double itemHeight) {
+    final result =
+        (widget.project.placements![extractIndex].ratioOffset[1]) * itemHeight;
+    return result;
+  }
+
+  double getPositionWithLeft(int extractIndex, double itemWidth) {
     var result;
     // if (widget.listWH != null &&
     //     widget.project.placements![extractIndex].listWHBoard[0] != 0) {
@@ -201,8 +205,8 @@ class _LayoutMedia1State extends ConsumerState<LayoutMedia1> {
     //     "result getPositionWithLeft ${widget.project.placements![extractIndex].offset.dx} / ${widget.project.placements![extractIndex].listWHBoard[0]} -  ${result} / ${widget.listWH![0]}");
 
     // } else {
-    result = (widget.project.placements![extractIndex].offset.dx) *
-        ratioTargetWithWidthPlacement();
+    result =
+        (widget.project.placements![extractIndex].ratioOffset[0]) * itemWidth;
     // }
     return result;
   }

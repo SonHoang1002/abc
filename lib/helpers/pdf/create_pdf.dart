@@ -5,48 +5,17 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/compress_file.dart';
+import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/helpers/extract_list.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
-import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/helpers/render_boxfit.dart';
 import 'package:printing/printing.dart';
-
-Future<String> savePdf(Uint8List uint8list, Project project) async {
-  final outputDirectory = await getExternalStorageDirectory();
-  final pdfFile = File(
-      '${outputDirectory?.path}/${project.title != "" ? project.title : "Untitled"}.pdf');
-  await pdfFile.writeAsBytes(uint8list);
-  final message =('Tệp PDF đã được lưu tại: ${pdfFile.path}');
-  return  message;
-}
-
-Future<File> convertUint8ListToFile(Uint8List uint8list) async {
-  final directory = await getTemporaryDirectory();
-  final filePath = '${directory.path}/${getRandomNumber()}.pdf';
-  final file = File(filePath);
-  await file.writeAsBytes(uint8list);
-  return file;
-}
-
-Future<double> getPdfFileSize(
-    Project project, BuildContext context, List<double> ratioTarget,
-    {double? compressValue}) async {
-  Uint8List result = await createPdfFile(project, context, ratioTarget,
-      compressValue: compressValue);
-  final directory = await getTemporaryDirectory();
-  final filePath = '${directory.path}/temp.pdf';
-  final file = File(filePath);
-  await file.writeAsBytes(result);
-  int fileSizeInBytes = await file.length();
-  double fileSizeInKB = (fileSizeInBytes / 1024);
-  return fileSizeInKB;
-}
+import 'package:photo_to_pdf/helpers/pdf/save_pdf.dart';
 
 Future<void> createAndPreviewPdf(
     Project project, BuildContext context, List<double> ratioTarget,
@@ -65,10 +34,7 @@ Future<void> createAndPreviewPdf(
                 icon: const Icon(FontAwesomeIcons.save),
                 color: colorBlue,
                 onPressed: () async {
-                  final message = await savePdf(result, project);
-                  // ignore: use_build_context_synchronously
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(SnackBar(content: Text(message)));
+                  await savePdf(result, project);
                 },
               ),
             ],
@@ -113,12 +79,12 @@ Future<Uint8List> createPdfFile(
   String pageOrientationValue;
   if (_project.paper != null &&
       _project.paper!.height > _project.paper!.width) {
-    pageOrientationValue = "portrait";
+    pageOrientationValue = PORTRAIT;
   } else if (_project.paper != null &&
       _project.paper!.height < _project.paper!.width) {
-    pageOrientationValue = "landscape";
+    pageOrientationValue = LANDSCAPE;
   } else {
-    pageOrientationValue = "natural";
+    pageOrientationValue = NATURAL;
   }
 
   PdfPageFormat? pdfPageFormat;
@@ -126,17 +92,41 @@ Future<Uint8List> createPdfFile(
     pdfPageFormat =
         PDF_PAGE_FORMAT[project.paper?.title]?[pageOrientationValue];
   }
-  // check height==width to render
-  if (project.paper?.height != null && project.paper?.width != null) {
-    // print(" project.paper? ${project.paper?.getInfor()}");
-    
-    // pdfPageFormat = PdfPageFormat(project.paper!.width, project.paper!.height);
+
+  if (project.paper != null &&
+      project.paper?.height != null &&
+      project.paper?.width != null) {
+    if (project.paper!.unit!.title == POINT.title) {
+      // print("POINT");
+      pdfPageFormat = PdfPageFormat(project.paper!.width, project.paper!.height,
+          marginAll: 2.0);
+    } else if (project.paper!.unit!.title == INCH.title) {
+      // print("INCH");
+      pdfPageFormat = PdfPageFormat(
+          project.paper!.width * inch > 72 * 28
+              ? 72 * 28
+              : project.paper!.width * inch,
+          project.paper!.height * inch > 72 * 28
+              ? 72 * 28
+              : project.paper!.height * inch,
+          marginAll: 2.0 * inch);
+    } else if (project.paper!.unit!.title == CENTIMET.title) {
+      // print("CENTIMET");
+      pdfPageFormat = PdfPageFormat(
+          project.paper!.width * cm, project.paper!.height * cm,
+          marginAll: 2.0 * cm);
+    } else {
+      print("NONE");
+    }
   }
+  print("pdfPageFormat ${pdfPageFormat}");
+
   if (compressValue != null) {
     final compressImages =
         await compressImageFile(project.listMedia, compressValue);
     _project = project.copyWith(listMedia: compressImages);
   }
+
   List listExtract = [];
   if (project.useAvailableLayout) {
     listExtract = extractList1(
@@ -176,8 +166,8 @@ Future<Uint8List> createPdfFile(
     pdf.addPage(pw.Page(
       build: (ctx) {
         return pw.Center(
-            child: _buildPdfPreview(
-                context, _project, listExtract, index, ratioTarget));
+            child: _buildPdfPreview(context, _project, listExtract, index,
+                [pdfPageFormat!.width, pdfPageFormat.height]));
       },
       pageTheme: pw.PageTheme(
         pageFormat: pdfPageFormat,
@@ -185,6 +175,7 @@ Future<Uint8List> createPdfFile(
       ),
     ));
   }
+
   // add back cover photo
   if (_project.coverPhoto?.backPhoto != null) {
     File compressBackPhoto;
@@ -215,7 +206,7 @@ Future<Uint8List> createPdfFile(
 }
 
 pw.Widget _buildPdfPreview(BuildContext context, Project project,
-    List layoutExtractList, int indexPage, List<double> ratioTarget) {
+    List layoutExtractList, int indexPage, List<double> widthAndHeight) {
   return pw.Container(
     color: convertColorToPdfColor(project.backgroundColor),
     padding: pw.EdgeInsets.only(
@@ -230,7 +221,7 @@ pw.Widget _buildPdfPreview(BuildContext context, Project project,
     ),
     // alignment: project.alignmentAttribute?.alignmentMode,
     child: _buildCorePDFLayoutMedia(
-        indexPage, project, layoutExtractList[indexPage], ratioTarget),
+        indexPage, project, layoutExtractList[indexPage], widthAndHeight),
   );
 }
 
@@ -238,7 +229,7 @@ pw.Widget _buildCorePDFLayoutMedia(
   int indexPage,
   Project project,
   List<dynamic>? layoutExtractList,
-  List<double> ratioTarget,
+  List<double> widthAndHeight,
 ) {
   final double spacingHorizontalValue =
       ((project.spacingAttribute?.horizontalSpacing ?? 0.0)) * 3;
@@ -253,18 +244,18 @@ pw.Widget _buildCorePDFLayoutMedia(
       children: layoutExtractList!.map((e) {
         final index = layoutExtractList.indexOf(e);
         return pw.Positioned(
-          top: getPositionWithTop(index, project, ratioTarget),
-          left: getPositionWithLeft(index, project, ratioTarget),
+          top: getPositionWithTop(index, project, widthAndHeight[1]),
+          left: getPositionWithLeft(index, project, widthAndHeight[0]),
           child: _buildImageWidget(
             project,
             layoutExtractList[index],
-            height: getRealHeight(index, project, ratioTarget),
-            width: getRealWidth(index, project, ratioTarget),
+            height: getRealHeight(index, project, widthAndHeight[1]),
+            width: getRealWidth(index, project, widthAndHeight[0]),
           ),
         );
       }).toList(),
     ));
-  } else { 
+  } else {
     final List<int> layoutSuggestion =
         LIST_LAYOUT_SUGGESTION[project.layoutIndex];
     List<pw.Widget> columnWidgets = [];
@@ -285,15 +276,13 @@ pw.Widget _buildCorePDFLayoutMedia(
                 child: _buildImageWidget(
                   project,
                   imageData,
-                  width: double.infinity,
-                  height: double.infinity,
                 ),
               );
             }).toList()),
       ));
     }
     return pw.Column(
-      mainAxisAlignment: pw.MainAxisAlignment.start,
+      mainAxisAlignment: pw.MainAxisAlignment.center,
       crossAxisAlignment: pw.CrossAxisAlignment.center,
       children: columnWidgets,
     );
@@ -316,55 +305,28 @@ pw.Widget _buildImageWidget(Project project, dynamic imageData,
           bottom:
               1.5 * (3 + (project.spacingAttribute?.verticalSpacing ?? 0.0)),
         ),
-        child: pw.Image(
-          pw.MemoryImage(File(imageData.path).readAsBytesSync()),
-          fit: fit,
-          // width: 200,
-          // height: 200
-        )
-        );
+        child: pw.Image(pw.MemoryImage(File(imageData.path).readAsBytesSync()),
+            fit: fit, width: width, height: height));
   }
 }
 
-PdfColor convertColorToPdfColor(Color color) {
-  final r = color.red / 255.0;
-  final g = color.green / 255.0;
-  final b = color.blue / 255.0;
-  return PdfColor(r, g, b);
-}
-
-double getDrawBoardWithPreviewBoardHeight(List<dynamic> ratioTarget) {
-  return ratioTarget[0] / (LIST_RATIO_PLACEMENT_BOARD[0]);
-}
-
-double getDrawBoardWithPreviewBoardWidth(List<dynamic> ratioTarget) {
-  return ratioTarget[1] / (LIST_RATIO_PLACEMENT_BOARD[1]);
-}
-
-double getRealHeight(
-    int extractIndex, Project project, List<dynamic> ratioTarget) {
-  final realHeight = getDrawBoardWithPreviewBoardHeight(ratioTarget) *
-      (project.placements![extractIndex].height);
+double getRealHeight(int extractIndex, Project project, double pdfHeight) {
+  final realHeight =
+      pdfHeight * (project.placements![extractIndex].ratioHeight);
   return realHeight;
 }
 
-double getRealWidth(
-    int extractIndex, Project project, List<dynamic> ratioTarget) {
-  final realWidth = getDrawBoardWithPreviewBoardWidth(ratioTarget) *
-      (project.placements![extractIndex].width);
+double getRealWidth(int extractIndex, Project project, double pdfWidth) {
+  final realWidth = pdfWidth * (project.placements![extractIndex].ratioWidth);
   return realWidth;
 }
 
-double getPositionWithTop(
-    int extractIndex, Project project, List<dynamic> ratioTarget) {
-  return (project.placements![extractIndex].offset.dy) *
-      getDrawBoardWithPreviewBoardHeight(ratioTarget);
+double getPositionWithTop(int extractIndex, Project project, double pdfHeight) {
+  final result =
+      ((project.placements![extractIndex].ratioOffset[1]) * pdfHeight);
+  return result;
 }
 
-double getPositionWithLeft(
-    int extractIndex, Project project, List<dynamic> ratioTarget) {
-  return (project.placements![extractIndex].offset.dx) *
-      getDrawBoardWithPreviewBoardWidth(ratioTarget);
+double getPositionWithLeft(int extractIndex, Project project, double pdfWidth) {
+  return ((project.placements![extractIndex].ratioOffset[0]) * pdfWidth);
 }
-
-

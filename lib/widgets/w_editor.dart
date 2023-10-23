@@ -69,37 +69,26 @@ Widget buildPageSizePreset(
               return DropdownMenuItem<dynamic>(
                   value: item,
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                        // child: Container(
-                        //   height: 60,
-                        //   width: 100,
-                        // ),
+                      const SizedBox(),
+                      WTextContent(
+                        value: item.title,
+                        textColor: const Color.fromRGBO(10, 132, 255, 1),
+                        textSize: 14,
+                        textLineHeight: 19.09,
                       ),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(),
-                          WTextContent(
-                            value: item.title,
-                            textColor: const Color.fromRGBO(10, 132, 255, 1),
-                            textSize: 14,
-                            textLineHeight: 19.09,
-                          ),
-                          index != LIST_PAGE_SIZE.length - 1
-                              ? WDivider(
-                                  color: const Color.fromRGBO(0, 0, 0, 0.3),
-                                  width: 200 /
-                                      390 *
-                                      MediaQuery.sizeOf(context).width,
-                                  height: 1,
-                                  margin: EdgeInsets.zero,
-                                )
-                              : const SizedBox()
-                        ],
-                      )
+                      index != LIST_PAGE_SIZE.length - 1
+                          ? WDivider(
+                              color: const Color.fromRGBO(0, 0, 0, 0.3),
+                              width: 200 /
+                                  390 *
+                                  MediaQuery.sizeOf(context).width,
+                              height: 1,
+                              margin: EdgeInsets.zero,
+                            )
+                          : const SizedBox()
                     ],
                   ));
             }).toList(),
@@ -359,14 +348,11 @@ Widget buildBottomButton(
       children: [
         Flexible(
             child: WButtonFilled(
-          message: "Cancel",
-          backgroundColor: Theme.of(context).cardColor,
-          textColor: colorBlue,
-          height: 60,
-          onPressed: () {
-            onCancel != null ? onCancel() : null;
-          },
-        )),
+                message: "Cancel",
+                backgroundColor: Theme.of(context).cardColor,
+                textColor: colorBlue,
+                height: 60,
+                onPressed: onCancel)),
         WSpacer(
           width: 20,
         ),

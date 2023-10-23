@@ -1,4 +1,5 @@
 import 'package:photo_to_pdf/commons/colors.dart';
+import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_background.dart';
@@ -53,6 +54,7 @@ class _LayoutBodyState extends State<LayoutBody> {
   // layout custom variables
   List<ValueNotifier<Matrix4>> _matrix4Notifiers = [];
   List<Placement> _listPlacement = [];
+  // late List<Placement> _listPlacementOld;
   Placement? _seletedPlacement;
 
   // background variable
@@ -191,7 +193,8 @@ class _LayoutBodyState extends State<LayoutBody> {
             buildBottomButton(
               context: context,
               onApply: () {
-                if (_segmentCurrentIndex == 0) {
+                if (_segmentCurrentIndex == 0 ||
+                    (_segmentCurrentIndex == 1 && _listPlacement.isEmpty)) {
                   _project = _project.copyWith(
                       layoutIndex: _listLayoutStatus
                           .indexWhere((element) => element['isFocus'] == true),
@@ -205,7 +208,10 @@ class _LayoutBodyState extends State<LayoutBody> {
                       spacingAttribute: _spacingOptions,
                       placements: _listPlacement,
                       useAvailableLayout: true);
-                } else if (_segmentCurrentIndex == 1) {
+                  widget.onApply(_project, _segmentCurrentIndex);
+                  return;
+                }
+                if (_segmentCurrentIndex == 1) {
                   _project = _project.copyWith(
                       layoutIndex: null,
                       resizeAttribute: _resizeModeSelectedValue,
@@ -216,8 +222,9 @@ class _LayoutBodyState extends State<LayoutBody> {
                       backgroundColor: _currentLayoutColor,
                       placements: _listPlacement,
                       useAvailableLayout: false);
+                  widget.onApply(_project, _segmentCurrentIndex);
+                  return;
                 }
-                widget.onApply(_project, _segmentCurrentIndex);
               },
               onCancel: () {
                 popNavigator(context);
@@ -262,12 +269,10 @@ class _LayoutBodyState extends State<LayoutBody> {
               margin: const EdgeInsets.symmetric(horizontal: 10),
               child: buildLayoutWidget(
                 context: context,
-                // mediaSrc: e['mediaSrc'],
                 title: "Layout ${index + 1}",
                 isFocus: e['isFocus'],
                 backgroundColor: _currentLayoutColor,
                 layoutSuggestion: e["layout"],
-                // indexLayoutItem: index,
                 onTap: () {
                   _resetLayoutSelections();
                   setState(() {
@@ -480,7 +485,6 @@ class _LayoutBodyState extends State<LayoutBody> {
             Expanded(
                 child: WDragZoomImage(
               backgroundColor: _currentLayoutColor,
-              reRenerFunction: rerenderFunction,
               listPlacement: _listPlacement,
               matrix4Notifiers: _matrix4Notifiers,
               updatePlacement: (placements) {
@@ -509,6 +513,7 @@ class _LayoutBodyState extends State<LayoutBody> {
                 });
                 widget.reRenderFunction();
               },
+              onCancelFocusPlacement: _disablePlacement,
               seletedPlacement: _seletedPlacement,
               paperAttribute: _project.paper,
             )),
@@ -532,14 +537,16 @@ class _LayoutBodyState extends State<LayoutBody> {
                           _matrix4Notifiers
                               .add(ValueNotifier(Matrix4.identity()));
                           _listPlacement.add(Placement(
-                              id: getRandomNumber(),
-                              width: 70,
-                              height: 70,
-                              offset: Offset(
-                                  _size.width * _ratioTarget[0] / 2 - 35,
-                                  _size.width * _ratioTarget[1] / 2 - 35),
-                              placementAttribute: PLACEMENT_ATTRIBUTE,
-                              listWHBoard: []));
+                            id: getRandomNumber(),
+                            ratioWidth: 0.2,
+                            ratioHeight: _project.paper != null
+                                ? (0.2 *
+                                    _project.paper!.width /
+                                    _project.paper!.height)
+                                : 0.15,
+                            ratioOffset: [0.425, 0.425],
+                            placementAttribute: PLACEMENT_ATTRIBUTE,
+                          ));
                         });
                         widget.reRenderFunction();
                       },
@@ -564,6 +571,42 @@ class _LayoutBodyState extends State<LayoutBody> {
                                 const Color.fromRGBO(22, 115, 255, 0.08),
                             padding: EdgeInsets.zero,
                             onPressed: () {
+                              final convertHeight = convertUnit(
+                                  _project.paper!.unit!,
+                                  _seletedPlacement!.placementAttribute!.unit!,
+                                  _project.paper!.height);
+                              print(
+                                  "unit unit unit unit ${_seletedPlacement?.placementAttribute?.unit?.title} -> ${_project.paper?.unit?.title}  _project.paper!.height ${_project.paper!.height} to ${convertHeight}");
+                              final convertWidth = convertUnit(
+                                  _project.paper!.unit!,
+                                  _seletedPlacement!.placementAttribute!.unit!,
+                                  _project.paper!.width);
+                              // horizontal, vertical, top, left, right, bottom
+                              List<String> paddingAttributeList = [];
+                              paddingAttributeList.add("0.0");
+                              paddingAttributeList.add("0.0");
+                              //top
+                              paddingAttributeList.add(
+                                  (_seletedPlacement!.ratioOffset[1] *
+                                          convertHeight)
+                                      .toStringAsFixed(2));
+                              //left
+                              paddingAttributeList.add(
+                                  (_seletedPlacement!.ratioOffset[0] *
+                                          convertWidth)
+                                      .toStringAsFixed(2));
+                              //right
+                              paddingAttributeList.add(((1 -
+                                          (_seletedPlacement!.ratioOffset[0] +
+                                              _seletedPlacement!.ratioWidth)) *
+                                      convertWidth)
+                                  .toStringAsFixed(2));
+                              // bottom
+                              paddingAttributeList.add(((1 -
+                                          (_seletedPlacement!.ratioOffset[1] +
+                                              _seletedPlacement!.ratioHeight)) *
+                                      convertHeight)
+                                  .toStringAsFixed(2));
                               pushCustomVerticalMaterialPageRoute(
                                   context,
                                   EditorPaddingSpacing(
@@ -572,25 +615,27 @@ class _LayoutBodyState extends State<LayoutBody> {
                                         .placementAttribute!.unit!),
                                     title: TITLE_EDIT_PLACEMENT,
                                     // width and height is 0 and 1 to comparable with EditorPaddingSpacing (2 controller)
-                                    inputValues: [
-                                      _seletedPlacement!
-                                          .placementAttribute!.horizontal
-                                          .toString(),
-                                      _seletedPlacement!
-                                          .placementAttribute!.vertical
-                                          .toString(),
-                                      _seletedPlacement!.placementAttribute!.top
-                                          .toString(),
-                                      _seletedPlacement!
-                                          .placementAttribute!.left
-                                          .toString(),
-                                      _seletedPlacement!
-                                          .placementAttribute!.right
-                                          .toString(),
-                                      _seletedPlacement!
-                                          .placementAttribute!.bottom
-                                          .toString(),
-                                    ],
+                                    inputValues:
+                                        // [
+                                        //   _seletedPlacement!
+                                        //       .placementAttribute!.horizontal
+                                        //       .toString(),
+                                        //   _seletedPlacement!
+                                        //       .placementAttribute!.vertical
+                                        //       .toString(),
+                                        //   _seletedPlacement!.placementAttribute!.top
+                                        //       .toString(),
+                                        //   _seletedPlacement!
+                                        //       .placementAttribute!.left
+                                        //       .toString(),
+                                        //   _seletedPlacement!
+                                        //       .placementAttribute!.right
+                                        //       .toString(),
+                                        //   _seletedPlacement!
+                                        //       .placementAttribute!.bottom
+                                        //       .toString(),
+                                        // ]
+                                        paddingAttributeList,
                                     onChanged: (index, value) {},
                                     onDone: (newData) {
                                       for (var placement in _listPlacement) {

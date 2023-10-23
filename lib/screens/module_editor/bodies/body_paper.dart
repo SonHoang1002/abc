@@ -41,7 +41,11 @@ class _PaperBodyState extends State<PaperBody> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      _project = widget.project;
+    });
     super.dispose();
+    _project = Project(id: 0, listMedia: []);
     _indexPageSizeSelectionWidget = null;
     _paperConfig = null;
     _paperSizeWidthController.dispose();
@@ -117,6 +121,10 @@ class _PaperBodyState extends State<PaperBody> {
                                   (_paperConfig['content'].width).toString();
                               _paperSizeHeightController.text =
                                   (_paperConfig['content'].height).toString();
+                              _paperHeightValue =
+                                  _paperSizeHeightController.text.trim();
+                              _paperWidthValue =
+                                  _paperSizeWidthController.text.trim();
                               _pageSizeIsPortrait = true;
                             });
                             widget.reRenderFunction();
@@ -202,8 +210,10 @@ class _PaperBodyState extends State<PaperBody> {
                                 duration: const Duration(milliseconds: 400),
                                 constraints: const BoxConstraints(
                                     maxHeight: 150, maxWidth: 150),
-                                height: _renderPreviewHeight(),
-                                width: _renderPreviewWidth(),
+                                // height: _renderPreviewHeight(),
+                                // width: _renderPreviewWidth(),
+                                height: _getWidthAndHeight(150)[1],
+                                width: _getWidthAndHeight(150)[0],
                                 decoration: BoxDecoration(
                                     color: colorWhite,
                                     border: Border.all(
@@ -298,9 +308,9 @@ class _PaperBodyState extends State<PaperBody> {
                         if (_paperHeightValue !=
                                 _paperConfig['content'].height ||
                             _paperWidthValue != _paperConfig['content'].width) {
-                          setState(() {
-                            _paperConfig['content'] = LIST_PAGE_SIZE[7];
-                          });
+                          _paperConfig['content'] = LIST_PAGE_SIZE[7].copyWith(
+                            unit: value,
+                          );
                         }
                         setState(() {});
                         widget.reRenderFunction();
@@ -314,15 +324,6 @@ class _PaperBodyState extends State<PaperBody> {
     );
   }
 
-  // bool _overWHValue() {
-  //   if (_paperSizeWidthController.text.trim().isEmpty ||
-  //       _paperSizeHeightController.text.trim().isEmpty) {
-  //     return true;
-  //   }
-  //   return ((double.parse(_paperSizeHeightController.text.trim()) > 50.0) ||
-  //       (double.parse(_paperSizeWidthController.text.trim()) > 50.0));
-  // }
-
   String _renderPreviewContent() {
     if (_paperSizeWidthController.text.trim().isEmpty ||
         _paperSizeHeightController.text.trim().isEmpty) {
@@ -332,15 +333,38 @@ class _PaperBodyState extends State<PaperBody> {
   }
 
   double _renderPreviewHeight() {
+    // (_pageSizeIsPortrait ? 220 : 170)
     return (_pageSizeIsPortrait ? 220 : 170) *
         double.parse(_paperHeightValue) /
         double.parse(_paperWidthValue);
   }
 
   double _renderPreviewWidth() {
+    // (_pageSizeIsPortrait ? 170 : 220)
     return (_pageSizeIsPortrait ? 170 : 220) *
         double.parse(_paperWidthValue) /
         double.parse(_paperHeightValue);
+  }
+
+  List<double> _getWidthAndHeight(double maxSize) {
+    double width = 150;
+    double height = 150;
+    double widthPaper = double.parse(_paperWidthValue);
+    double heightPaper = double.parse(_paperHeightValue);
+    if (heightPaper > widthPaper) {
+      height = width * heightPaper / widthPaper;
+      if (height > 150) {
+        height = 150;
+        width = height * widthPaper / heightPaper;
+      }
+    } else if (heightPaper < widthPaper) {
+      width = height * widthPaper / heightPaper;
+      if (width > 150) {
+        width = 150;
+        height = width * heightPaper / widthPaper;
+      }
+    }
+    return [width, height];
   }
 
   _tranferValuePageSize() {
@@ -355,13 +379,14 @@ class _PaperBodyState extends State<PaperBody> {
     final height = _paperSizeHeightController.text;
     _paperSizeHeightController.text = width;
     _paperSizeWidthController.text = height;
+    _paperHeightValue = width;
+    _paperWidthValue = height;
   }
 
   Widget _buildOrientation(
     Function() rerenderFunc,
   ) {
     return _paperConfig['content'].title != "Custom"
-        // && !_overWHValue()
         ? Flexible(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -375,8 +400,6 @@ class _PaperBodyState extends State<PaperBody> {
                 Flexible(
                   flex: 4,
                   child: Container(
-                    // constraints:
-                    // const BoxConstraints(minWidth: 70, maxWidth: 100),
                     padding: const EdgeInsets.only(left: 5),
                     child: WTextContent(
                       value: "Orientation",
@@ -393,7 +416,6 @@ class _PaperBodyState extends State<PaperBody> {
                 Flexible(
                   flex: 4,
                   child: Row(
-                    // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       buildPageSizeOrientationItem(
                           context: context,

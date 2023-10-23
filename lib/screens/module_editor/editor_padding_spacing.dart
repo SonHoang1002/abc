@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/models/project.dart';
@@ -60,7 +61,11 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
   void initState() {
     super.initState();
     for (var element in widget.inputValues) {
-      controllers.add(TextEditingController(text: element));
+      if (double.parse(element) < 0) {
+        controllers.add(TextEditingController(text: "0.0"));
+      } else {
+        controllers.add(TextEditingController(text: element));
+      }
     }
     if ([TITLE_EDIT_PLACEMENT].contains(widget.title)) {
       _labelInputs = LABELS_EDIT_PLACEMENT;
@@ -172,8 +177,18 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                     ? WUnitSelections(
                         unitValue: _unit,
                         onSelected: (value) {
+                          List<TextEditingController> newControllers = [];
+                          newControllers = controllers.map(
+                            (element) {
+                              return TextEditingController(
+                                  text: convertUnit(_unit, value,
+                                          double.parse(element.text.trim()))
+                                      .toStringAsFixed(2));
+                            },
+                          ).toList();
                           setState(() {
                             _unit = value;
+                            controllers = newControllers;
                           });
                         },
                         onDone: (newUnit) {

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
+import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 
@@ -22,11 +23,11 @@ List<PaperAttribute> LIST_PAGE_SIZE = [
 // NUMBER OF ICON IN ROW
 List<List<int>> LIST_LAYOUT_SUGGESTION = [
   [1],
-  [1,1],
-  [1,2],
-  [2,1],
-  [1,2,3],
-  [1,2,3,4]
+  [1, 1],
+  [1, 2],
+  [2, 1],
+  [1, 2, 3],
+  [1, 2, 3, 4]
 ];
 
 List<AlignmentAttribute> LIST_ALIGNMENT = [
@@ -111,8 +112,8 @@ const String TITLE_SPACING = "Spacing";
 const String TITLE_EDIT_PLACEMENT = "Editing Placement";
 
 final Unit INCH = Unit(title: "inch", value: "”");
-final Unit CENTIMET = Unit(title: "centimet", value: "cm");
-final Unit POINT = Unit(title: "point", value: "point");
+final Unit CENTIMET = Unit(title: "cm", value: "cm");
+final Unit POINT = Unit(title: "pt", value: "pt");
 final List<Unit> LIST_UNIT = [INCH, CENTIMET, POINT];
 
 // TẤT CẢ CÁC TỈ LỆ NÀY ĐỀU ĐƯỢC SO SÁNH VỚI WIDTH CỦA MÀN HÌNH
@@ -136,27 +137,28 @@ const thumbColorSegments = CupertinoDynamicColor.withBrightness(
 
 const String LANDSCAPE = "landscape";
 const String PORTRAIT = "portrait";
+const String NATURAL = "natural";
 
 final PDF_PAGE_FORMAT = <String, Map<String, PdfPageFormat>>{
   "A3": {
     LANDSCAPE: PdfPageFormat.a3.landscape,
     PORTRAIT: PdfPageFormat.a3.portrait,
-    "natural": PdfPageFormat.a3,
+    NATURAL: PdfPageFormat.a3,
   },
   "A4": {
     LANDSCAPE: PdfPageFormat.a4.landscape,
     PORTRAIT: PdfPageFormat.a4.portrait,
-    "natural": PdfPageFormat.a4,
+    NATURAL: PdfPageFormat.a4,
   },
   "B5": {
     LANDSCAPE: PdfPageFormat.a5.landscape,
     PORTRAIT: PdfPageFormat.a5.portrait,
-    "natural": PdfPageFormat.a5,
+    NATURAL: PdfPageFormat.a5,
   },
   "Legal": {
     LANDSCAPE: PdfPageFormat.legal.landscape,
     PORTRAIT: PdfPageFormat.legal.portrait,
-    "natural": PdfPageFormat.legal,
+    NATURAL: PdfPageFormat.legal,
   },
   "Letter": {
     LANDSCAPE: PdfPageFormat.letter.landscape,
@@ -164,7 +166,6 @@ final PDF_PAGE_FORMAT = <String, Map<String, PdfPageFormat>>{
     'natural': PdfPageFormat.letter,
   },
 };
-
 
 const List<Color> ALL_COLORS = [
   Colors.amber,
@@ -206,3 +207,7 @@ const List<Color> ALL_COLORS = [
   Colors.white,
 ];
 
+  const double point = 1.0;
+  const double inch = 72.0;
+  const double cm = inch / 2.54;
+  const double mm = inch / 25.4;

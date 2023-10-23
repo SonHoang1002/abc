@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 
-class WDragZoomImage extends ConsumerStatefulWidget {
+class WDragZoomImage extends StatefulWidget {
   final Color backgroundColor;
-  final Function reRenerFunction;
   final List<Placement> listPlacement;
   final List<ValueNotifier<Matrix4>> matrix4Notifiers;
   final Function(List<Placement> placements) updatePlacement;
@@ -16,24 +15,25 @@ class WDragZoomImage extends ConsumerStatefulWidget {
   final PaperAttribute? paperAttribute;
   final Function(Placement placement, ValueNotifier<Matrix4> matrix4)?
       onFocusPlacement;
+  final void Function()? onCancelFocusPlacement;
   final List<double>? ratioTarget;
   const WDragZoomImage(
       {super.key,
       required this.backgroundColor,
-      required this.reRenerFunction,
       required this.listPlacement,
       required this.matrix4Notifiers,
       required this.updatePlacement,
       this.seletedPlacement,
       this.onFocusPlacement,
       this.ratioTarget = LIST_RATIO_PLACEMENT_BOARD,
-      this.paperAttribute});
+      this.paperAttribute,
+      this.onCancelFocusPlacement});
 
   @override
-  ConsumerState<WDragZoomImage> createState() => _WDragZoomImageState();
+  State<WDragZoomImage> createState() => _WDragZoomImageState();
 }
 
-class _WDragZoomImageState extends ConsumerState<WDragZoomImage> {
+class _WDragZoomImageState extends State<WDragZoomImage> {
   late Size _size;
   List<ValueNotifier<Matrix4>> _matrix4Notifiers = [];
   List<Placement> _listPlacement = [];
@@ -42,8 +42,11 @@ class _WDragZoomImageState extends ConsumerState<WDragZoomImage> {
   final GlobalKey _placementFrame = GlobalKey();
   final GlobalKey _drawAreaKey = GlobalKey();
   static const double minSizePlacement = 30;
-
   late List<double> _ratioTarget;
+
+  late double _maxHeight;
+  late double _maxWidth;
+  Placement? _seletedPlacement;
 
   @override
   void dispose() {
@@ -55,6 +58,7 @@ class _WDragZoomImageState extends ConsumerState<WDragZoomImage> {
   @override
   void initState() {
     super.initState();
+    _seletedPlacement = widget.seletedPlacement;
     _ratioTarget = LIST_RATIO_PLACEMENT_BOARD;
     if (widget.paperAttribute != null &&
         widget.paperAttribute?.height != 0 &&
@@ -82,10 +86,56 @@ class _WDragZoomImageState extends ConsumerState<WDragZoomImage> {
     _size = MediaQuery.sizeOf(context);
   }
 
+  double _getHeightOfImage(int index) {
+    final result = _listPlacement[index].ratioHeight * _maxHeight;
+    return result;
+  }
+
+  double _getWidthOfImage(int index) {
+    final result = _listPlacement[index].ratioWidth * _maxWidth;
+    return result;
+  }
+
+  List<double> _getWidthAndHeight() {
+    final MAXHEIGHT = _size.height * 404 / 791 * 0.9;
+    final MAXWIDTH = _size.width * 0.9;
+
+    double width = MAXWIDTH;
+    double height = MAXHEIGHT;
+
+    if (widget.paperAttribute != null) {
+      final ratioHeightToWidth =
+          widget.paperAttribute!.height / widget.paperAttribute!.width;
+
+      if (widget.paperAttribute!.height > widget.paperAttribute!.width) {
+        height = _size.width * ratioHeightToWidth;
+        if (height > MAXHEIGHT) {
+          height = MAXHEIGHT;
+          width = height * (1 / ratioHeightToWidth);
+        }
+      } else if (widget.paperAttribute!.height < widget.paperAttribute!.width) {
+        width = height * (1 / ratioHeightToWidth);
+        if (width > MAXWIDTH) {
+          width = MAXWIDTH;
+          height = width * ratioHeightToWidth;
+        }
+      }
+    } else {
+      width = _size.width * _ratioTarget[1];
+      height = _size.width * _ratioTarget[0];
+    }
+
+    return [width, height];
+  }
+
   @override
   Widget build(BuildContext context) {
     _matrix4Notifiers = widget.matrix4Notifiers;
     _listPlacement = widget.listPlacement;
+    _maxHeight = _getWidthAndHeight()[1];
+    _maxWidth = _getWidthAndHeight()[0];
+    // _maxHeight = _size.width * _ratioTarget[1];
+    // _maxWidth = _size.width * _ratioTarget[0];
     return _buildCustomArea();
   }
 
@@ -100,8 +150,8 @@ class _WDragZoomImageState extends ConsumerState<WDragZoomImage> {
           padding: const EdgeInsets.symmetric(vertical: 5),
           child: Container(
             key: _drawAreaKey,
-            width: _size.width * _ratioTarget[0],
-            height: _size.width * _ratioTarget[1],
+            width: _maxWidth,
+            height: _maxHeight,
             decoration:
                 BoxDecoration(color: widget.backgroundColor, boxShadow: [
               BoxShadow(
@@ -115,8 +165,8 @@ class _WDragZoomImageState extends ConsumerState<WDragZoomImage> {
         ),
         Container(
           alignment: Alignment.center,
-          width: _size.width * _ratioTarget[0] + 15,
-          height: _size.width * _ratioTarget[1] + 15,
+          width: _maxWidth + 15,
+          height: _maxHeight + 15,
           child: Stack(
             key: _placementFrame,
             children: _listPlacement.map<Widget>(
@@ -132,54 +182,72 @@ class _WDragZoomImageState extends ConsumerState<WDragZoomImage> {
                         maxAreaHeight = areaBox.size.height - 2;
                       }
                     }
-                    _listPlacement[index].offset = _listPlacement[index]
-                        .offset
-                        .translate(details.delta.dx, details.delta.dy);
+                    _listPlacement[index].ratioOffset = [
+                      _listPlacement[index].ratioOffset[0] +
+                          pixelToRatio(details.delta.dx, maxAreaWidth),
+                      _listPlacement[index].ratioOffset[1] +
+                          pixelToRatio(details.delta.dy, maxAreaHeight)
+                    ];
                     //left
-                    if (_listPlacement[index].offset.dx <= 0) {
-                      _listPlacement[index].offset =
-                          Offset(0, _listPlacement[index].offset.dy);
+                    if (_listPlacement[index].ratioOffset[0] <= 0) {
+                      _listPlacement[index].ratioOffset = [
+                        0,
+                        _listPlacement[index].ratioOffset[1]
+                      ];
                     }
                     //top
-                    if (_listPlacement[index].offset.dy <= 0) {
-                      _listPlacement[index].offset =
-                          Offset(_listPlacement[index].offset.dx, 0);
+                    if (_listPlacement[index].ratioOffset[1] <= 0) {
+                      _listPlacement[index].ratioOffset = [
+                        _listPlacement[index].ratioOffset[0],
+                        0
+                      ];
                     }
                     //right
-                    if (_listPlacement[index].offset.dx +
-                            _listPlacement[index].width >=
-                        maxAreaWidth) {
-                      _listPlacement[index].offset = Offset(
-                          maxAreaWidth - _listPlacement[index].width,
-                          _listPlacement[index].offset.dy);
+                    if (_listPlacement[index].ratioOffset[0] +
+                            _listPlacement[index].ratioWidth >=
+                        1) {
+                      _listPlacement[index].ratioOffset = [
+                        1 - _listPlacement[index].ratioWidth,
+                        _listPlacement[index].ratioOffset[1]
+                      ];
                     }
                     //bottom
-                    if (_listPlacement[index].offset.dy +
-                            _listPlacement[index].height >=
-                        maxAreaHeight) {
-                      _listPlacement[index].offset = Offset(
-                          _listPlacement[index].offset.dx,
-                          maxAreaHeight - _listPlacement[index].height);
+                    if (_listPlacement[index].ratioOffset[1] +
+                            _listPlacement[index].ratioHeight >=
+                        1) {
+                      _listPlacement[index].ratioOffset = [
+                        _listPlacement[index].ratioOffset[0],
+                        1 - _listPlacement[index].ratioHeight
+                      ];
                     }
-                    _listPlacement[index] = _listPlacement[index].copyWith(
-                        listWHBoard: [
-                          areaBox!.size.width,
-                          areaBox.size.height
-                        ]);
                     widget.updatePlacement(_listPlacement);
                     setState(() {});
                   },
                   onTap: () {
-                    widget.onFocusPlacement != null
-                        ? widget.onFocusPlacement!(
-                            _listPlacement[index], _matrix4Notifiers[index])
-                        : null;
+                    // widget.onFocusPlacement != null
+                    //     ? widget.onFocusPlacement!(
+                    //         _listPlacement[index], _matrix4Notifiers[index])
+                    //     : null;
+                    if (_seletedPlacement == _listPlacement[index]) {
+                      widget.onCancelFocusPlacement != null
+                          ? widget.onCancelFocusPlacement!()
+                          : null;
+                      _seletedPlacement = null;
+                      setState(() {});
+                    } else {
+                      if (widget.onFocusPlacement != null) {
+                        widget.onFocusPlacement!(
+                            _listPlacement[index], _matrix4Notifiers[index]);
+                        _seletedPlacement = _listPlacement[index];
+                        setState(() {});
+                      }
+                    }
                   },
                   onPanStart: (details) {
-                    widget.onFocusPlacement != null
-                        ? widget.onFocusPlacement!(
-                            _listPlacement[index], _matrix4Notifiers[index])
-                        : null;
+                    // widget.onFocusPlacement != null
+                    //     ? widget.onFocusPlacement!(
+                    //         _listPlacement[index], _matrix4Notifiers[index])
+                    //     : null;
                   },
                   child: AnimatedBuilder(
                     animation: _matrix4Notifiers[index],
@@ -187,16 +255,18 @@ class _WDragZoomImageState extends ConsumerState<WDragZoomImage> {
                       return Stack(
                         children: [
                           Positioned(
-                            top: _listPlacement[index].offset.dy,
-                            left: _listPlacement[index].offset.dx,
+                            top: _listPlacement[index].ratioOffset[1] *
+                                _maxHeight,
+                            left: _listPlacement[index].ratioOffset[0] *
+                                _maxWidth,
                             child: Stack(children: [
                               Container(
                                 margin: const EdgeInsets.all(7),
                                 child: Image.asset(
                                   "${pathPrefixImage}image_demo.png",
                                   fit: BoxFit.cover,
-                                  height: _listPlacement[index].height,
-                                  width: _listPlacement[index].width,
+                                  height: _getHeightOfImage(index),
+                                  width: _getWidthOfImage(index),
                                 ),
                               ),
                               Positioned.fill(
@@ -209,12 +279,17 @@ class _WDragZoomImageState extends ConsumerState<WDragZoomImage> {
                                       color: colorBlue),
                                   child: Center(
                                       child: WTextContent(
-                                    value: (index + 1).toString(),
+                                    value: "${index + 1}",
+                                    // value:
+                                    //     "${_listPlacement[index].ratioWidth.toStringAsFixed(1)} ${_listPlacement[index].ratioHeight.toStringAsFixed(1)} ${_listPlacement[index].ratioOffset[0].toStringAsFixed(1)} ${_listPlacement[index].ratioOffset[1].toStringAsFixed(1)}",
                                     textColor: colorWhite,
+                                    textSize: 10,
                                   )),
                                 ),
                               )),
-                              widget.seletedPlacement == _listPlacement[index]
+                              _seletedPlacement == _listPlacement[index] &&
+                                      widget.seletedPlacement ==
+                                          _listPlacement[index]
                                   ? Positioned.fill(
                                       child: _buildPanGestureWidget(index))
                                   : const SizedBox()
@@ -235,13 +310,21 @@ class _WDragZoomImageState extends ConsumerState<WDragZoomImage> {
 
   double limitLeft(int index) {
     return ((_size.width * (1 - _ratioTarget[0]) / 2) -
-        (_listPlacement[index].width < minSizePlacement ? 5 : 15) / 2);
+        (ratioToPixel(_listPlacement[index].ratioWidth, _maxWidth) <
+                    minSizePlacement
+                ? 5
+                : 15) /
+            2);
   }
 
   double limitRight(int index) {
     return ((_size.width * _ratioTarget[0] +
             _size.width * (1 - _ratioTarget[0]) / 2) +
-        (_listPlacement[index].width < minSizePlacement ? 5 : 15) / 2);
+        (ratioToPixel(_listPlacement[index].ratioWidth, _maxWidth) <
+                    minSizePlacement
+                ? 5
+                : 15) /
+            2);
   }
 
   Widget _buildPanGestureWidget(int index) {
@@ -265,37 +348,53 @@ class _WDragZoomImageState extends ConsumerState<WDragZoomImage> {
                 // dot top left
                 _buildDotDrag(
                   index,
-                  _listPlacement[index].width < minSizePlacement ? 5 : 15,
+                  12,
+                  // ratioToPixel(_listPlacement[index].ratioWidth, _maxWidth) < minSizePlacement  ? 5   : 15,
                   margin: const EdgeInsets.only(bottom: 10),
                   onPanUpdate: (details) {
-                    final deltaX = details.delta.dx;
-                    final deltaY = details.delta.dy;
-
-                    if (deltaX > 0 || deltaY > 0) {
-                      if (_listPlacement[index].height > minSizePlacement &&
-                          _listPlacement[index].width > minSizePlacement) {
-                        _listPlacement[index].offset =
-                            _listPlacement[index].offset + details.delta;
+                    final ratioDeltaX =
+                        pixelToRatio(details.delta.dx, _maxWidth);
+                    final ratioDeltaY =
+                        pixelToRatio(details.delta.dy, _maxHeight);
+                    if (ratioDeltaX > 0 || ratioDeltaY > 0) {
+                      if (_listPlacement[index].ratioHeight >
+                              pixelToRatio(minSizePlacement, _maxHeight) &&
+                          _listPlacement[index].ratioWidth >
+                              pixelToRatio(minSizePlacement, _maxWidth)) {
+                        _listPlacement[index].ratioOffset = [
+                          _listPlacement[index].ratioOffset[0] +
+                              pixelToRatio(details.delta.dx, _maxWidth),
+                          _listPlacement[index].ratioOffset[1] +
+                              pixelToRatio(details.delta.dy, _maxHeight),
+                        ];
                       }
-                      if (_listPlacement[index].width > deltaX) {
-                        _listPlacement[index].width -= deltaX;
+                      if (_listPlacement[index].ratioWidth > ratioDeltaX) {
+                        _listPlacement[index].ratioWidth -= ratioDeltaX;
                       }
 
-                      if (_listPlacement[index].height > deltaY) {
-                        _listPlacement[index].height -= deltaY;
+                      if (_listPlacement[index].ratioHeight > ratioDeltaY) {
+                        _listPlacement[index].ratioHeight -= ratioDeltaY;
                       }
                     } else {
-                      _listPlacement[index].offset += Offset(
-                          _listPlacement[index].offset.dx > 0 ? deltaX : 0,
-                          _listPlacement[index].offset.dy > 0 ? deltaY : 0);
-                      if (_listPlacement[index].width > deltaX) {
-                        if (_listPlacement[index].offset.dx > 0) {
-                          _listPlacement[index].width -= deltaX;
+                      _listPlacement[index].ratioOffset = [
+                        _listPlacement[index].ratioOffset[0] +
+                            (_listPlacement[index].ratioOffset[0] > 0
+                                ? ratioDeltaX
+                                : 0),
+                        _listPlacement[index].ratioOffset[1] +
+                            (_listPlacement[index].ratioOffset[1] > 0
+                                ? ratioDeltaY
+                                : 0),
+                      ];
+
+                      if (_listPlacement[index].ratioWidth > ratioDeltaX) {
+                        if (_listPlacement[index].ratioOffset[0] > 0) {
+                          _listPlacement[index].ratioWidth -= ratioDeltaX;
                         }
                       }
-                      if (_listPlacement[index].height > deltaY) {
-                        if (_listPlacement[index].offset.dy > 0) {
-                          _listPlacement[index].height -= deltaY;
+                      if (_listPlacement[index].ratioHeight > ratioDeltaY) {
+                        if (_listPlacement[index].ratioOffset[1] > 0) {
+                          _listPlacement[index].ratioHeight -= ratioDeltaY;
                         }
                       }
                     }
@@ -307,23 +406,31 @@ class _WDragZoomImageState extends ConsumerState<WDragZoomImage> {
                 // dot top center
                 _buildDotDrag(
                   index,
-                  _listPlacement[index].width < minSizePlacement ? 2 : 12,
-                  margin: const EdgeInsets.only(bottom: 11),
+                  8,
+                  // ratioToPixel(_listPlacement[index].ratioWidth, _maxWidth) < minSizePlacement ? 2  : 12,
+                  margin: const EdgeInsets.only(bottom: 10),
                   onPanUpdate: (details) {
-                    final deltaY = details.delta.dy;
-                    if (deltaY > 0) {
-                      _listPlacement[index].offset += Offset(0, deltaY);
-                      if (_listPlacement[index].height > details.delta.dy) {
-                        _listPlacement[index].height -= details.delta.dy;
+                    final ratioDeltaY =
+                        pixelToRatio(details.delta.dy, _maxHeight);
+                    if (ratioDeltaY > 0) {
+                      _listPlacement[index].ratioOffset = [
+                        _listPlacement[index].ratioOffset[0],
+                        _listPlacement[index].ratioOffset[1] + ratioDeltaY
+                      ];
+                      if (_listPlacement[index].ratioHeight > ratioDeltaY) {
+                        _listPlacement[index].ratioHeight -= ratioDeltaY;
 
                         widget.updatePlacement(_listPlacement);
                         setState(() {});
                       }
                     } else {
-                      if (_listPlacement[index].offset.dy > 0) {
-                        _listPlacement[index].offset += Offset(0, deltaY);
-                        if (_listPlacement[index].height > details.delta.dy) {
-                          _listPlacement[index].height -= details.delta.dy;
+                      if (_listPlacement[index].ratioOffset[1] > 0) {
+                        _listPlacement[index].ratioOffset = [
+                          _listPlacement[index].ratioOffset[0],
+                          _listPlacement[index].ratioOffset[1] + ratioDeltaY
+                        ];
+                        if (_listPlacement[index].ratioHeight > ratioDeltaY) {
+                          _listPlacement[index].ratioHeight -= ratioDeltaY;
                         }
                         widget.updatePlacement(_listPlacement);
                         setState(() {});
@@ -331,20 +438,20 @@ class _WDragZoomImageState extends ConsumerState<WDragZoomImage> {
                     }
                   },
                   onPanStart: (details) {
-                    lastBottom = _listPlacement[index].height +
-                        _listPlacement[index].offset.dy;
                     setState(() {});
                   },
                 ),
                 // dot top right
                 _buildDotDrag(
                   index,
-                  _listPlacement[index].width < minSizePlacement ? 5 : 15,
+                  12,
+                  // ratioToPixel(_listPlacement[index].ratioWidth, _maxWidth) <  minSizePlacement ? 5  : 15,
                   margin: const EdgeInsets.only(bottom: 10),
                   onPanUpdate: (details) {
-                    final deltaX = details.delta.dx;
-                    final deltaY = details.delta.dy;
-                    final maxWidth = _size.width * _ratioTarget[0];
+                    final ratioDeltaX =
+                        pixelToRatio(details.delta.dx, _maxWidth);
+                    final ratioDeltaY =
+                        pixelToRatio(details.delta.dy, _maxHeight);
                     //   rut gon
                     //   _listPlacement[index].offset +=
                     //         Offset(0, details.delta.dy);
@@ -355,28 +462,33 @@ class _WDragZoomImageState extends ConsumerState<WDragZoomImage> {
                     //    _listPlacement[index].width += details.delta.dx;
 
                     // chi mo rong height -> deltaY <0
-                    if (deltaY < 0) {
-                      if (_listPlacement[index].offset.dy > 0) {
-                        _listPlacement[index].offset +=
-                            Offset(0, details.delta.dy);
-                        if (_listPlacement[index].height > details.delta.dy) {
-                          _listPlacement[index].height -= details.delta.dy;
+                    if (ratioDeltaY < 0) {
+                      if (_listPlacement[index].ratioOffset[1] > 0) {
+                        _listPlacement[index].ratioOffset = [
+                          _listPlacement[index].ratioOffset[0],
+                          _listPlacement[index].ratioOffset[1] + ratioDeltaY
+                        ];
+
+                        if (_listPlacement[index].ratioHeight > ratioDeltaY) {
+                          _listPlacement[index].ratioHeight -= ratioDeltaY;
                         }
                       }
                       // chi mo rong width  -> deltaX >0
-                    } else if (deltaX > 0) {
-                      if (_listPlacement[index].width +
-                              _listPlacement[index].offset.dx <
-                          maxWidth) {
-                        _listPlacement[index].width += details.delta.dx;
+                    } else if (ratioDeltaX > 0) {
+                      if (_listPlacement[index].ratioWidth +
+                              _listPlacement[index].ratioOffset[0] <
+                          1) {
+                        _listPlacement[index].ratioWidth += ratioDeltaX;
                       }
                       // mo rong ca hai     -> deltaX >0 && deltaY < 0 va thu hep
                     } else {
-                      _listPlacement[index].offset +=
-                          Offset(0, details.delta.dy);
-                      _listPlacement[index].width += details.delta.dx;
-                      if (_listPlacement[index].height > details.delta.dy) {
-                        _listPlacement[index].height -= details.delta.dy;
+                      _listPlacement[index].ratioOffset = [
+                        _listPlacement[index].ratioOffset[0],
+                        _listPlacement[index].ratioOffset[1] + ratioDeltaY
+                      ];
+                      _listPlacement[index].ratioWidth += ratioDeltaX;
+                      if (_listPlacement[index].ratioHeight > ratioDeltaY) {
+                        _listPlacement[index].ratioHeight -= ratioDeltaY;
                       }
                     }
                     setState(() {});
@@ -392,22 +504,29 @@ class _WDragZoomImageState extends ConsumerState<WDragZoomImage> {
                 //dot center left
                 _buildDotDrag(
                   index,
-                  _listPlacement[index].width < minSizePlacement ? 2 : 12,
-                  margin: const EdgeInsets.only(right: 11),
+                  8,
+                  // ratioToPixel(_listPlacement[index].ratioWidth, _maxWidth) <  minSizePlacement ? 2 : 12,
+                  margin: const EdgeInsets.only(left: 2),
                   onPanUpdate: (details) {
-                    if (details.delta.dx > 0) {
-                      _listPlacement[index].offset +=
-                          Offset(details.delta.dx, 0);
-                      if (_listPlacement[index].width > details.delta.dx) {
-                        _listPlacement[index].width -= details.delta.dx;
+                    final ratioDeltaX =
+                        pixelToRatio(details.delta.dx, _maxWidth);
+                    if (ratioDeltaX > 0) {
+                      _listPlacement[index].ratioOffset = [
+                        _listPlacement[index].ratioOffset[0] + ratioDeltaX,
+                        _listPlacement[index].ratioOffset[1]
+                      ];
+                      if (_listPlacement[index].ratioWidth > ratioDeltaX) {
+                        _listPlacement[index].ratioWidth -= ratioDeltaX;
                       }
                       setState(() {});
                     } else {
-                      if (_listPlacement[index].offset.dx >= 0) {
-                        _listPlacement[index].offset +=
-                            Offset(details.delta.dx, 0);
-                        if (_listPlacement[index].width > details.delta.dx) {
-                          _listPlacement[index].width -= details.delta.dx;
+                      if (_listPlacement[index].ratioOffset[0] >= 0) {
+                        _listPlacement[index].ratioOffset = [
+                          _listPlacement[index].ratioOffset[0] + ratioDeltaX,
+                          _listPlacement[index].ratioOffset[1]
+                        ];
+                        if (_listPlacement[index].ratioWidth > ratioDeltaX) {
+                          _listPlacement[index].ratioWidth -= ratioDeltaX;
                         }
                         setState(() {});
                       }
@@ -418,20 +537,21 @@ class _WDragZoomImageState extends ConsumerState<WDragZoomImage> {
                 // dot center right
                 _buildDotDrag(
                   index,
-                  _listPlacement[index].width < minSizePlacement ? 2 : 12,
-                  margin: const EdgeInsets.only(left: 11),
+                  8,
+                  margin: const EdgeInsets.only(right: 2),
                   onPanUpdate: (details) {
-                    final maxWidth = _size.width * _ratioTarget[0];
-                    if (details.delta.dx < 0) {
+                    final ratioDeltaX =
+                        pixelToRatio(details.delta.dx, _maxWidth);
+                    if (ratioDeltaX < 0) {
                       setState(() {
-                        _listPlacement[index].width += details.delta.dx;
+                        _listPlacement[index].ratioWidth += ratioDeltaX;
                       });
                     } else {
-                      if (_listPlacement[index].width +
-                              _listPlacement[index].offset.dx <
-                          maxWidth) {
+                      if (_listPlacement[index].ratioWidth +
+                              _listPlacement[index].ratioOffset[0] <
+                          1) {
                         setState(() {
-                          _listPlacement[index].width += details.delta.dx;
+                          _listPlacement[index].ratioWidth += ratioDeltaX;
                         });
                       }
                     }
@@ -447,34 +567,39 @@ class _WDragZoomImageState extends ConsumerState<WDragZoomImage> {
                 // dot bottom left
                 _buildDotDrag(
                   index,
-                  _listPlacement[index].width < minSizePlacement ? 5 : 15,
+                  12,
+                  // ratioToPixel(_listPlacement[index].ratioWidth, _maxWidth) < minSizePlacement  ? 5 : 15,
                   margin: const EdgeInsets.only(top: 11),
                   onPanUpdate: (details) {
-                    final deltaX = details.delta.dx;
-                    final deltaY = details.delta.dy;
-                    final maxHeight = _size.width * _ratioTarget[1];
-
-                    if (deltaY > 0) {
-                      if (_listPlacement[index].offset.dy +
-                              _listPlacement[index].height <
-                          maxHeight) {
-                        _listPlacement[index].height += details.delta.dy;
+                    final ratioDeltaX =
+                        pixelToRatio(details.delta.dx, _maxWidth);
+                    final ratioDeltaY =
+                        pixelToRatio(details.delta.dy, _maxHeight);
+                    if (ratioDeltaY > 0) {
+                      if (_listPlacement[index].ratioOffset[1] +
+                              _listPlacement[index].ratioHeight <
+                          1) {
+                        _listPlacement[index].ratioHeight += ratioDeltaY;
                       }
-                    } else if (deltaX < 0) {
-                      if (_listPlacement[index].offset.dx >= 0) {
-                        _listPlacement[index].offset +=
-                            Offset(details.delta.dx, 0);
-                        if (_listPlacement[index].width > details.delta.dx) {
-                          _listPlacement[index].width -= details.delta.dx;
+                    } else if (ratioDeltaX < 0) {
+                      if (_listPlacement[index].ratioOffset[0] >= 0) {
+                        _listPlacement[index].ratioOffset = [
+                          _listPlacement[index].ratioOffset[0] + ratioDeltaX,
+                          _listPlacement[index].ratioOffset[1]
+                        ];
+                        if (_listPlacement[index].ratioWidth > ratioDeltaX) {
+                          _listPlacement[index].ratioWidth -= ratioDeltaX;
                         }
                       }
                     } else {
-                      _listPlacement[index].offset +=
-                          Offset(details.delta.dx, 0);
-                      if (_listPlacement[index].width > details.delta.dx) {
-                        _listPlacement[index].width -= details.delta.dx;
+                      _listPlacement[index].ratioOffset = [
+                        _listPlacement[index].ratioOffset[0] + ratioDeltaX,
+                        _listPlacement[index].ratioOffset[1]
+                      ];
+                      if (_listPlacement[index].ratioWidth > ratioDeltaX) {
+                        _listPlacement[index].ratioWidth -= ratioDeltaX;
                       }
-                      _listPlacement[index].height += details.delta.dy;
+                      _listPlacement[index].ratioHeight += ratioDeltaY;
                     }
 
                     setState(() {});
@@ -484,20 +609,23 @@ class _WDragZoomImageState extends ConsumerState<WDragZoomImage> {
                 // dot bottom center
                 _buildDotDrag(
                   index,
-                  _listPlacement[index].width < minSizePlacement ? 2 : 12,
-                  margin: const EdgeInsets.only(top: 11),
+                  8,
+                  // ratioToPixel(_listPlacement[index].ratioWidth, _maxWidth) < minSizePlacement ? 2  : 12,
+                  margin: const EdgeInsets.only(top: 12),
                   onPanUpdate: (details) {
-                    if (details.delta.dy > 0) {
-                      if (_listPlacement[index].height +
-                              _listPlacement[index].offset.dy <
-                          (_size.width * _ratioTarget[1])) {
+                    final ratioDeltaY =
+                        pixelToRatio(details.delta.dy, _maxHeight);
+                    if (ratioDeltaY > 0) {
+                      if (_listPlacement[index].ratioHeight +
+                              _listPlacement[index].ratioOffset[1] <
+                          1) {
                         setState(() {
-                          _listPlacement[index].height += details.delta.dy;
+                          _listPlacement[index].ratioHeight += ratioDeltaY;
                         });
                       }
                     } else {
                       setState(() {
-                        _listPlacement[index].height += details.delta.dy;
+                        _listPlacement[index].ratioHeight += ratioDeltaY;
                       });
                     }
                   },
@@ -506,31 +634,32 @@ class _WDragZoomImageState extends ConsumerState<WDragZoomImage> {
                 // dot bottom right
                 _buildDotDrag(
                   index,
-                  _listPlacement[index].width < minSizePlacement ? 5 : 15,
-                  margin: const EdgeInsets.only(top: 11),
+                  12,
+                  // ratioToPixel(_listPlacement[index].ratioWidth, _maxWidth) <  minSizePlacement ? 5 : 15,
+                  margin: const EdgeInsets.only(top: 10),
                   onPanUpdate: (details) {
-                    final deltaX = details.delta.dx;
-                    final deltaY = details.delta.dy;
-                    final maxWidth = _size.width * _ratioTarget[0];
-                    final maxHeight = _size.width * _ratioTarget[1];
-                    if (deltaX > 0) {
-                      if (_listPlacement[index].offset.dx +
-                              _listPlacement[index].width <
-                          maxWidth) {
-                        _listPlacement[index].width += details.delta.dx;
+                    final ratioDeltaX =
+                        pixelToRatio(details.delta.dx, _maxWidth);
+                    final ratioDeltaY =
+                        pixelToRatio(details.delta.dy, _maxHeight);
+                    if (ratioDeltaX > 0) {
+                      if (_listPlacement[index].ratioOffset[0] +
+                              _listPlacement[index].ratioWidth <
+                          1) {
+                        _listPlacement[index].ratioWidth += ratioDeltaX;
                       }
-                    } else if (deltaY > 0) {
-                      if (_listPlacement[index].offset.dy +
-                              _listPlacement[index].height <
-                          maxHeight) {
-                        _listPlacement[index].height += details.delta.dy;
+                    } else if (ratioDeltaY > 0) {
+                      if (_listPlacement[index].ratioOffset[1] +
+                              _listPlacement[index].ratioHeight <
+                          1) {
+                        _listPlacement[index].ratioHeight += ratioDeltaY;
                       }
-                    } else if (deltaY > 0 && deltaX > 0) {
-                      _listPlacement[index].width += details.delta.dx;
-                      _listPlacement[index].height += details.delta.dy;
+                    } else if (ratioDeltaY > 0 && ratioDeltaX > 0) {
+                      _listPlacement[index].ratioWidth += ratioDeltaX;
+                      _listPlacement[index].ratioHeight += ratioDeltaY;
                     } else {
-                      _listPlacement[index].width += details.delta.dx;
-                      _listPlacement[index].height += details.delta.dy;
+                      _listPlacement[index].ratioWidth += ratioDeltaX;
+                      _listPlacement[index].ratioHeight += ratioDeltaY;
                     }
 
                     setState(() {});

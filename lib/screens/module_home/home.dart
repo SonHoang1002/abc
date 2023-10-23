@@ -173,8 +173,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
             _disableReOrderFocus();
           },
           child: ReorderableGridView.count(
-            padding: const EdgeInsets.only(
-                top: 10, left: 7, right: 7),
+            padding: const EdgeInsets.only(top: 10, left: 7, right: 7),
             shrinkWrap: true,
             crossAxisSpacing: 5,
             mainAxisSpacing: 10,
@@ -219,7 +218,8 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
             _listProject[index].listMedia)[0];
       }
     } else {
-      if (_listProject[index].placements != null) {
+      if (_listProject[index].placements != null &&
+          _listProject[index].listMedia.isNotEmpty) {
         result = extractList(_listProject[index].placements!.length,
             _listProject[index].listMedia)[0];
       }
@@ -228,7 +228,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
   }
 
   Widget _buildProjectItemHome(int index) {
-    return WProjectItemEditor1(
+    return WProjectItemEditor(
       key: ValueKey(_listProject[index]),
       project: _listProject[index],
       isFocusByLongPress: _isFocusProjectList,
@@ -333,7 +333,6 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
         shape: const CircleBorder(),
         elevation: 10,
         shadowColor: const Color(0xFFB250FF),
-        // shadowColor: const Color.fromRGBO(160, 85, 255, 0.4),
       ),
       child: Container(
         width: 50.0,
@@ -505,6 +504,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                                         ...result
                                       ]);
                                     }
+                                    setState(() {});
                                     setStatefull(() {});
                                   },
                                 ),
@@ -574,9 +574,9 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
         backgroundColor: transparent);
   }
 
-  Widget _buildProjectBottomItem(int index, Function()? reRenderFunction) {
+  Widget _buildProjectBottomItem(int index, Function reRenderFunction) {
     return WProjectItemHomeBottom(
-      key: ValueKey(_currentProject.listMedia[index]),
+      key: ValueKey(getRandomNumber()),
       project: _currentProject,
       isFocusByLongPress: _isFocusProjectListBottom,
       index: index,
@@ -587,11 +587,10 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                   .where((element) => element != srcMedia)
                   .toList());
         });
-        reRenderFunction;
-
-        ref
-            .read(projectControllerProvider.notifier)
-            .updateProject(_currentProject);
+        reRenderFunction();
+        // ref
+        //     .read(projectControllerProvider.notifier)
+        //     .updateProject(_currentProject);
       },
     );
   }

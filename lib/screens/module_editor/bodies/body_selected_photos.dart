@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
-import 'package:photo_to_pdf/helpers/convert_byte_unit.dart';
+import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
-import 'package:photo_to_pdf/helpers/create_pdf.dart';
+import 'package:photo_to_pdf/helpers/pdf/create_pdf.dart';
 import 'package:photo_to_pdf/helpers/pick_media.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/widgets/w_editor.dart';
@@ -69,7 +69,7 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
           _project, context, _getRatioProject(LIST_RATIO_PDF),
           compressValue: widget.sliderCompressionLevelValue);
       // render to file
-      final pdfFile = await convertUint8ListToFile(pdfUint8List);
+      final pdfFile = await convertUint8ListToFilePDF(pdfUint8List);
       _sizeOfFileValue = convertByteUnit((await pdfFile.length()) / 1024);
       setState(() {});
       widget.reRenderFunction();

@@ -8,7 +8,7 @@ import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/extract_list.dart';
 import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/models/project.dart';
-import 'package:photo_to_pdf/widgets/project_items/w_project_ratio.dart';
+import 'package:photo_to_pdf/widgets/project_items/w_layout_media_project.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
@@ -123,7 +123,7 @@ class _PreviewState extends State<PreviewProject>
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               _buildImageContent(
-                                widget.project,
+                                _project,
                                 currentIndex,
                                 widget.ratioTarget!,
                               ),
@@ -300,6 +300,58 @@ class WProjectItemPreview extends StatelessWidget {
       this.coverFile,
       required this.ratioTarget});
 
+  List<double> _getRealWH(BuildContext context) {
+    final MAXWIDTH = MediaQuery.sizeOf(context).width * 0.7;
+    final MAXHEIGHT = MediaQuery.sizeOf(context).height * 0.55;
+
+    double height = MAXHEIGHT;
+    double width = MAXWIDTH;
+    if (project.paper != null &&
+        project.paper!.height != 0 &&
+        project.paper!.width != 0) {
+      final ratioHW = project.paper!.height / project.paper!.width;
+      // height > width
+      if (ratioHW > 1) {
+        height = width * ratioHW;
+        if (height > MAXHEIGHT) {
+          height = MAXHEIGHT;
+          width = height * (1 / ratioHW);
+        }
+        // height < width
+      } else if (ratioHW < 1) {
+        width = height * (1 / ratioHW);
+        if (width > MAXWIDTH) {
+          width = MAXWIDTH;
+          height = width * ratioHW;
+        }
+        // height = width
+      } else {
+        height = width;
+      }
+    }
+    return [width, height];
+  }
+  // List<double> _getRealWH(BuildContext context) {
+  //   double realHeight = MediaQuery.sizeOf(context).width * ratioTarget[1];
+  //   double realWidth = MediaQuery.sizeOf(context).width * ratioTarget[0];
+  //   if (project.paper != null &&
+  //       project.paper!.height != 0 &&
+  //       project.paper!.width != 0) {
+  //     final ratioHW = project.paper!.height / project.paper!.width;
+  //     // height > width
+  //     if (ratioHW > 1) {
+  //       realWidth = realHeight * (1 / ratioHW);
+  //       // height < width
+  //     } else if (ratioHW < 1) {
+  //       realHeight = realWidth * ratioHW;
+  //       // height = width
+  //     } else {
+  //       realHeight = realWidth;
+  //     }
+  //   }
+  //   return [realWidth, realHeight];
+  // }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -309,12 +361,12 @@ class WProjectItemPreview extends StatelessWidget {
           child: Column(
             children: [
               Container(
-                  constraints: BoxConstraints(
-                      maxHeight: MediaQuery.sizeOf(context).height *
-                          (589 / 844) *
-                          0.8),
-                  width: MediaQuery.sizeOf(context).width * ratioTarget[0],
-                  height: MediaQuery.sizeOf(context).width * ratioTarget[1],
+                  // constraints: BoxConstraints(
+                  //     maxHeight: MediaQuery.sizeOf(context).height *
+                  //         (589 / 844) *
+                  //         0.8),
+                  width: _getRealWH(context)[0],
+                  height: _getRealWH(context)[1],
                   decoration:
                       BoxDecoration(color: project.backgroundColor, boxShadow: [
                     BoxShadow(
@@ -326,11 +378,11 @@ class WProjectItemPreview extends StatelessWidget {
                   ]),
                   child: coverFile != null
                       ? const SizedBox()
-                      : LayoutMedia1(
+                      : LayoutMedia(
                           indexImage: indexImage,
                           project: project,
                           layoutExtractList: layoutExtractList,
-                          ratioTarget: ratioTarget,
+                          widthAndHeight: _getRealWH(context),
                           // ratioTarget: [0.54, 0.72],
                         )),
               WSpacer(

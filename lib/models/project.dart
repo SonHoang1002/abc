@@ -70,26 +70,6 @@ class Project {
         useAvailableLayout: useAvailableLayout ?? this.useAvailableLayout);
   }
 
-  // Map<String, dynamic> toJson() {
-  //   return {
-  //     'id': id,
-  //     'title': title,
-  //     'listMedia': listMedia,
-  //     'paper': paper?.toJson(),
-  //     'layoutIndex': layoutIndex,
-  //     'resizeAttribute': resizeAttribute?.toJson(),
-  //     'alignmentAttribute': alignmentAttribute?.toJson(),
-  //     'backgroundColor': backgroundColor.value,
-  //     'paddingAttribute': paddingAttribute?.toJson(),
-  //     'spacingAttribute': spacingAttribute?.toJson(),
-  //     'compression': compression,
-  //     'coverPhoto': coverPhoto?.toJson(),
-  //     'placements': placements != null
-  //         ? placements!.map((x) => x.toJson()).toList()
-  //         : null,
-  //     'useAvailableLayout': useAvailableLayout,
-  //   };
-  // }
   Map<String, dynamic> toJson() {
     List<String?> mediaList = listMedia.map((media) {
       if (media is File) {
