@@ -134,8 +134,6 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
     _listPlacement = widget.listPlacement;
     _maxHeight = _getWidthAndHeight()[1];
     _maxWidth = _getWidthAndHeight()[0];
-    // _maxHeight = _size.width * _ratioTarget[1];
-    // _maxWidth = _size.width * _ratioTarget[0];
     return _buildCustomArea();
   }
 
@@ -224,10 +222,6 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                     setState(() {});
                   },
                   onTap: () {
-                    // widget.onFocusPlacement != null
-                    //     ? widget.onFocusPlacement!(
-                    //         _listPlacement[index], _matrix4Notifiers[index])
-                    //     : null;
                     if (_seletedPlacement == _listPlacement[index]) {
                       widget.onCancelFocusPlacement != null
                           ? widget.onCancelFocusPlacement!()
@@ -281,7 +275,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                                       child: WTextContent(
                                     value: "${index + 1}",
                                     // value:
-                                    //     "${_listPlacement[index].ratioWidth.toStringAsFixed(1)} ${_listPlacement[index].ratioHeight.toStringAsFixed(1)} ${_listPlacement[index].ratioOffset[0].toStringAsFixed(1)} ${_listPlacement[index].ratioOffset[1].toStringAsFixed(1)}",
+                                    //     "w:${_listPlacement[index].ratioWidth.toStringAsFixed(1)} h:${_listPlacement[index].ratioHeight.toStringAsFixed(1)} rw:${_listPlacement[index].ratioOffset[0].toStringAsFixed(1)} rh:${_listPlacement[index].ratioOffset[1].toStringAsFixed(1)}",
                                     textColor: colorWhite,
                                     textSize: 10,
                                   )),

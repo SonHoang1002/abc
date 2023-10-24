@@ -85,7 +85,7 @@ class _PreviewState extends State<PreviewProject>
     return Stack(
       children: [
         BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
           child: Container(
             color: const Color.fromRGBO(0, 0, 0, 0.1),
           ),
@@ -286,7 +286,6 @@ class WProjectItemPreview extends StatelessWidget {
   final String? title;
   final File? coverFile;
 
-  /// Use with layoutIndex is 1,2,3
   final List<dynamic>? layoutExtractList;
   final List<double> ratioTarget;
 
@@ -331,26 +330,6 @@ class WProjectItemPreview extends StatelessWidget {
     }
     return [width, height];
   }
-  // List<double> _getRealWH(BuildContext context) {
-  //   double realHeight = MediaQuery.sizeOf(context).width * ratioTarget[1];
-  //   double realWidth = MediaQuery.sizeOf(context).width * ratioTarget[0];
-  //   if (project.paper != null &&
-  //       project.paper!.height != 0 &&
-  //       project.paper!.width != 0) {
-  //     final ratioHW = project.paper!.height / project.paper!.width;
-  //     // height > width
-  //     if (ratioHW > 1) {
-  //       realWidth = realHeight * (1 / ratioHW);
-  //       // height < width
-  //     } else if (ratioHW < 1) {
-  //       realHeight = realWidth * ratioHW;
-  //       // height = width
-  //     } else {
-  //       realHeight = realWidth;
-  //     }
-  //   }
-  //   return [realWidth, realHeight];
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -361,10 +340,6 @@ class WProjectItemPreview extends StatelessWidget {
           child: Column(
             children: [
               Container(
-                  // constraints: BoxConstraints(
-                  //     maxHeight: MediaQuery.sizeOf(context).height *
-                  //         (589 / 844) *
-                  //         0.8),
                   width: _getRealWH(context)[0],
                   height: _getRealWH(context)[1],
                   decoration:
@@ -383,7 +358,6 @@ class WProjectItemPreview extends StatelessWidget {
                           project: project,
                           layoutExtractList: layoutExtractList,
                           widthAndHeight: _getRealWH(context),
-                          // ratioTarget: [0.54, 0.72],
                         )),
               WSpacer(
                 height: 10,

@@ -172,6 +172,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
 
   @override
   Widget build(BuildContext context) {
+    print(" rebuild ");
     _size = MediaQuery.sizeOf(context);
     return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -394,6 +395,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   }
 
   void _showBottomSheetLayout() {
+    _project.getInfor();
     showModalBottomSheet(
         context: context,
         builder: (context) {
@@ -410,7 +412,6 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                 child: LayoutBody(
                   project: _project,
                   reRenderFunction: () {
-                    setState(() {});
                     setStatefull(() {});
                   },
                   segmentCurrentIndex: _segmentCurrentIndex,

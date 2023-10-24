@@ -2,11 +2,13 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 
+import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/models/project.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 double pixelToRatio(double child, double parent) {
   return child / parent;
@@ -74,4 +76,29 @@ PdfColor convertColorToPdfColor(Color color) {
   final g = color.green / 255.0;
   final b = color.blue / 255.0;
   return PdfColor(r, g, b);
+}
+
+pw.Alignment? convertAlignmentToPdfAlignment(Alignment? alignment) {
+  switch (alignment) {
+    case Alignment.bottomCenter:
+      return pw.Alignment.bottomCenter;
+    case Alignment.bottomLeft:
+      return pw.Alignment.bottomLeft;
+    case Alignment.bottomRight:
+      return pw.Alignment.bottomRight;
+    case Alignment.center:
+      return pw.Alignment.center;
+    case Alignment.centerLeft:
+      return pw.Alignment.centerLeft;
+    case Alignment.centerRight:
+      return pw.Alignment.centerRight;
+    case Alignment.topCenter:
+      return pw.Alignment.topCenter;
+    case Alignment.topLeft:
+      return pw.Alignment.topLeft;
+    case Alignment.topRight:
+      return pw.Alignment.topRight;
+    default:
+      return null;
+  }
 }

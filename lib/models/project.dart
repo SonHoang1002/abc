@@ -219,6 +219,9 @@ class PaddingAttribute {
       unit: json['unit'] != null ? Unit.fromJson(json['unit']) : null,
     );
   }
+    String getInfor() {
+    return "PaddingAttribute verticalPadding: ${this.verticalPadding}, PaddingAttribute horizontalPadding: ${this.horizontalPadding}, PaddingAttribute unit: ${this.unit?.getInfor()},";
+  }
 }
 
 class SpacingAttribute {

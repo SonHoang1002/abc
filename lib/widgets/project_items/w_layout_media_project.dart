@@ -2,6 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/helpers/caculate_padding.dart';
+import 'package:photo_to_pdf/helpers/caculate_spacing.dart';
+import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/helpers/render_boxfit.dart';
 import 'package:photo_to_pdf/models/project.dart';
 
@@ -30,15 +33,19 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
     List<dynamic>? layoutExtractList,
     List<double> widthAndHeight,
   ) {
-    // const double spaceWidth = 3;
-    // const double spaceheight = 3;
     if (project.listMedia.isEmpty ||
         (project.listMedia.length == 1 && project.listMedia[0] is String)) {
-      return _buildImageWidget(
-        project,
-        (layoutExtractList?[0]) ?? "${pathPrefixImage}blank_page.jpg",
-        width: double.infinity,
-        height: double.infinity,
+      return Container(
+        margin: caculateSpacing(project, widthAndHeight,
+            project.spacingAttribute?.unit, project.paper?.unit),
+        padding: caculatePadding(widget.project, widget.widthAndHeight,
+            widget.project.paddingAttribute?.unit, widget.project.paper?.unit),
+        child: _buildImageWidget(
+          project,
+          (layoutExtractList?[0]) ?? "${pathPrefixImage}blank_page.jpg",
+          width: double.infinity,
+          height: double.infinity,
+        ),
       );
     }
     if (project.useAvailableLayout != true &&
@@ -51,13 +58,11 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
             top: getPositionWithTop(indexExtract, widthAndHeight[1]),
             left: getPositionWithLeft(indexExtract, widthAndHeight[0]),
             child: Container(
-              margin: EdgeInsets.symmetric(
-                  horizontal: ((project.placements![indexExtract]
-                          .placementAttribute?.horizontal) ??
-                      0),
-                  vertical: ((project.placements![indexExtract]
-                          .placementAttribute?.vertical) ??
-                      0)),
+              // margin: caculateSpacing(
+              //     project,
+              //     widthAndHeight,
+              //     project.placements![indexExtract].placementAttribute?.unit,
+              //     project.paper?.unit),
               child: _buildImageWidget(
                 project,
                 layoutExtractList[indexExtract],
@@ -70,11 +75,20 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
       );
     } else {
       if (project.listMedia.length == 1 && project.listMedia[0] is String) {
-        return _buildImageWidget(
-          project,
-          (layoutExtractList?[0]) ?? "${pathPrefixImage}blank_page.jpg",
-          width: double.infinity,
-          height: double.infinity,
+        return Container(
+          padding: caculatePadding(
+              widget.project,
+              widget.widthAndHeight,
+              widget.project.paddingAttribute?.unit,
+              widget.project.paper?.unit),
+          margin: caculateSpacing(project, widthAndHeight,
+              project.spacingAttribute?.unit, project.paper?.unit),
+          child: _buildImageWidget(
+            project,
+            (layoutExtractList?[0]) ?? "${pathPrefixImage}blank_page.jpg",
+            width: double.infinity,
+            height: double.infinity,
+          ),
         );
       } else {
         final List<int> layoutSuggestion =
@@ -93,20 +107,31 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
                   final indexRow = rows.indexOf(childRow);
                   return Flexible(
                     fit: FlexFit.tight,
-                    child: _buildImageWidget(
-                      project,
-                      layoutExtractList?[indexColumn]![indexRow],
-                      width: double.infinity,
-                      height: double.infinity,
+                    child: Container(
+                      margin: caculateSpacing(project, widthAndHeight,
+                          project.spacingAttribute?.unit, project.paper?.unit),
+                      child: _buildImageWidget(
+                        project,
+                        layoutExtractList?[indexColumn]![indexRow],
+                        width: double.infinity,
+                        height: double.infinity,
+                      ),
                     ),
                   );
                 }).toList()),
           ));
         }
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: widgetColumn,
+        return Container(
+          padding: caculatePadding(
+              widget.project,
+              widget.widthAndHeight,
+              widget.project.paddingAttribute?.unit,
+              widget.project.paper?.unit),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: widgetColumn,
+          ),
         );
       }
     }
@@ -114,19 +139,14 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
 
   Widget _buildImageWidget(Project project, dynamic imageData,
       {double? width, double? height}) {
-    EdgeInsets margin = EdgeInsets.only(
-      top: (2 + (project.spacingAttribute?.verticalSpacing ?? 0.0)),
-      left: (2 + (project.spacingAttribute?.horizontalSpacing ?? 0.0)),
-      right: (2 + (project.spacingAttribute?.horizontalSpacing ?? 0.0)),
-      bottom: (2 + (project.spacingAttribute?.verticalSpacing ?? 0.0)),
-    );
+    EdgeInsets margin = const EdgeInsets.all(2);
     final fit = renderImageBoxfit(project.resizeAttribute);
     if (imageData == null) {
       return Container();
     } else {
       if (imageData is File) {
         return Container(
-          margin: margin,
+          // margin: margin,
           alignment: Alignment.center,
           child: Image.file(
             imageData,
@@ -140,7 +160,7 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
         if (imageData is String) {
           return Container(
             alignment: Alignment.center,
-            margin: margin,
+            // margin: margin,
             child: Image.asset(
               imageData,
               fit: fit,
@@ -159,13 +179,6 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(
-          top: 2 + (widget.project.paddingAttribute?.verticalPadding ?? 0.0),
-          left: 3 + (widget.project.paddingAttribute?.horizontalPadding ?? 0.0),
-          right:
-              3 + (widget.project.paddingAttribute?.horizontalPadding ?? 0.0),
-          bottom:
-              3 + (widget.project.paddingAttribute?.verticalPadding ?? 0.0)),
       alignment: widget.project.alignmentAttribute?.alignmentMode,
       color: widget.project.backgroundColor,
       child: buildCoreLayoutMedia(widget.indexImage, widget.project,
@@ -174,40 +187,67 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
   }
 
   double getRealHeight(int extractIndex, double itemHeight) {
-    // final result = ratioTargetWithHeightPlacement() *
-    //     (widget.project.placements![extractIndex].height);
-    final result =
-        itemHeight * (widget.project.placements![extractIndex].ratioHeight);
+    print(
+        'vertical ${convertUnit(widget.project.placements![extractIndex].placementAttribute!.unit!, widget.project.paper!.unit!, ((widget.project.placements![extractIndex].placementAttribute?.vertical) ?? 0) / 2)}');
+    final result = itemHeight *
+        (widget.project.placements![extractIndex].ratioHeight 
+        // -convertUnit(
+        //             widget.project.placements![extractIndex].placementAttribute!
+        //                 .unit!,
+        //             widget.project.paper!.unit!,
+        //             ((widget.project.placements![extractIndex]
+        //                         .placementAttribute?.vertical) ??
+        //                     0) /
+        //                 2) /
+        //         widget.project.paper!.height
+                );
     return result;
   }
 
   double getRealWidth(int extractIndex, double itemWidth) {
-    final result =
-        itemWidth * (widget.project.placements![extractIndex].ratioWidth);
+    final result = itemWidth *
+        (widget.project.placements![extractIndex].ratioWidth 
+        // - convertUnit(
+        //             widget.project.placements![extractIndex].placementAttribute!
+        //                 .unit!,
+        //             widget.project.paper!.unit!,
+        //             ((widget.project.placements![extractIndex]
+        //                         .placementAttribute?.horizontal) ??
+        //                     0) /
+        //                 2) /
+        //         widget.project.paper!.width
+                );
     return result;
   }
 
   double getPositionWithTop(int extractIndex, double itemHeight) {
-    final result =
-        (widget.project.placements![extractIndex].ratioOffset[1]) * itemHeight;
+    final result = (widget.project.placements![extractIndex].ratioOffset[1] 
+    // - convertUnit( widget.project.placements![extractIndex].placementAttribute!
+    //                     .unit!,
+    //                 widget.project.paper!.unit!,
+    //                 ((widget.project.placements![extractIndex]
+    //                             .placementAttribute?.vertical) ??
+    //                         0) /
+    //                     2) /
+    //             widget.project.paper!.height
+                ) *
+        itemHeight;
     return result;
   }
 
   double getPositionWithLeft(int extractIndex, double itemWidth) {
-    var result;
-    // if (widget.listWH != null &&
-    //     widget.project.placements![extractIndex].listWHBoard[0] != 0) {
-    //   result = (widget.project.placements![extractIndex].offset.dx /
-    //           widget.project.placements![extractIndex].listWHBoard[0] *
-    //           widget.listWH![0]) *
-    //       ratioTargetWithWidthPlacement();
-    //        print(
-    //     "result getPositionWithLeft ${widget.project.placements![extractIndex].offset.dx} / ${widget.project.placements![extractIndex].listWHBoard[0]} -  ${result} / ${widget.listWH![0]}");
-
-    // } else {
-    result =
-        (widget.project.placements![extractIndex].ratioOffset[0]) * itemWidth;
-    // }
+    var result = (widget.project.placements![extractIndex].ratioOffset[0] 
+    // -convertUnit(
+    //                 widget.project.placements![extractIndex].placementAttribute!
+    //                     .unit!,
+    //                 widget.project.paper!.unit!,
+    //                 ((widget.project.placements![extractIndex]
+    //                             .placementAttribute?.horizontal) ??
+    //                         0) /
+    //                     2) /
+    //             widget.project.paper!.width
+                ) *
+        itemWidth;
     return result;
   }
 }

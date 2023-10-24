@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/helpers/caculate_padding.dart';
+import 'package:photo_to_pdf/helpers/caculate_spacing.dart';
 import 'package:photo_to_pdf/helpers/compress_file.dart';
 import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/helpers/extract_list.dart';
@@ -97,21 +99,13 @@ Future<Uint8List> createPdfFile(
       project.paper?.height != null &&
       project.paper?.width != null) {
     if (project.paper!.unit!.title == POINT.title) {
-      // print("POINT");
       pdfPageFormat = PdfPageFormat(project.paper!.width, project.paper!.height,
-          marginAll: 2.0);
+          marginAll: 2.0 * point);
     } else if (project.paper!.unit!.title == INCH.title) {
-      // print("INCH");
       pdfPageFormat = PdfPageFormat(
-          project.paper!.width * inch > 72 * 28
-              ? 72 * 28
-              : project.paper!.width * inch,
-          project.paper!.height * inch > 72 * 28
-              ? 72 * 28
-              : project.paper!.height * inch,
+          project.paper!.width * inch, project.paper!.height * inch,
           marginAll: 2.0 * inch);
     } else if (project.paper!.unit!.title == CENTIMET.title) {
-      // print("CENTIMET");
       pdfPageFormat = PdfPageFormat(
           project.paper!.width * cm, project.paper!.height * cm,
           marginAll: 2.0 * cm);
@@ -119,7 +113,6 @@ Future<Uint8List> createPdfFile(
       print("NONE");
     }
   }
-  print("pdfPageFormat ${pdfPageFormat}");
 
   if (compressValue != null) {
     final compressImages =
@@ -209,17 +202,8 @@ pw.Widget _buildPdfPreview(BuildContext context, Project project,
     List layoutExtractList, int indexPage, List<double> widthAndHeight) {
   return pw.Container(
     color: convertColorToPdfColor(project.backgroundColor),
-    padding: pw.EdgeInsets.only(
-      top: 2 * (5 + (project.paddingAttribute?.verticalPadding ?? 0.0)),
-      //  * (ratioTarget[1]),
-      left: 2 * (5 + (project.paddingAttribute?.horizontalPadding ?? 0.0)),
-      // *(ratioTarget[0]),
-      right: 2 * (5 + (project.paddingAttribute?.horizontalPadding ?? 0.0)),
-      // *(ratioTarget[0]),
-      bottom: 2 * (5 + (project.paddingAttribute?.verticalPadding ?? 0.0)),
-      // *(ratioTarget[1]),
-    ),
-    // alignment: project.alignmentAttribute?.alignmentMode,
+    alignment: convertAlignmentToPdfAlignment(
+        project.alignmentAttribute?.alignmentMode),
     child: _buildCorePDFLayoutMedia(
         indexPage, project, layoutExtractList[indexPage], widthAndHeight),
   );
@@ -244,15 +228,18 @@ pw.Widget _buildCorePDFLayoutMedia(
       children: layoutExtractList!.map((e) {
         final index = layoutExtractList.indexOf(e);
         return pw.Positioned(
-          top: getPositionWithTop(index, project, widthAndHeight[1]),
-          left: getPositionWithLeft(index, project, widthAndHeight[0]),
-          child: _buildImageWidget(
-            project,
-            layoutExtractList[index],
-            height: getRealHeight(index, project, widthAndHeight[1]),
-            width: getRealWidth(index, project, widthAndHeight[0]),
-          ),
-        );
+            top: getPositionWithTop(index, project, widthAndHeight[1]),
+            left: getPositionWithLeft(index, project, widthAndHeight[0]),
+            child: pw.Container(
+              // margin: caculatePdfSpacing(project, widthAndHeight,
+              //     project.spacingAttribute?.unit, project.paper?.unit),
+              child: _buildImageWidget(
+                project,
+                layoutExtractList[index],
+                height: getRealHeight(index, project, widthAndHeight[1]),
+                width: getRealWidth(index, project, widthAndHeight[0]),
+              ),
+            ));
       }).toList(),
     ));
   } else {
@@ -272,20 +259,26 @@ pw.Widget _buildCorePDFLayoutMedia(
               final indexRow = rows.indexOf(childRow);
               final imageData = layoutExtractList![indexColumn]![indexRow];
               return pw.Flexible(
-                fit: pw.FlexFit.tight,
-                child: _buildImageWidget(
-                  project,
-                  imageData,
-                ),
-              );
+                  fit: pw.FlexFit.tight,
+                  child: pw.Container(
+                    margin: caculatePdfSpacing(project, widthAndHeight,
+                        project.spacingAttribute?.unit, project.paper?.unit),
+                    child: _buildImageWidget(
+                      project,
+                      imageData,
+                    ),
+                  ));
             }).toList()),
       ));
     }
-    return pw.Column(
-      mainAxisAlignment: pw.MainAxisAlignment.center,
-      crossAxisAlignment: pw.CrossAxisAlignment.center,
-      children: columnWidgets,
-    );
+    return pw.Container(
+        padding: caculatePdfPadding(project, widthAndHeight,
+            project.spacingAttribute?.unit, project.paper?.unit),
+        child: pw.Column(
+          mainAxisAlignment: pw.MainAxisAlignment.center,
+          crossAxisAlignment: pw.CrossAxisAlignment.center,
+          children: columnWidgets,
+        ));
   }
 }
 
@@ -296,15 +289,6 @@ pw.Widget _buildImageWidget(Project project, dynamic imageData,
     return pw.SizedBox();
   } else {
     return pw.Container(
-        margin: pw.EdgeInsets.only(
-          top: 1.5 * (3 + (project.spacingAttribute?.verticalSpacing ?? 0.0)),
-          left:
-              1.5 * (3 + (project.spacingAttribute?.horizontalSpacing ?? 0.0)),
-          right:
-              1.5 * (3 + (project.spacingAttribute?.horizontalSpacing ?? 0.0)),
-          bottom:
-              1.5 * (3 + (project.spacingAttribute?.verticalSpacing ?? 0.0)),
-        ),
         child: pw.Image(pw.MemoryImage(File(imageData.path).readAsBytesSync()),
             fit: fit, width: width, height: height));
   }

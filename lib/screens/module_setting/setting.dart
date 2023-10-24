@@ -12,6 +12,27 @@ import 'package:provider/provider.dart';
 class Setting extends StatelessWidget {
   const Setting({super.key});
 
+  void _onFeedback() async {
+    final Email email = Email(
+      // body: 'Feedback',
+      // subject: 'Email subject',
+      // receiver
+      // recipients: ['hoangtrungson07012001@gmail.com'],
+      // cc: ['abc@gmail.com'],
+      // bcc: ['abc@gmail.com'],
+      isHTML: false,
+    );
+    await FlutterEmailSender.send(email);
+  }
+
+  void _onShare() {
+    print("share app");
+  }
+
+  void _onAccessSetting() async {
+    final result = await openAppSettings();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -64,123 +85,131 @@ class Setting extends StatelessWidget {
           height: 30,
         ),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
           margin: const EdgeInsets.symmetric(horizontal: 20),
           decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: const [
-                BoxShadow(
-                    color: Color.fromRGBO(20, 20, 20, 0.05),
-                    spreadRadius: 5,
-                    offset: Offset(0, 10),
-                    blurRadius: 40)
-              ],
-              color: Theme.of(context).canvasColor,
-              border: Border.all(
-                  width: 1, color: const Color.fromRGBO(0, 0, 0, 0.05))),
-          child: Column(children: [
-            _buildSettingItem(
-              context: context,
-              prefixMediaSrc: "${pathPrefixIcon}icon_feedback.png",
-              title: "Write a feedback",
-              onTap: () async {
-                final Email email = Email(
-                  body: 'Feedback',
-                  subject: 'Email subject',
-                  // receiver
-                  recipients: ['hoangtrungson07012001@gmail.com'],
-                  cc: ['abc@gmail.com'],
-                  bcc: ['abc@gmail.com'],
-                  isHTML: false,
-                );
-                await FlutterEmailSender.send(email);
-              },
-            ),
-            WSpacer(
-              height: 30,
-            ),
-            _buildSettingItem(
-              context: context,
-              prefixMediaSrc: "${pathPrefixIcon}icon_share.png",
-              title: "Share this app",
-              onTap: () {
-                // share link app
-              },
-            ),
-          ]),
+            border: Border.all(
+                width: 1, color: const Color.fromRGBO(0, 0, 0, 0.05)),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: const [
+              BoxShadow(
+                  color: Color.fromRGBO(20, 20, 20, 0.05),
+                  spreadRadius: 5,
+                  offset: Offset(0, 10),
+                  blurRadius: 40)
+            ],
+          ),
+          child: Column(
+            children: [
+              GestureDetector(
+                onTap: _onFeedback,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).canvasColor,
+                    borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(12),
+                        topRight: Radius.circular(12)),
+                  ),
+                  child: _buildSettingItem(
+                    context: context,
+                    prefixMediaSrc: "${pathPrefixIcon}icon_feedback.png",
+                    title: "Write a feedback",
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: _onShare,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).canvasColor,
+                    borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(12),
+                        bottomRight: Radius.circular(12)),
+                  ),
+                  child: Container(
+                    child: _buildSettingItem(
+                      context: context,
+                      prefixMediaSrc: "${pathPrefixIcon}icon_share.png",
+                      title: "Share this app",
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
         WSpacer(
           height: 30,
         ),
-        Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color.fromRGBO(20, 20, 20, 0.05),
-                  spreadRadius: 5,
-                  blurRadius: 40,
-                  offset: Offset(0, 10),
+        GestureDetector(
+          onTap: _onAccessSetting,
+          child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color.fromRGBO(20, 20, 20, 0.05),
+                    spreadRadius: 5,
+                    blurRadius: 40,
+                    offset: Offset(0, 10),
+                  ),
+                ],
+                color: Theme.of(context).canvasColor,
+                border: Border.all(
+                  width: 1,
+                  color: const Color.fromRGBO(0, 0, 0, 0.05),
                 ),
-              ],
-              color: Theme.of(context).canvasColor,
-              border: Border.all(
-                width: 1,
-                color: const Color.fromRGBO(0, 0, 0, 0.05),
               ),
-            ),
-            child: _buildSettingItem(
-              context: context,
-              prefixMediaSrc: "${pathPrefixIcon}icon_access_setting.png",
-              title: "Photo Access Settings",
-              onTap: () async {
-                openAppSettings();
-              },
-            ))
+              child: _buildSettingItem(
+                context: context,
+                prefixMediaSrc: "${pathPrefixIcon}icon_access_setting.png",
+                title: "Photo Access Settings",
+              )),
+        )
       ]),
     );
   }
 
-  Widget _buildSettingItem(
-      {required BuildContext context,
-      required String prefixMediaSrc,
-      required String title,
-      Function()? onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Image.asset(
-                prefixMediaSrc,
-                height: 20,
-                width: 20,
-                color: Theme.of(context).textTheme.displayLarge!.color,
-              ),
-              WSpacer(
-                width: 10,
-              ),
-              WTextContent(
-                value: title,
-                textSize: 15,
-                textLineHeight: 20,
-                textFontWeight: FontWeight.w500,
-                textColor: Theme.of(context).textTheme.displayLarge!.color,
-              ),
-            ],
-          ),
-          Icon(
-            FontAwesomeIcons.chevronRight,
-            size: 20,
-            color: Theme.of(context).textTheme.displayLarge!.color,
-          )
-        ],
-      ),
+  Widget _buildSettingItem({
+    required BuildContext context,
+    required String prefixMediaSrc,
+    required String title,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Image.asset(
+              prefixMediaSrc,
+              height: 20,
+              width: 20,
+              color: Theme.of(context).textTheme.displayLarge!.color,
+            ),
+            WSpacer(
+              width: 10,
+            ),
+            WTextContent(
+              value: title,
+              textSize: 15,
+              textLineHeight: 20,
+              textFontWeight: FontWeight.w500,
+              textColor: Theme.of(context).textTheme.displayLarge!.color,
+            ),
+          ],
+        ),
+        Icon(
+          FontAwesomeIcons.chevronRight,
+          size: 20,
+          color: Theme.of(context).textTheme.displayLarge!.color,
+        )
+      ],
     );
   }
 }

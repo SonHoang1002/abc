@@ -37,12 +37,14 @@ class _LayoutBodyState extends State<LayoutBody> {
   late int _segmentCurrentIndex;
   late List _listLayoutStatus;
   late Size _size;
+
   // layout config keys
   final GlobalKey _keyResizeMode = GlobalKey();
   final GlobalKey _keyAlignment = GlobalKey();
 
   // layout alignment variables
   late ResizeAttribute _resizeModeSelectedValue;
+
   // layout alignment variables
   late List<dynamic> _listAlignment;
 
@@ -51,10 +53,10 @@ class _LayoutBodyState extends State<LayoutBody> {
 
   //layout spacing variables
   late SpacingAttribute _spacingOptions;
+
   // layout custom variables
   List<ValueNotifier<Matrix4>> _matrix4Notifiers = [];
   List<Placement> _listPlacement = [];
-  // late List<Placement> _listPlacementOld;
   Placement? _seletedPlacement;
 
   // background variable
@@ -62,19 +64,12 @@ class _LayoutBodyState extends State<LayoutBody> {
   late List<double> _ratioTarget;
   late Offset _alignmentDialogOffset;
   late bool _isShowAlignmentDialog;
-  @override
-  void dispose() {
-    super.dispose();
-    _listAlignment = [];
-    _matrix4Notifiers = [];
-    _listPlacement = [];
-    _seletedPlacement = null;
-  }
 
   @override
   void initState() {
     super.initState();
-    _project = widget.project;
+    _project = widget.project
+        .copyWith(placements: List.from(widget.project.placements ?? []));
     _resizeModeSelectedValue = _project.resizeAttribute ?? LIST_RESIZE_MODE[0];
     _segmentCurrentIndex = widget.segmentCurrentIndex;
     _listLayoutStatus = LIST_LAYOUT_SUGGESTION.map((e) {
@@ -97,7 +92,7 @@ class _LayoutBodyState extends State<LayoutBody> {
     _spacingOptions = _project.spacingAttribute ?? SPACING_OPTIONS;
     _currentLayoutColor = _project.backgroundColor;
     _listPlacement = _project.placements ?? [];
-    _listPlacement.forEach((element) {
+    _listPlacement.forEach((_) {
       _matrix4Notifiers.add(ValueNotifier<Matrix4>(Matrix4.identity()));
     });
     _ratioTarget = LIST_RATIO_PLACEMENT_BOARD;
@@ -112,6 +107,15 @@ class _LayoutBodyState extends State<LayoutBody> {
     _isShowAlignmentDialog = false;
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    _listAlignment.clear();
+    _matrix4Notifiers.clear();
+    _seletedPlacement = null;
+    _listLayoutStatus.clear();
+  }
+
   void _resetLayoutSelections() {
     _listLayoutStatus = LIST_LAYOUT_SUGGESTION.map((e) {
       return {"layout": e, "isFocus": false};
@@ -124,6 +128,135 @@ class _LayoutBodyState extends State<LayoutBody> {
 
   String _renderPreviewSpacingOptions() {
     return "${_spacingOptions.horizontalSpacing} ${_spacingOptions.unit?.value} , ${_spacingOptions.verticalSpacing} ${_spacingOptions.unit?.value}";
+  }
+
+  void _onDone(Placement newData, List<String> paddingAttributeList,
+      double convertWidth, double convertHeight) {
+    for (var placement in _listPlacement) {
+      if (placement.id == newData.id) {
+        final index = _listPlacement.indexOf(placement);
+        // update ratioHeight, ratioWidth, ratioOffset of _listPlacement[index]
+        // convert unit
+        List<double> paddingAttributeList0 = [];
+        paddingAttributeList0 = paddingAttributeList.map((e) {
+          return convertUnit(_seletedPlacement!.placementAttribute!.unit!,
+              newData.placementAttribute!.unit!, double.parse(e));
+        }).toList();
+        final convertWidth0 = convertUnit(
+            _seletedPlacement!.placementAttribute!.unit!,
+            newData.placementAttribute!.unit!,
+            convertWidth);
+        final convertHeight0 = convertUnit(
+            _seletedPlacement!.placementAttribute!.unit!,
+            newData.placementAttribute!.unit!,
+            convertHeight);
+        // final deltaHorizontal =
+        //     (newData.placementAttribute!.horizontal - paddingAttributeList0[0]);
+        // final deltaVertical =
+        //     (newData.placementAttribute!.vertical - paddingAttributeList0[1]);
+        final deltaTop =
+            (newData.placementAttribute!.top - paddingAttributeList0[2]);
+        final deltaLeft =
+            (newData.placementAttribute!.left - paddingAttributeList0[3]);
+        final deltaRight =
+            (newData.placementAttribute!.right - paddingAttributeList0[4]);
+        final deltaBottom =
+            (newData.placementAttribute!.bottom - paddingAttributeList0[5]);
+        // if (deltaHorizontal > 0) {
+        //   _listPlacement[index].ratioWidth -=
+        //       2 * (deltaHorizontal / convertWidth0).abs();
+        //   _listPlacement[index].ratioOffset[0] +=
+        //       (deltaHorizontal / convertWidth0).abs();
+        // } else if (deltaHorizontal > 0) {
+        //   _listPlacement[index].ratioWidth +=
+        //       2 * (deltaHorizontal / convertWidth0).abs();
+        //   _listPlacement[index].ratioOffset[0] -=
+        //       (deltaHorizontal / convertWidth0).abs();
+        // }
+        // if (deltaVertical > 0) {
+        //   _listPlacement[index].ratioHeight -=
+        //       2 * (deltaVertical / convertHeight0).abs();
+        //   _listPlacement[index].ratioOffset[1] +=
+        //       (deltaVertical / convertHeight0).abs();
+        // } else if (deltaVertical > 0) {
+        //   _listPlacement[index].ratioHeight +=
+        //       2 * (deltaVertical / convertHeight0).abs();
+        //   _listPlacement[index].ratioOffset[1] -=
+        //       (deltaVertical / convertHeight0).abs();
+        // }
+        // padding top
+        if (deltaTop > 0) {
+          _listPlacement[index].ratioHeight -=
+              (deltaTop / convertHeight0).abs();
+          _listPlacement[index].ratioOffset[1] +=
+              (deltaTop / convertHeight0).abs();
+        } else if (deltaTop < 0) {
+          _listPlacement[index].ratioHeight +=
+              (deltaTop / convertHeight0).abs();
+          _listPlacement[index].ratioOffset[1] -=
+              (deltaTop / convertHeight0).abs();
+        }
+        // padding left
+        if (deltaLeft > 0) {
+          _listPlacement[index].ratioWidth -= (deltaLeft / convertWidth0).abs();
+          _listPlacement[index].ratioOffset[0] +=
+              (deltaLeft / convertWidth0).abs();
+        } else if (deltaLeft < 0) {
+          _listPlacement[index].ratioWidth += (deltaLeft / convertWidth0).abs();
+          _listPlacement[index].ratioOffset[0] -=
+              (deltaLeft / convertWidth0).abs();
+        }
+        // padding right
+        if (deltaRight > 0) {
+          _listPlacement[index].ratioWidth -=
+              (deltaRight / convertWidth0).abs();
+        } else if (deltaRight < 0) {
+          _listPlacement[index].ratioWidth +=
+              (deltaRight / convertWidth0).abs();
+        }
+        // padding bottom
+        if (deltaBottom > 0) {
+          _listPlacement[index].ratioHeight -=
+              (deltaBottom / convertHeight0).abs();
+        } else if (deltaBottom < 0) {
+          _listPlacement[index].ratioHeight +=
+              (deltaBottom / convertHeight0).abs();
+        }
+        // update list placements
+        _listPlacement[index] = _listPlacement[index].copyWith(
+            placementAttribute: newData.placementAttribute!.copyWith(
+                horizontal: newData.placementAttribute!.horizontal,
+                vertical: newData.placementAttribute!.vertical,
+                left: newData.placementAttribute!.left,
+                right: newData.placementAttribute!.right,
+                top: newData.placementAttribute!.top,
+                bottom: newData.placementAttribute!.bottom,
+                unit: newData.placementAttribute!.unit));
+      }
+    }
+    // _disablePlacement();
+  }
+
+  void _showBottomSheetBackground(
+      {required void Function()? rerenderFunction}) {
+    showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(builder: (context, setStatefull) {
+            return BackgroundBody(
+              currentColor: _currentLayoutColor,
+              onColorChanged: (color) {
+                setState(() {
+                  _currentLayoutColor = color;
+                });
+                setStatefull(() {});
+                rerenderFunction != null ? rerenderFunction() : null;
+              },
+            );
+          });
+        },
+        isScrollControlled: true,
+        backgroundColor: transparent);
   }
 
   @override
@@ -433,28 +566,6 @@ class _LayoutBodyState extends State<LayoutBody> {
     );
   }
 
-  void _showBottomSheetBackground(
-      {required void Function()? rerenderFunction}) {
-    showModalBottomSheet(
-        context: context,
-        builder: (context) {
-          return StatefulBuilder(builder: (context, setStatefull) {
-            return BackgroundBody(
-              currentColor: _currentLayoutColor,
-              onColorChanged: (color) {
-                setState(() {
-                  _currentLayoutColor = color;
-                });
-                setStatefull(() {});
-                rerenderFunction != null ? rerenderFunction() : null;
-              },
-            );
-          });
-        },
-        isScrollControlled: true,
-        backgroundColor: transparent);
-  }
-
   Widget _buildCustomArea(
     Function rerenderFunction,
   ) {
@@ -575,16 +686,21 @@ class _LayoutBodyState extends State<LayoutBody> {
                                   _project.paper!.unit!,
                                   _seletedPlacement!.placementAttribute!.unit!,
                                   _project.paper!.height);
-                              print(
-                                  "unit unit unit unit ${_seletedPlacement?.placementAttribute?.unit?.title} -> ${_project.paper?.unit?.title}  _project.paper!.height ${_project.paper!.height} to ${convertHeight}");
                               final convertWidth = convertUnit(
                                   _project.paper!.unit!,
                                   _seletedPlacement!.placementAttribute!.unit!,
                                   _project.paper!.width);
                               // horizontal, vertical, top, left, right, bottom
+                              // width and height is 0 and 1 to comparable with EditorPaddingSpacing (2 controller)
                               List<String> paddingAttributeList = [];
-                              paddingAttributeList.add("0.0");
-                              paddingAttributeList.add("0.0");
+                              paddingAttributeList.add(((_seletedPlacement!
+                                          .placementAttribute?.horizontal) ??
+                                      0.0)
+                                  .toString());
+                              paddingAttributeList.add(((_seletedPlacement!
+                                          .placementAttribute?.vertical) ??
+                                      0.0)
+                                  .toString());
                               //top
                               paddingAttributeList.add(
                                   (_seletedPlacement!.ratioOffset[1] *
@@ -614,41 +730,11 @@ class _LayoutBodyState extends State<LayoutBody> {
                                     unit: (_seletedPlacement!
                                         .placementAttribute!.unit!),
                                     title: TITLE_EDIT_PLACEMENT,
-                                    // width and height is 0 and 1 to comparable with EditorPaddingSpacing (2 controller)
-                                    inputValues:
-                                        // [
-                                        //   _seletedPlacement!
-                                        //       .placementAttribute!.horizontal
-                                        //       .toString(),
-                                        //   _seletedPlacement!
-                                        //       .placementAttribute!.vertical
-                                        //       .toString(),
-                                        //   _seletedPlacement!.placementAttribute!.top
-                                        //       .toString(),
-                                        //   _seletedPlacement!
-                                        //       .placementAttribute!.left
-                                        //       .toString(),
-                                        //   _seletedPlacement!
-                                        //       .placementAttribute!.right
-                                        //       .toString(),
-                                        //   _seletedPlacement!
-                                        //       .placementAttribute!.bottom
-                                        //       .toString(),
-                                        // ]
-                                        paddingAttributeList,
+                                    inputValues: paddingAttributeList,
                                     onChanged: (index, value) {},
                                     onDone: (newData) {
-                                      for (var placement in _listPlacement) {
-                                        if (placement.id == newData.id) {
-                                          final index =
-                                              _listPlacement.indexOf(placement);
-                                          _listPlacement[index] =
-                                              _listPlacement[index].copyWith(
-                                                  placementAttribute: newData
-                                                      .placementAttribute);
-                                        }
-                                      }
-                                      _disablePlacement();
+                                      _onDone(newData, paddingAttributeList,
+                                          convertWidth, convertHeight);
                                     },
                                   ));
                             },

@@ -26,8 +26,8 @@ List<List<int>> LIST_LAYOUT_SUGGESTION = [
   [1, 1],
   [1, 2],
   [2, 1],
-  [1, 2, 3],
-  [1, 2, 3, 4]
+  [2, 2],
+  [1, 2, 3]
 ];
 
 List<AlignmentAttribute> LIST_ALIGNMENT = [
@@ -207,7 +207,7 @@ const List<Color> ALL_COLORS = [
   Colors.white,
 ];
 
-  const double point = 1.0;
-  const double inch = 72.0;
-  const double cm = inch / 2.54;
-  const double mm = inch / 25.4;
+const double point = 1.0;
+const double inch = 72.0;
+const double cm = inch / 2.54;
+const double mm = inch / 25.4;

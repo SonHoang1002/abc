@@ -1,5 +1,4 @@
 import 'dart:ui';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
@@ -119,6 +118,8 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                 controllers[5].text.trim(),
               ),
               unit: newUnit));
+      print(
+          '_placement!.placementAttribute!.bottom ${_placement!.placementAttribute!.bottom}');
       widget.onDone(_placement);
     } else if (_paddingAttribute != null) {
       _paddingAttribute = _paddingAttribute?.copyWith(
@@ -181,8 +182,13 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                           newControllers = controllers.map(
                             (element) {
                               return TextEditingController(
-                                  text: convertUnit(_unit, value,
-                                          double.parse(element.text.trim()))
+                                  text: convertUnit(
+                                          _unit,
+                                          value,
+                                          double.parse(
+                                              element.text.trim().isEmpty
+                                                  ? "0.0"
+                                                  : element.text.trim()))
                                       .toStringAsFixed(2));
                             },
                           ).toList();
