@@ -353,11 +353,13 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                   XFile(result[0].path),
                                 ]);
                               },
-                              onCancel: () {
+                              onCancel: () async {
                                 ref
                                     .read(projectControllerProvider.notifier)
                                     .updateProject(_project);
                                 popNavigator(context);
+                                await IsarProjectService()
+                                    .updateProject(_project);
                               },
                               titleApply: "Save to...")
                         ],
