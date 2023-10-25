@@ -4,6 +4,7 @@ import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_background.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_dialogs.dart';
+import 'package:photo_to_pdf/tests/test_w_drag.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
@@ -569,7 +570,7 @@ class _LayoutBodyState extends State<LayoutBody> {
           },
           child: Column(children: [
             Expanded(
-                child: WDragZoomImage(
+                child: WDragZoomImageTest(
               backgroundColor: _currentLayoutColor,
               listPlacement: _listPlacement,
               matrix4Notifiers: _matrix4Notifiers,
@@ -716,6 +717,7 @@ class _LayoutBodyState extends State<LayoutBody> {
                                     onDone: (newData) {
                                       _onDone(newData, paddingAttributeList,
                                           convertWidth, convertHeight);
+                                      _disablePlacement();
                                     },
                                   ));
                             },

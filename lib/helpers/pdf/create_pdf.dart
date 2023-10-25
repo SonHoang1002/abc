@@ -317,8 +317,7 @@ double _getRealWidth(int extractIndex, Project project, double pdfWidth) {
 
 double _getPositionWithTop(
     int extractIndex, Project project, double pdfHeight) {
-  final result =
-      ((project.placements![extractIndex].ratioOffset[1]) * pdfHeight +
+  final result = ((project.placements![extractIndex].ratioOffset[1] +
           convertUnit(
                   project.placements![extractIndex].placementAttribute!.unit!,
                   project.paper!.unit!,
@@ -326,19 +325,21 @@ double _getPositionWithTop(
                               ?.vertical) ??
                           0) /
                       2) /
-              project.paper!.height);
+              project.paper!.height)) *
+      pdfHeight;
   return result;
 }
 
 double _getPositionWithLeft(
     int extractIndex, Project project, double pdfWidth) {
-  return ((project.placements![extractIndex].ratioOffset[0]) * pdfWidth +
-      convertUnit(
-              project.placements![extractIndex].placementAttribute!.unit!,
-              project.paper!.unit!,
-              ((project.placements![extractIndex].placementAttribute
-                          ?.horizontal) ??
-                      0) /
-                  2) /
-          project.paper!.width);
+  return ((project.placements![extractIndex].ratioOffset[0] +
+          convertUnit(
+                  project.placements![extractIndex].placementAttribute!.unit!,
+                  project.paper!.unit!,
+                  ((project.placements![extractIndex].placementAttribute
+                              ?.horizontal) ??
+                          0) /
+                      2) /
+              project.paper!.width)) *
+      pdfWidth;
 }

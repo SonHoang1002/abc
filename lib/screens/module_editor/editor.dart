@@ -349,9 +349,12 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                 setState(() {
                                   _isLoading = false;
                                 });
-                                await Share.shareXFiles([
+                                ShareResult shareResult =
+                                    await Share.shareXFiles([
                                   XFile(result[0].path),
                                 ]);
+                                print(
+                                    "shareResult on Save to function: ${shareResult.toString()}");
                               },
                               onCancel: () async {
                                 ref
