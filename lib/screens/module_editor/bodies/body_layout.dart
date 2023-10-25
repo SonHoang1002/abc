@@ -150,10 +150,6 @@ class _LayoutBodyState extends State<LayoutBody> {
             _seletedPlacement!.placementAttribute!.unit!,
             newData.placementAttribute!.unit!,
             convertHeight);
-        // final deltaHorizontal =
-        //     (newData.placementAttribute!.horizontal - paddingAttributeList0[0]);
-        // final deltaVertical =
-        //     (newData.placementAttribute!.vertical - paddingAttributeList0[1]);
         final deltaTop =
             (newData.placementAttribute!.top - paddingAttributeList0[2]);
         final deltaLeft =
@@ -162,28 +158,7 @@ class _LayoutBodyState extends State<LayoutBody> {
             (newData.placementAttribute!.right - paddingAttributeList0[4]);
         final deltaBottom =
             (newData.placementAttribute!.bottom - paddingAttributeList0[5]);
-        // if (deltaHorizontal > 0) {
-        //   _listPlacement[index].ratioWidth -=
-        //       2 * (deltaHorizontal / convertWidth0).abs();
-        //   _listPlacement[index].ratioOffset[0] +=
-        //       (deltaHorizontal / convertWidth0).abs();
-        // } else if (deltaHorizontal > 0) {
-        //   _listPlacement[index].ratioWidth +=
-        //       2 * (deltaHorizontal / convertWidth0).abs();
-        //   _listPlacement[index].ratioOffset[0] -=
-        //       (deltaHorizontal / convertWidth0).abs();
-        // }
-        // if (deltaVertical > 0) {
-        //   _listPlacement[index].ratioHeight -=
-        //       2 * (deltaVertical / convertHeight0).abs();
-        //   _listPlacement[index].ratioOffset[1] +=
-        //       (deltaVertical / convertHeight0).abs();
-        // } else if (deltaVertical > 0) {
-        //   _listPlacement[index].ratioHeight +=
-        //       2 * (deltaVertical / convertHeight0).abs();
-        //   _listPlacement[index].ratioOffset[1] -=
-        //       (deltaVertical / convertHeight0).abs();
-        // }
+
         // padding top
         if (deltaTop > 0) {
           _listPlacement[index].ratioHeight -=
@@ -605,24 +580,30 @@ class _LayoutBodyState extends State<LayoutBody> {
                 widget.reRenderFunction();
               },
               onFocusPlacement: (placement, matrix4) {
+                setState(() {
+                  int index = _listPlacement.indexWhere(
+                    (element) {
+                      return element.id == placement.id;
+                    },
+                  );
+                  if (index != -1) {
+                    _matrix4Notifiers.removeAt(index);
+                    _matrix4Notifiers.add(matrix4);
+                    _listPlacement.removeAt(index);
+                    _listPlacement.add(placement);
+                  }
+                });
+                Future.delayed(const Duration(milliseconds: 50), () {
+                  setState(() {
+                    _seletedPlacement = placement;
+                  });
+                  widget.reRenderFunction();
+                });
+
                 // setState(() {
-                //   int index = _listPlacement.indexWhere(
-                //     (element) {
-                //       return element.id == placement.id;
-                //     },
-                //   );
-                //   if (index != -1) {
-                //     _matrix4Notifiers.removeAt(index);
-                //     _matrix4Notifiers.add(matrix4);
-                //     _listPlacement.removeAt(index);
-                //     _listPlacement.add(placement);
-                //   }
+                // _seletedPlacement = placement;
                 // });
                 // widget.reRenderFunction();
-                setState(() {
-                  _seletedPlacement = placement;
-                });
-                widget.reRenderFunction();
               },
               onCancelFocusPlacement: _disablePlacement,
               seletedPlacement: _seletedPlacement,

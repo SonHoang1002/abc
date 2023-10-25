@@ -42,7 +42,7 @@ class MyThemes {
       cardColor: const Color.fromRGBO(255, 255, 255, 0.1),
       // mau nen block navigator
       canvasColor: const Color.fromRGBO(0, 0, 0, 0.1),
-      dividerTheme: DividerThemeData(color: Colors.black),
+      dividerTheme: const DividerThemeData(color: Colors.black),
       primaryColor: Colors.grey.withOpacity(0.6),
       appBarTheme: AppBarTheme(backgroundColor: Colors.grey.shade900),
       textTheme: const TextTheme(

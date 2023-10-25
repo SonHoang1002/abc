@@ -339,26 +339,39 @@ class WProjectItemPreview extends StatelessWidget {
           padding: const EdgeInsets.all(3),
           child: Column(
             children: [
-              Container(
-                  width: _getRealWH(context)[0],
-                  height: _getRealWH(context)[1],
-                  decoration:
-                      BoxDecoration(color: project.backgroundColor, boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      spreadRadius: 0.5,
-                      blurRadius: 5,
-                      offset: const Offset(0, 1),
-                    ),
-                  ]),
-                  child: coverFile != null
-                      ? const SizedBox()
-                      : LayoutMedia(
-                          indexImage: indexImage,
-                          project: project,
-                          layoutExtractList: layoutExtractList,
-                          widthAndHeight: _getRealWH(context),
-                        )),
+              Stack(
+                children: [
+                  Container(
+                      width: _getRealWH(context)[0],
+                      height: _getRealWH(context)[1],
+                      decoration: BoxDecoration(
+                          color: project.backgroundColor,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              spreadRadius: 0.5,
+                              blurRadius: 5,
+                              offset: const Offset(0, 1),
+                            ),
+                          ]),
+                      child: coverFile != null
+                          ? const SizedBox()
+                          : LayoutMedia(
+                              indexImage: indexImage,
+                              project: project,
+                              layoutExtractList: layoutExtractList,
+                              widthAndHeight: _getRealWH(context),
+                            )),
+                  coverFile != null
+                      ? Positioned.fill(
+                          child: Image.file(
+                            coverFile!,
+                            fit: BoxFit.cover,
+                            filterQuality: FilterQuality.medium,
+                          ))
+                      : const SizedBox()
+                ],
+              ),
               WSpacer(
                 height: 10,
               ),
@@ -372,17 +385,6 @@ class WProjectItemPreview extends StatelessWidget {
             ],
           ),
         ),
-        coverFile != null
-            ? Positioned.fill(
-                child: Container(
-                margin: const EdgeInsets.fromLTRB(3, 3, 3, 29),
-                child: Image.file(
-                  coverFile!,
-                  fit: BoxFit.cover,
-                  filterQuality: FilterQuality.medium,
-                ),
-              ))
-            : const SizedBox()
       ],
     );
   }

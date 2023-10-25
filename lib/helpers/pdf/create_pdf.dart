@@ -215,11 +215,6 @@ pw.Widget _buildCorePDFLayoutMedia(
   List<dynamic>? layoutExtractList,
   List<double> widthAndHeight,
 ) {
-  final double spacingHorizontalValue =
-      ((project.spacingAttribute?.horizontalSpacing ?? 0.0)) * 3;
-  final double spacingVerticalValue =
-      ((project.spacingAttribute?.verticalSpacing ?? 0.0)) * 3;
-
   if (project.useAvailableLayout != true &&
       project.placements != null &&
       project.placements!.isNotEmpty) {
@@ -228,16 +223,16 @@ pw.Widget _buildCorePDFLayoutMedia(
       children: layoutExtractList!.map((e) {
         final index = layoutExtractList.indexOf(e);
         return pw.Positioned(
-            top: getPositionWithTop(index, project, widthAndHeight[1]),
-            left: getPositionWithLeft(index, project, widthAndHeight[0]),
+            top: _getPositionWithTop(index, project, widthAndHeight[1]),
+            left: _getPositionWithLeft(index, project, widthAndHeight[0]),
             child: pw.Container(
               // margin: caculatePdfSpacing(project, widthAndHeight,
               //     project.spacingAttribute?.unit, project.paper?.unit),
               child: _buildImageWidget(
                 project,
                 layoutExtractList[index],
-                height: getRealHeight(index, project, widthAndHeight[1]),
-                width: getRealWidth(index, project, widthAndHeight[0]),
+                height: _getRealHeight(index, project, widthAndHeight[1]),
+                width: _getRealWidth(index, project, widthAndHeight[0]),
               ),
             ));
       }).toList(),
@@ -273,7 +268,7 @@ pw.Widget _buildCorePDFLayoutMedia(
     }
     return pw.Container(
         padding: caculatePdfPadding(project, widthAndHeight,
-            project.spacingAttribute?.unit, project.paper?.unit),
+            project.paddingAttribute?.unit, project.paper?.unit),
         child: pw.Column(
           mainAxisAlignment: pw.MainAxisAlignment.center,
           crossAxisAlignment: pw.CrossAxisAlignment.center,
@@ -294,23 +289,56 @@ pw.Widget _buildImageWidget(Project project, dynamic imageData,
   }
 }
 
-double getRealHeight(int extractIndex, Project project, double pdfHeight) {
-  final realHeight =
-      pdfHeight * (project.placements![extractIndex].ratioHeight);
+double _getRealHeight(int extractIndex, Project project, double pdfHeight) {
+  final realHeight = pdfHeight *
+      (project.placements![extractIndex].ratioHeight -
+          convertUnit(
+                  project.placements![extractIndex].placementAttribute!.unit!,
+                  project.paper!.unit!,
+                  ((project.placements![extractIndex].placementAttribute
+                          ?.vertical) ??
+                      0)) /
+              project.paper!.height);
   return realHeight;
 }
 
-double getRealWidth(int extractIndex, Project project, double pdfWidth) {
-  final realWidth = pdfWidth * (project.placements![extractIndex].ratioWidth);
+double _getRealWidth(int extractIndex, Project project, double pdfWidth) {
+  final realWidth = pdfWidth *
+      (project.placements![extractIndex].ratioWidth -
+          convertUnit(
+                  project.placements![extractIndex].placementAttribute!.unit!,
+                  project.paper!.unit!,
+                  ((project.placements![extractIndex].placementAttribute
+                          ?.horizontal) ??
+                      0)) /
+              project.paper!.width);
   return realWidth;
 }
 
-double getPositionWithTop(int extractIndex, Project project, double pdfHeight) {
+double _getPositionWithTop(
+    int extractIndex, Project project, double pdfHeight) {
   final result =
-      ((project.placements![extractIndex].ratioOffset[1]) * pdfHeight);
+      ((project.placements![extractIndex].ratioOffset[1]) * pdfHeight +
+          convertUnit(
+                  project.placements![extractIndex].placementAttribute!.unit!,
+                  project.paper!.unit!,
+                  ((project.placements![extractIndex].placementAttribute
+                              ?.vertical) ??
+                          0) /
+                      2) /
+              project.paper!.height);
   return result;
 }
 
-double getPositionWithLeft(int extractIndex, Project project, double pdfWidth) {
-  return ((project.placements![extractIndex].ratioOffset[0]) * pdfWidth);
+double _getPositionWithLeft(
+    int extractIndex, Project project, double pdfWidth) {
+  return ((project.placements![extractIndex].ratioOffset[0]) * pdfWidth +
+      convertUnit(
+              project.placements![extractIndex].placementAttribute!.unit!,
+              project.paper!.unit!,
+              ((project.placements![extractIndex].placementAttribute
+                          ?.horizontal) ??
+                      0) /
+                  2) /
+          project.paper!.width);
 }

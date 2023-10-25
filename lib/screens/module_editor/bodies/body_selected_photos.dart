@@ -210,46 +210,18 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
           WSpacer(
             height: 5,
           ),
-          SizedBox(
-            width: size.width * 0.7,
-            child: Flex(
-              direction: Axis.horizontal,
-              children: [
-                Flexible(
-                  flex: 2,
-                  child: WButtonFilled(
-                    message: "Add Photo",
-                    textColor: colorBlue,
-                    textLineHeight: 14.32,
-                    textSize: 12,
-                    height: 30,
-                    backgroundColor: const Color.fromRGBO(22, 115, 255, 0.08),
-                    onPressed: () async {
-                      _pickImages();
-                    },
-                    padding: EdgeInsets.zero,
-                  ),
-                ),
-                WSpacer(
-                  width: 10,
-                ),
-                Flexible(
-                  flex: 2,
-                  child: WButtonFilled(
-                    message: "Add File",
-                    height: 30,
-                    textColor: colorBlue,
-                    textLineHeight: 14.32,
-                    textSize: 12,
-                    backgroundColor: const Color.fromRGBO(22, 115, 255, 0.08),
-                    padding: EdgeInsets.zero,
-                    onPressed: () async {
-                      _pickFiles();
-                    },
-                  ),
-                ),
-              ],
-            ),
+          WButtonFilled(
+            message: "Add Photo",
+            textColor: colorBlue,
+            textLineHeight: 14.32,
+            textSize: 12,
+            height: 30,
+            width: size.width * 0.5,
+            backgroundColor: const Color.fromRGBO(22, 115, 255, 0.08),
+            onPressed: () async {
+              _pickImages();
+            },
+            padding: EdgeInsets.zero,
           ),
           WSpacer(
             height: 15,

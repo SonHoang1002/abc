@@ -211,3 +211,6 @@ const double point = 1.0;
 const double inch = 72.0;
 const double cm = inch / 2.54;
 const double mm = inch / 25.4;
+
+const String SHARE_APP_LINK =
+    "https://play.google.com/store/apps/details?id=com.tapuniverse.phototopdf&pli=1";

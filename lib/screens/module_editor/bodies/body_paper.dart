@@ -332,20 +332,6 @@ class _PaperBodyState extends State<PaperBody> {
     return "${_paperSizeWidthController.text.trim()}x${_paperSizeHeightController.text.trim()} ${_paperConfig['content'].unit.value}";
   }
 
-  double _renderPreviewHeight() {
-    // (_pageSizeIsPortrait ? 220 : 170)
-    return (_pageSizeIsPortrait ? 220 : 170) *
-        double.parse(_paperHeightValue) /
-        double.parse(_paperWidthValue);
-  }
-
-  double _renderPreviewWidth() {
-    // (_pageSizeIsPortrait ? 170 : 220)
-    return (_pageSizeIsPortrait ? 170 : 220) *
-        double.parse(_paperWidthValue) /
-        double.parse(_paperHeightValue);
-  }
-
   List<double> _getWidthAndHeight(double maxSize) {
     double width = 150;
     double height = 150;

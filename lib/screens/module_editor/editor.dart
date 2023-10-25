@@ -172,7 +172,6 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
 
   @override
   Widget build(BuildContext context) {
-    print(" rebuild ");
     _size = MediaQuery.sizeOf(context);
     return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,

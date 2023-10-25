@@ -1,5 +1,4 @@
-import 'dart:io';
-import 'package:isar/isar.dart';
+import 'package:photo_to_pdf/commons/themes.dart';
 import 'package:photo_to_pdf/services/isar_project_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
@@ -19,6 +18,7 @@ import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/project_items/w_project_item_bottom.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
+import 'package:provider/provider.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 
 class HomePage extends flutter_riverpod.ConsumerStatefulWidget {
@@ -80,6 +80,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // bool isDarkMode = Provider.of<ThemeManager>(context).isDarkMode;
     _listProject = ref.watch(projectControllerProvider).listProject;
     return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -113,7 +114,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
             : null,
         body: Column(
           children: [
-            Expanded(child: _buildBody()),
+            Expanded(child: Container(child: _buildBody())),
             _buildBottomNavigatorButtons()
           ],
         ));
@@ -253,8 +254,8 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
   Widget _buildBottomNavigatorButtons() {
     return Container(
       color: Theme.of(context).canvasColor,
-      height: 112,
-      margin: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
+      height: 112 + MediaQuery.of(context).padding.bottom,
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
@@ -479,65 +480,58 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                         children: [
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              WSpacer(
-                                width: 10,
+                              WButtonFilled(
+                                message: "Import Photos",
+                                height: 40,
+                                width: MediaQuery.sizeOf(context).width * 0.45,
+                                mediaSize: 20,
+                                textColor: colorRed,
+                                mediaColor: colorRed,
+                                mediaValue: "${pathPrefixIcon}icon_photos.png",
+                                backgroundColor:
+                                    const Color.fromRGBO(255, 63, 51, 0.1),
+                                onPressed: () async {
+                                  final result = await pickImage(
+                                      ImageSource.gallery, true);
+                                  if (result.isNotEmpty) {
+                                    _currentProject = _currentProject.copyWith(
+                                        listMedia: [
+                                          ..._currentProject.listMedia,
+                                          ...result
+                                        ]);
+                                  }
+                                  setState(() {});
+                                  setStatefull(() {});
+                                },
                               ),
-                              Flexible(
-                                child: WButtonFilled(
-                                  message: "Import Photos",
-                                  height: 60,
-                                  mediaSize: 20,
-                                  textColor: colorRed,
-                                  mediaColor: colorRed,
-                                  mediaValue:
-                                      "${pathPrefixIcon}icon_photos.png",
-                                  backgroundColor:
-                                      const Color.fromRGBO(255, 63, 51, 0.1),
-                                  onPressed: () async {
-                                    final result = await pickImage(
-                                        ImageSource.gallery, true);
-                                    if (result.isNotEmpty) {
-                                      _currentProject = _currentProject
-                                          .copyWith(listMedia: [
-                                        ..._currentProject.listMedia,
-                                        ...result
-                                      ]);
-                                    }
-                                    setState(() {});
-                                    setStatefull(() {});
-                                  },
-                                ),
-                              ),
-                              WSpacer(
-                                width: 10,
-                              ),
-                              Flexible(
-                                child: WButtonFilled(
-                                  message: "Import Files",
-                                  height: 60,
-                                  mediaSize: 20,
-                                  textColor: colorBlue,
-                                  mediaColor: colorBlue,
-                                  backgroundColor:
-                                      const Color.fromRGBO(22, 115, 255, 0.08),
-                                  mediaValue: "${pathPrefixIcon}icon_files.png",
-                                  onPressed: () async {
-                                    List<File> result = await pickFiles();
-                                    if (result.isNotEmpty) {
-                                      _currentProject = _currentProject
-                                          .copyWith(listMedia: [
-                                        ..._currentProject.listMedia,
-                                        ...result
-                                      ]);
-                                    }
-                                    setStatefull(() {});
-                                  },
-                                ),
-                              ),
-                              WSpacer(
-                                width: 10,
-                              )
+                              // Flexible(
+                              //   child: WButtonFilled(
+                              //     message: "Import Files",
+                              //     height: 60,
+                              //     mediaSize: 20,
+                              //     textColor: colorBlue,
+                              //     mediaColor: colorBlue,
+                              //     backgroundColor:
+                              //         const Color.fromRGBO(22, 115, 255, 0.08),
+                              //     mediaValue: "${pathPrefixIcon}icon_files.png",
+                              //     onPressed: () async {
+                              //       List<File> result = await pickFiles();
+                              //       if (result.isNotEmpty) {
+                              //         _currentProject = _currentProject
+                              //             .copyWith(listMedia: [
+                              //           ..._currentProject.listMedia,
+                              //           ...result
+                              //         ]);
+                              //       }
+                              //       setStatefull(() {});
+                              //     },
+                              //   ),
+                              // ),
+                              // WSpacer(
+                              //   width: 10,
+                              // )
                             ],
                           ),
                           WSpacer(
@@ -551,7 +545,9 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                             textColor: colorWhite,
                             onPressed: () async {
                               _currentProject = _currentProject.copyWith(
-                                  paper: LIST_PAGE_SIZE[5]);
+                                  paper: LIST_PAGE_SIZE[5],
+                                  paddingAttribute: PADDING_OPTIONS,
+                                  spacingAttribute: SPACING_OPTIONS,);
                               ref
                                   .read(projectControllerProvider.notifier)
                                   .addProject(_currentProject);

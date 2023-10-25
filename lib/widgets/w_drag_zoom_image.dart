@@ -281,9 +281,8 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                                   )),
                                 ),
                               )),
-                              _seletedPlacement == _listPlacement[index] &&
-                                      widget.seletedPlacement ==
-                                          _listPlacement[index]
+                              // _seletedPlacement == _listPlacement[index] &&
+                              widget.seletedPlacement == _listPlacement[index]
                                   ? Positioned.fill(
                                       child: _buildPanGestureWidget(index))
                                   : const SizedBox()
@@ -300,25 +299,6 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
         )
       ],
     );
-  }
-
-  double limitLeft(int index) {
-    return ((_size.width * (1 - _ratioTarget[0]) / 2) -
-        (ratioToPixel(_listPlacement[index].ratioWidth, _maxWidth) <
-                    minSizePlacement
-                ? 5
-                : 15) /
-            2);
-  }
-
-  double limitRight(int index) {
-    return ((_size.width * _ratioTarget[0] +
-            _size.width * (1 - _ratioTarget[0]) / 2) +
-        (ratioToPixel(_listPlacement[index].ratioWidth, _maxWidth) <
-                    minSizePlacement
-                ? 5
-                : 15) /
-            2);
   }
 
   Widget _buildPanGestureWidget(int index) {

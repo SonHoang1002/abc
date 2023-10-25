@@ -8,6 +8,7 @@ import 'package:photo_to_pdf/commons/themes.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class Setting extends StatelessWidget {
   const Setting({super.key});
@@ -15,22 +16,22 @@ class Setting extends StatelessWidget {
   void _onFeedback() async {
     final Email email = Email(
       // body: 'Feedback',
-      // subject: 'Email subject',
+      // subject: 'Feedback',
       // receiver
-      // recipients: ['hoangtrungson07012001@gmail.com'],
-      // cc: ['abc@gmail.com'],
+      recipients: ['tapuniverse@gmail.com'],
       // bcc: ['abc@gmail.com'],
       isHTML: false,
     );
     await FlutterEmailSender.send(email);
   }
 
-  void _onShare() {
-    print("share app");
+  void _onShare() async {
+    await Share.shareUri(Uri.parse(SHARE_APP_LINK));
   }
 
   void _onAccessSetting() async {
     final result = await openAppSettings();
+    print("result from _onAccessSetting ${result}");
   }
 
   @override
