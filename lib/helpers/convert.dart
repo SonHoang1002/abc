@@ -11,11 +11,11 @@ import 'package:photo_to_pdf/models/project.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 double pixelToRatio(double child, double parent) {
-  return double.parse((child / parent).toStringAsFixed(2));
+  return (child / parent);
 }
 
 double ratioToPixel(double ratio, double parent) {
-  return double.parse((ratio * parent).toStringAsFixed(2));
+  return (ratio * parent);
 }
 
 /// [Input] is KB , [Output] is KB or MB

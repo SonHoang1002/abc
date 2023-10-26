@@ -1,0 +1,43 @@
+
+
+let view
+let gesture
+
+let position0 = Point
+
+// goi lien tuc
+func gestureDetect() {
+    if state == began {
+        // goi 1 lan khi bat dau keo
+        // position0 = view.position
+        rect0 = view.frame
+        position0 = gesture.globalposition
+        return
+    }
+
+    if state == changed {
+        // goi lien tuc sau lan began
+        let translation = globalposition - position0
+        let x0, x1, y0, y1 = rect0 + translation
+
+        // let translation = gesture.translation // do dich chuyen cua gesture
+        // let newX = position0.x + translation.x
+        // let newY = position0.y + translation.y
+
+        for all other views {
+            if abs(newX - x_i) < delta do {
+                newX = x_i
+            }
+            if abs(newY - y_i) < delta do {
+                newY = y_i
+            }
+        }
+
+        view.position = Point(newX, newY)
+
+        return
+    }
+
+    // check truong hop finish
+    // code finish
+}

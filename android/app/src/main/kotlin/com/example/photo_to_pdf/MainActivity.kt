@@ -1,4 +1,4 @@
-package com.example.photo_to_pdf
+package com.tapuniverse.phototopdf
 
 import io.flutter.embedding.android.FlutterActivity
 

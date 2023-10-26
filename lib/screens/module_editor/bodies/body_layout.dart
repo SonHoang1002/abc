@@ -58,6 +58,7 @@ class _LayoutBodyState extends State<LayoutBody> {
   // layout custom variables
   List<ValueNotifier<Matrix4>> _matrix4Notifiers = [];
   List<Placement> _listPlacement = [];
+  List<GlobalKey> _listDragItemKey = [];
   Placement? _seletedPlacement;
 
   // background variable
@@ -65,6 +66,7 @@ class _LayoutBodyState extends State<LayoutBody> {
   late List<double> _ratioTarget;
   late Offset _alignmentDialogOffset;
   late bool _isShowAlignmentDialog;
+  late List<Placement> _listPlacementPreventive;
 
   @override
   void initState() {
@@ -93,8 +95,10 @@ class _LayoutBodyState extends State<LayoutBody> {
     _spacingOptions = _project.spacingAttribute ?? SPACING_OPTIONS;
     _currentLayoutColor = _project.backgroundColor;
     _listPlacement = _project.placements ?? [];
+    _listPlacementPreventive = List.from(_listPlacement);
     _listPlacement.forEach((_) {
       _matrix4Notifiers.add(ValueNotifier<Matrix4>(Matrix4.identity()));
+      _listDragItemKey.add(GlobalKey());
     });
     _ratioTarget = LIST_RATIO_PLACEMENT_BOARD;
     if (_project.paper != null &&
@@ -233,6 +237,26 @@ class _LayoutBodyState extends State<LayoutBody> {
         },
         isScrollControlled: true,
         backgroundColor: transparent);
+  }
+
+  Placement _createNewPlacement() {
+    final newPlacement = Placement(
+      id: getRandomNumber(),
+      ratioWidth: 0.3,
+      ratioHeight: _project.paper != null
+          ? (0.3 * _project.paper!.width / _project.paper!.height)
+          : 0.25,
+      ratioOffset: [
+        0.5 - 0.15,
+        0.5 -
+            (_project.paper != null
+                    ? (0.3 * _project.paper!.width / _project.paper!.height)
+                    : 0.25) /
+                2
+      ],
+      placementAttribute: PLACEMENT_ATTRIBUTE,
+    );
+    return newPlacement;
   }
 
   @override
@@ -574,13 +598,16 @@ class _LayoutBodyState extends State<LayoutBody> {
               backgroundColor: _currentLayoutColor,
               listPlacement: _listPlacement,
               matrix4Notifiers: _matrix4Notifiers,
-              updatePlacement: (placements) {
+              listDragItemKey: _listDragItemKey,
+              updatePlacement: (
+                placements,
+              ) {
                 setState(() {
                   _listPlacement = placements;
                 });
                 widget.reRenderFunction();
               },
-              onFocusPlacement: (placement, matrix4) {
+              onFocusPlacement: (placement, matrix4,globalKey) {
                 setState(() {
                   int index = _listPlacement.indexWhere(
                     (element) {
@@ -590,6 +617,8 @@ class _LayoutBodyState extends State<LayoutBody> {
                   if (index != -1) {
                     _matrix4Notifiers.removeAt(index);
                     _matrix4Notifiers.add(matrix4);
+                    _listDragItemKey.removeAt(index);
+                    _listDragItemKey.add(globalKey);
                     _listPlacement.removeAt(index);
                     _listPlacement.add(placement);
                   }
@@ -609,6 +638,7 @@ class _LayoutBodyState extends State<LayoutBody> {
               onCancelFocusPlacement: _disablePlacement,
               seletedPlacement: _seletedPlacement,
               paperAttribute: _project.paper,
+              listPlacementPreventive: _listPlacementPreventive,
             )),
             WSpacer(height: 10),
             SizedBox(
@@ -629,17 +659,10 @@ class _LayoutBodyState extends State<LayoutBody> {
                         setState(() {
                           _matrix4Notifiers
                               .add(ValueNotifier(Matrix4.identity()));
-                          _listPlacement.add(Placement(
-                            id: getRandomNumber(),
-                            ratioWidth: 0.2,
-                            ratioHeight: _project.paper != null
-                                ? (0.2 *
-                                    _project.paper!.width /
-                                    _project.paper!.height)
-                                : 0.15,
-                            ratioOffset: [0.425, 0.425],
-                            placementAttribute: PLACEMENT_ATTRIBUTE,
-                          ));
+                          final newPlacement = _createNewPlacement();
+                          _listPlacement.add(newPlacement);
+                          _listDragItemKey.add(GlobalKey());
+                          _listPlacementPreventive.add(newPlacement);
                         });
                         widget.reRenderFunction();
                       },
@@ -744,8 +767,17 @@ class _LayoutBodyState extends State<LayoutBody> {
                             onPressed: () {
                               final index =
                                   _listPlacement.indexOf(_seletedPlacement!);
-                              _listPlacement.removeAt(index);
-                              _matrix4Notifiers.removeAt(index);
+                              if (index != -1) {
+                                _listPlacement.removeAt(index);
+                                _listDragItemKey.removeAt(index);
+                                _matrix4Notifiers.removeAt(index);
+                              }
+                              final indexPreventive = _listPlacementPreventive
+                                  .indexOf(_seletedPlacement!);
+                              if (indexPreventive != -1) {
+                                _listPlacementPreventive
+                                    .removeAt(indexPreventive);
+                              }
                               _seletedPlacement = null;
                               setState(() {});
                               widget.reRenderFunction();
