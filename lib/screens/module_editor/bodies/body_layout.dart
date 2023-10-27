@@ -11,7 +11,6 @@ import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/screens/module_editor/editor_padding_spacing.dart';
-import 'package:photo_to_pdf/widgets/w_drag_zoom_image.dart';
 import 'package:photo_to_pdf/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_layout_suggestion.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
@@ -56,10 +55,9 @@ class _LayoutBodyState extends State<LayoutBody> {
   late SpacingAttribute _spacingOptions;
 
   // layout custom variables
-  List<ValueNotifier<Matrix4>> _matrix4Notifiers = [];
+  final List<ValueNotifier<Matrix4>> _matrix4Notifiers = [];
   List<Placement> _listPlacement = [];
-  List<GlobalKey> _listDragItemKey = [];
-  Placement? _seletedPlacement;
+  Placement? _selectedPlacement;
 
   // background variable
   late Color _currentLayoutColor;
@@ -94,11 +92,11 @@ class _LayoutBodyState extends State<LayoutBody> {
     _paddingOptions = _project.paddingAttribute ?? PADDING_OPTIONS;
     _spacingOptions = _project.spacingAttribute ?? SPACING_OPTIONS;
     _currentLayoutColor = _project.backgroundColor;
-    _listPlacement = _project.placements ?? [];
-    _listPlacementPreventive = List.from(_listPlacement);
+    // _listPlacement = _project.placements ?? [];
+    _listPlacement = (_project.placements ?? []);
+    _listPlacementPreventive = List.from(_project.placements ?? []);
     _listPlacement.forEach((_) {
       _matrix4Notifiers.add(ValueNotifier<Matrix4>(Matrix4.identity()));
-      _listDragItemKey.add(GlobalKey());
     });
     _ratioTarget = LIST_RATIO_PLACEMENT_BOARD;
     if (_project.paper != null &&
@@ -117,7 +115,7 @@ class _LayoutBodyState extends State<LayoutBody> {
     super.dispose();
     _listAlignment.clear();
     _matrix4Notifiers.clear();
-    _seletedPlacement = null;
+    _selectedPlacement = null;
     _listLayoutStatus.clear();
   }
 
@@ -144,15 +142,15 @@ class _LayoutBodyState extends State<LayoutBody> {
         // convert unit
         List<double> paddingAttributeList0 = [];
         paddingAttributeList0 = paddingAttributeList.map((e) {
-          return convertUnit(_seletedPlacement!.placementAttribute!.unit!,
+          return convertUnit(_selectedPlacement!.placementAttribute!.unit!,
               newData.placementAttribute!.unit!, double.parse(e));
         }).toList();
         final convertWidth0 = convertUnit(
-            _seletedPlacement!.placementAttribute!.unit!,
+            _selectedPlacement!.placementAttribute!.unit!,
             newData.placementAttribute!.unit!,
             convertWidth);
         final convertHeight0 = convertUnit(
-            _seletedPlacement!.placementAttribute!.unit!,
+            _selectedPlacement!.placementAttribute!.unit!,
             newData.placementAttribute!.unit!,
             convertHeight);
         final deltaTop =
@@ -339,7 +337,7 @@ class _LayoutBodyState extends State<LayoutBody> {
                       backgroundColor: _currentLayoutColor,
                       paddingAttribute: _paddingOptions,
                       spacingAttribute: _spacingOptions,
-                      placements: _listPlacement,
+                      placements: _listPlacement.map((e) => e).toList(),
                       useAvailableLayout: true);
                   widget.onApply(_project, _segmentCurrentIndex);
                   return;
@@ -353,7 +351,7 @@ class _LayoutBodyState extends State<LayoutBody> {
                           .toList()
                           .first['alignment'],
                       backgroundColor: _currentLayoutColor,
-                      placements: _listPlacement,
+                      placements: _listPlacement.map((e) => e).toList(),
                       useAvailableLayout: false);
                   widget.onApply(_project, _segmentCurrentIndex);
                   return;
@@ -571,7 +569,7 @@ class _LayoutBodyState extends State<LayoutBody> {
   ) {
     void _disablePlacement() {
       setState(() {
-        _seletedPlacement = null;
+        _selectedPlacement = null;
       });
       widget.reRenderFunction();
     }
@@ -598,16 +596,32 @@ class _LayoutBodyState extends State<LayoutBody> {
               backgroundColor: _currentLayoutColor,
               listPlacement: _listPlacement,
               matrix4Notifiers: _matrix4Notifiers,
-              listDragItemKey: _listDragItemKey,
-              updatePlacement: (
-                placements,
-              ) {
-                setState(() {
-                  _listPlacement = placements;
-                });
+              onUpdatePlacement: (placementList, placement, matrix4) {
+                _listPlacement = placementList;
+                // if (placement != null && matrix4 != null) {
+                //   int index = _listPlacement.indexWhere(
+                //     (element) {
+                //       return element.id == placement.id;
+                //     },
+                //   );
+                //   if (index != -1) {
+                //     _matrix4Notifiers.removeAt(index);
+                //     _matrix4Notifiers.add(matrix4);
+                //     _listPlacement.removeAt(index);
+                //     _listPlacement.add(placement);
+                //   }
+
+                //   Future.delayed(const Duration(milliseconds: 50), () {
+                //     setState(() {
+                //       _selectedPlacement = placement;
+                //     });
+                //     widget.reRenderFunction();
+                //   });
+                // }
+                setState(() {});
                 widget.reRenderFunction();
               },
-              onFocusPlacement: (placement, matrix4,globalKey) {
+              onFocusPlacement: (placement, matrix4) {
                 setState(() {
                   int index = _listPlacement.indexWhere(
                     (element) {
@@ -617,26 +631,24 @@ class _LayoutBodyState extends State<LayoutBody> {
                   if (index != -1) {
                     _matrix4Notifiers.removeAt(index);
                     _matrix4Notifiers.add(matrix4);
-                    _listDragItemKey.removeAt(index);
-                    _listDragItemKey.add(globalKey);
                     _listPlacement.removeAt(index);
                     _listPlacement.add(placement);
                   }
                 });
                 Future.delayed(const Duration(milliseconds: 50), () {
                   setState(() {
-                    _seletedPlacement = placement;
+                    _selectedPlacement = placement;
                   });
                   widget.reRenderFunction();
                 });
 
                 // setState(() {
-                // _seletedPlacement = placement;
+                // _selectedPlacement = placement;
                 // });
                 // widget.reRenderFunction();
               },
               onCancelFocusPlacement: _disablePlacement,
-              seletedPlacement: _seletedPlacement,
+              selectedPlacement: _selectedPlacement,
               paperAttribute: _project.paper,
               listPlacementPreventive: _listPlacementPreventive,
             )),
@@ -661,7 +673,6 @@ class _LayoutBodyState extends State<LayoutBody> {
                               .add(ValueNotifier(Matrix4.identity()));
                           final newPlacement = _createNewPlacement();
                           _listPlacement.add(newPlacement);
-                          _listDragItemKey.add(GlobalKey());
                           _listPlacementPreventive.add(newPlacement);
                         });
                         widget.reRenderFunction();
@@ -669,12 +680,12 @@ class _LayoutBodyState extends State<LayoutBody> {
                       padding: EdgeInsets.zero,
                     ),
                   ),
-                  _seletedPlacement != null
+                  _selectedPlacement != null
                       ? WSpacer(
                           width: 10,
                         )
                       : const SizedBox(),
-                  _seletedPlacement != null
+                  _selectedPlacement != null
                       ? Flexible(
                           flex: 2,
                           child: WButtonFilled(
@@ -689,50 +700,50 @@ class _LayoutBodyState extends State<LayoutBody> {
                             onPressed: () {
                               final convertHeight = convertUnit(
                                   _project.paper!.unit!,
-                                  _seletedPlacement!.placementAttribute!.unit!,
+                                  _selectedPlacement!.placementAttribute!.unit!,
                                   _project.paper!.height);
                               final convertWidth = convertUnit(
                                   _project.paper!.unit!,
-                                  _seletedPlacement!.placementAttribute!.unit!,
+                                  _selectedPlacement!.placementAttribute!.unit!,
                                   _project.paper!.width);
                               // horizontal, vertical, top, left, right, bottom
                               // width and height is 0 and 1 to comparable with EditorPaddingSpacing (2 controller)
                               List<String> paddingAttributeList = [];
-                              paddingAttributeList.add(((_seletedPlacement!
+                              paddingAttributeList.add(((_selectedPlacement!
                                           .placementAttribute?.horizontal) ??
                                       0.0)
                                   .toString());
-                              paddingAttributeList.add(((_seletedPlacement!
+                              paddingAttributeList.add(((_selectedPlacement!
                                           .placementAttribute?.vertical) ??
                                       0.0)
                                   .toString());
                               //top
                               paddingAttributeList.add(
-                                  (_seletedPlacement!.ratioOffset[1] *
+                                  (_selectedPlacement!.ratioOffset[1] *
                                           convertHeight)
                                       .toStringAsFixed(2));
                               //left
                               paddingAttributeList.add(
-                                  (_seletedPlacement!.ratioOffset[0] *
+                                  (_selectedPlacement!.ratioOffset[0] *
                                           convertWidth)
                                       .toStringAsFixed(2));
                               //right
                               paddingAttributeList.add(((1 -
-                                          (_seletedPlacement!.ratioOffset[0] +
-                                              _seletedPlacement!.ratioWidth)) *
+                                          (_selectedPlacement!.ratioOffset[0] +
+                                              _selectedPlacement!.ratioWidth)) *
                                       convertWidth)
                                   .toStringAsFixed(2));
                               // bottom
                               paddingAttributeList.add(((1 -
-                                          (_seletedPlacement!.ratioOffset[1] +
-                                              _seletedPlacement!.ratioHeight)) *
+                                          (_selectedPlacement!.ratioOffset[1] +
+                                              _selectedPlacement!.ratioHeight)) *
                                       convertHeight)
                                   .toStringAsFixed(2));
                               pushCustomVerticalMaterialPageRoute(
                                   context,
                                   EditorPaddingSpacing(
-                                    placement: _seletedPlacement,
-                                    unit: (_seletedPlacement!
+                                    placement: _selectedPlacement!,
+                                    unit: (_selectedPlacement!
                                         .placementAttribute!.unit!),
                                     title: TITLE_EDIT_PLACEMENT,
                                     inputValues: paddingAttributeList,
@@ -747,12 +758,12 @@ class _LayoutBodyState extends State<LayoutBody> {
                           ),
                         )
                       : const SizedBox(),
-                  _seletedPlacement != null
+                  _selectedPlacement != null
                       ? WSpacer(
                           width: 10,
                         )
                       : const SizedBox(),
-                  _seletedPlacement != null
+                  _selectedPlacement != null
                       ? Flexible(
                           flex: 2,
                           child: WButtonFilled(
@@ -766,19 +777,18 @@ class _LayoutBodyState extends State<LayoutBody> {
                             padding: EdgeInsets.zero,
                             onPressed: () {
                               final index =
-                                  _listPlacement.indexOf(_seletedPlacement!);
+                                  _listPlacement.indexOf(_selectedPlacement!);
                               if (index != -1) {
                                 _listPlacement.removeAt(index);
-                                _listDragItemKey.removeAt(index);
                                 _matrix4Notifiers.removeAt(index);
                               }
                               final indexPreventive = _listPlacementPreventive
-                                  .indexOf(_seletedPlacement!);
+                                  .indexOf(_selectedPlacement!);
                               if (indexPreventive != -1) {
                                 _listPlacementPreventive
                                     .removeAt(indexPreventive);
                               }
-                              _seletedPlacement = null;
+                              _selectedPlacement = null;
                               setState(() {});
                               widget.reRenderFunction();
                             },

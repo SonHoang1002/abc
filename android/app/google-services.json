@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1091865429801",
+    "project_id": "photo-to-pdf-7f8ef",
+    "storage_bucket": "photo-to-pdf-7f8ef.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1091865429801:android:6b3be56fb10dd2c6929938",
+        "android_client_info": {
+          "package_name": "com.tapuniverse.phototopdf"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2xvZtMaAMh5-fo6hb_aPz36MAkTjT0Bk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

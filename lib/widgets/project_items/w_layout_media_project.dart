@@ -14,12 +14,14 @@ class LayoutMedia extends ConsumerStatefulWidget {
   final List<dynamic>? layoutExtractList;
   final List<double> widthAndHeight;
   final List<double>? listWH;
+  final bool? useCoverPhoto;
   const LayoutMedia(
       {super.key,
       required this.project,
       required this.indexImage,
       required this.layoutExtractList,
       required this.widthAndHeight,
+      this.useCoverPhoto,
       this.listWH});
 
   @override
@@ -33,6 +35,16 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
     List<dynamic>? layoutExtractList,
     List<double> widthAndHeight,
   ) {
+    if (widget.useCoverPhoto == true &&
+        project.coverPhoto?.frontPhoto != null) {
+      return Image.file(
+        project.coverPhoto?.frontPhoto,
+        fit: BoxFit.cover,
+        width: widget.listWH![0],
+        height: widget.listWH![1],
+        filterQuality: FilterQuality.high,
+      );
+    }
     if (project.listMedia.isEmpty ||
         (project.listMedia.length == 1 && project.listMedia[0] is String)) {
       return Container(

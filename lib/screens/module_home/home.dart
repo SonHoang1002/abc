@@ -1,4 +1,4 @@
-import 'package:photo_to_pdf/commons/themes.dart';
+import 'package:photo_to_pdf/helpers/render_boxfit.dart';
 import 'package:photo_to_pdf/services/isar_project_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
@@ -18,7 +18,6 @@ import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/project_items/w_project_item_bottom.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
-import 'package:provider/provider.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 
 class HomePage extends flutter_riverpod.ConsumerStatefulWidget {
@@ -236,6 +235,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
       indexImage: index,
       layoutExtractList: _getEtractList(index),
       title: _listProject[index].title,
+      useCoverPhoto: true,
       onTap: () {
         pushNavigator(context, Editor(project: _listProject[index]));
       },

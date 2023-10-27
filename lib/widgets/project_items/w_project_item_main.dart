@@ -19,6 +19,8 @@ class WProjectItemEditor extends StatelessWidget {
   final List<dynamic>? layoutExtractList;
   final Function()? onTap;
   final List<double>? ratioTarget;
+  // kiem tra xem co uu tien dung anh bia de hien thi khong
+  final bool? useCoverPhoto;
 
   WProjectItemEditor(
       {super.key,
@@ -29,6 +31,7 @@ class WProjectItemEditor extends StatelessWidget {
       this.onRemove,
       this.layoutExtractList,
       this.onTap,
+      this.useCoverPhoto,
       this.ratioTarget = LIST_RATIO_PROJECT_ITEM});
 
   double? maxHeight;
@@ -107,6 +110,7 @@ class WProjectItemEditor extends StatelessWidget {
                           project: project,
                           layoutExtractList: layoutExtractList,
                           widthAndHeight: _getRealWH(context),
+                          useCoverPhoto:useCoverPhoto,
                           listWH: _getRealWH(context)),
                       isFocusByLongPress
                           ? Positioned.fill(
