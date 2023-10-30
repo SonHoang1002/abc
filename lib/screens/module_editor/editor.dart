@@ -444,6 +444,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         },
         isDismissible: false,
         isScrollControlled: true,
+        enableDrag: false,
         backgroundColor: transparent);
   }
 

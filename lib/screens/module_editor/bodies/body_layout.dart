@@ -252,6 +252,14 @@ class _LayoutBodyState extends State<LayoutBody> {
                     : 0.25) /
                 2
       ],
+      previewRatioOffset: [
+        0.5 - 0.15,
+        0.5 -
+            (_project.paper != null
+                    ? (0.3 * _project.paper!.width / _project.paper!.height)
+                    : 0.25) /
+                2
+      ],
       placementAttribute: PLACEMENT_ATTRIBUTE,
     );
     return newPlacement;
@@ -736,7 +744,8 @@ class _LayoutBodyState extends State<LayoutBody> {
                               // bottom
                               paddingAttributeList.add(((1 -
                                           (_selectedPlacement!.ratioOffset[1] +
-                                              _selectedPlacement!.ratioHeight)) *
+                                              _selectedPlacement!
+                                                  .ratioHeight)) *
                                       convertHeight)
                                   .toStringAsFixed(2));
                               pushCustomVerticalMaterialPageRoute(
@@ -788,6 +797,7 @@ class _LayoutBodyState extends State<LayoutBody> {
                                 _listPlacementPreventive
                                     .removeAt(indexPreventive);
                               }
+                              _listPlacementPreventive = List.from(_project.placements ?? []);
                               _selectedPlacement = null;
                               setState(() {});
                               widget.reRenderFunction();

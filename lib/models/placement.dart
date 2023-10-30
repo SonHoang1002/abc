@@ -9,6 +9,7 @@ class Placement {
   // double ratioHeight;
   // ratio of width, height
   List<double> ratioOffset;
+  List<double> previewRatioOffset;
   PlacementAttribute? placementAttribute;
   Placement({
     required this.id,
@@ -16,7 +17,7 @@ class Placement {
     required this.ratioHeight,
     required this.ratioOffset,
     required this.placementAttribute,
-    // required this.titleIndex
+    required this.previewRatioOffset
   });
 
   Placement copyWith({
@@ -24,7 +25,7 @@ class Placement {
     double? ratioHeight,
     List<double>? ratioOffset,
     PlacementAttribute? placementAttribute,
-    // String? titleIndex
+    List<double>? previewRatioOffset
   }) {
     return Placement(
       id: id,
@@ -32,7 +33,7 @@ class Placement {
       ratioHeight: ratioHeight ?? this.ratioHeight,
       ratioOffset: ratioOffset ?? this.ratioOffset,
       placementAttribute: placementAttribute ?? this.placementAttribute,
-      // titleIndex:titleIndex ?? this.titleIndex
+      previewRatioOffset:previewRatioOffset ?? this.previewRatioOffset
     );
   }
 
@@ -41,8 +42,8 @@ class Placement {
       'id': id,
       'ratioWidth': ratioWidth,
       'ratioHeight': ratioHeight,
-      'ratioOffset': ratioOffset,
-      // "titleIndex":titleIndex,
+      'ratioOffset': ratioOffset, 
+      "previewRatioOffset":previewRatioOffset,
       'placementAttribute':
           placementAttribute != null ? placementAttribute!.toJson() : null,
     };
@@ -53,8 +54,8 @@ class Placement {
       id: json['id'],
       ratioWidth: json['ratioWidth'],
       ratioHeight: json['ratioHeight'],
-      // titleIndex:json['titleIndex'],
       ratioOffset: [json['ratioOffset'][0], json['ratioOffset'][1]],
+      previewRatioOffset: [json['previewRatioOffset'][0], json['previewRatioOffset'][1]],
       placementAttribute: json['placementAttribute'] != null
           ? PlacementAttribute.fromJson(json['placementAttribute'])
           : null,
