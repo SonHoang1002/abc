@@ -10,30 +10,36 @@ class Placement {
   // ratio of width, height
   List<double> ratioOffset;
   List<double> previewRatioOffset;
+  double previewWidth;
+  double previewHeight;
   PlacementAttribute? placementAttribute;
-  Placement({
-    required this.id,
-    required this.ratioWidth,
-    required this.ratioHeight,
-    required this.ratioOffset,
-    required this.placementAttribute,
-    required this.previewRatioOffset
-  });
+  Placement(
+      {required this.id,
+      required this.ratioWidth,
+      required this.ratioHeight,
+      required this.ratioOffset,
+      required this.placementAttribute,
+      required this.previewRatioOffset,
+      required this.previewHeight,
+      required this.previewWidth});
 
-  Placement copyWith({
-    double? ratioWidth,
-    double? ratioHeight,
-    List<double>? ratioOffset,
-    PlacementAttribute? placementAttribute,
-    List<double>? previewRatioOffset
-  }) {
+  Placement copyWith(
+      {double? ratioWidth,
+      double? ratioHeight,
+      List<double>? ratioOffset,
+      PlacementAttribute? placementAttribute,
+      List<double>? previewRatioOffset,
+      double? previewHeight,
+      double? previewWidth}) {
     return Placement(
       id: id,
       ratioWidth: ratioWidth ?? this.ratioWidth,
       ratioHeight: ratioHeight ?? this.ratioHeight,
       ratioOffset: ratioOffset ?? this.ratioOffset,
       placementAttribute: placementAttribute ?? this.placementAttribute,
-      previewRatioOffset:previewRatioOffset ?? this.previewRatioOffset
+      previewRatioOffset: previewRatioOffset ?? this.previewRatioOffset,
+      previewHeight: previewHeight ?? this.previewHeight,
+      previewWidth: previewWidth ?? this.previewWidth,
     );
   }
 
@@ -42,10 +48,12 @@ class Placement {
       'id': id,
       'ratioWidth': ratioWidth,
       'ratioHeight': ratioHeight,
-      'ratioOffset': ratioOffset, 
-      "previewRatioOffset":previewRatioOffset,
+      'ratioOffset': ratioOffset,
+      "previewRatioOffset": previewRatioOffset,
       'placementAttribute':
           placementAttribute != null ? placementAttribute!.toJson() : null,
+      "previewWidth": previewWidth,
+      "previewHeight": previewHeight
     };
   }
 
@@ -55,10 +63,15 @@ class Placement {
       ratioWidth: json['ratioWidth'],
       ratioHeight: json['ratioHeight'],
       ratioOffset: [json['ratioOffset'][0], json['ratioOffset'][1]],
-      previewRatioOffset: [json['previewRatioOffset'][0], json['previewRatioOffset'][1]],
+      previewRatioOffset: [
+        json['previewRatioOffset'][0],
+        json['previewRatioOffset'][1]
+      ],
       placementAttribute: json['placementAttribute'] != null
           ? PlacementAttribute.fromJson(json['placementAttribute'])
           : null,
+      previewHeight: json['previewHeight'],
+      previewWidth: json['previewWidth'],
     );
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/helpers/check_distance.dart';
 import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/models/project.dart';
@@ -62,7 +63,6 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
   // [1]: override height
   List<List<double>> _listOverride = [[], []];
 
-  Offset? _panStartOffset;
   @override
   void dispose() {
     super.dispose();
@@ -167,39 +167,28 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
 
       for (int i = 0; i < listVerticalPosition.length; i++) {
         // ratio offset se snap den khoang cach listVerticalPosition[i]
-        if (_checkInsideDistance(
+        if (checkInsideDistance(
             listVerticalPosition[i], offsetTopLeft.dy, 0.25)) {
           _listOverride[1].add(offsetTopLeft.dy);
         }
-        if (_checkInsideDistance(
+        if (checkInsideDistance(
             listVerticalPosition[i], offsetBottomRight.dy, 0.25)) {
           _listOverride[1].add(offsetBottomRight.dy);
         }
       }
 
       for (int i = 0; i < listHorizontalPosition.length; i++) {
-        if (_checkInsideDistance(
+        if (checkInsideDistance(
             listHorizontalPosition[i], offsetTopLeft.dx, 0.25)) {
           _listOverride[0].add(offsetTopLeft.dx);
         }
-        if (_checkInsideDistance(
+        if (checkInsideDistance(
             listHorizontalPosition[i], offsetBottomRight.dx, 0.25)) {
           _listOverride[0].add(offsetBottomRight.dx);
         }
       }
     } else {
       _listOverride = [[], []];
-    }
-  }
-
-  bool _checkInsideDistance(
-      double checkValue, double checkedValue, double addtionalValue) {
-    final rightCheckValue = checkValue + addtionalValue;
-    final leftCheckValue = checkValue - addtionalValue;
-    if (leftCheckValue < checkedValue && checkedValue < rightCheckValue) {
-      return true;
-    } else {
-      return false;
     }
   }
 
@@ -271,7 +260,7 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
 
       for (int i = 0; i < listHorizontalPosition.length; i++) {
         // snap vao offsetTopLeft
-        if (_checkInsideDistance(
+        if (checkInsideDistance(
             listHorizontalPosition[i], offsetTopLeft.dx, 7)) {
           _listPlacement[index] = _listPlacement[index].copyWith(
             ratioOffset: List.from([
@@ -294,12 +283,10 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
                 _listPlacement[index].ratioOffset[1],
               ]),
             );
-          } else {
-            _listPlacement[index].ratioOffset = [currentRatio[0], newRatio[1]];
           }
         }
         // snap vao offsetBottomRight
-        if (_checkInsideDistance(
+        if (checkInsideDistance(
             listHorizontalPosition[i], offsetBottomRight.dx, 7)) {
           _listPlacement[index] = _listPlacement[index].copyWith(
             ratioOffset: List.from([
@@ -325,16 +312,13 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
                 _listPlacement[index].ratioOffset[1],
               ]),
             );
-          } else {
-            _listPlacement[index].ratioOffset = [currentRatio[0], newRatio[1]];
           }
         }
       }
 
       for (int i = 0; i < listVerticalPosition.length; i++) {
         // snap vao offsetTopLeft
-        if (_checkInsideDistance(
-            listVerticalPosition[i], offsetTopLeft.dy, 7)) {
+        if (checkInsideDistance(listVerticalPosition[i], offsetTopLeft.dy, 7)) {
           _listPlacement[index] = _listPlacement[index].copyWith(
             ratioOffset: List.from([
               _listPlacement[index].ratioOffset[0],
@@ -356,14 +340,11 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
                 _listPlacement[index].previewRatioOffset[1],
               ]),
             );
-          } else {
-            _listPlacement[index].ratioOffset =
-                List.from([newRatio[0], currentRatio[1]]);
           }
         }
 
         // snap vao offsetBottomRight
-        if (_checkInsideDistance(
+        if (checkInsideDistance(
             listVerticalPosition[i], offsetBottomRight.dy, 7)) {
           _listPlacement[index] = _listPlacement[index].copyWith(
             ratioOffset: List.from([
@@ -389,185 +370,9 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
                 _listPlacement[index].previewRatioOffset[1],
               ]),
             );
-          } else {
-            _listPlacement[index].ratioOffset = [newRatio[0], currentRatio[1]];
           }
         }
       }
-      widget.onFocusPlacement!(
-        _listPlacement[index],
-        _matrix4Notifiers[index],
-      );
-      setState(() {});
-    }
-  }
-
-  void _snapPosition1(
-    int index,
-    DragUpdateDetails details,
-    List<double> currentRatio,
-    List<double> newRatio, {
-    dynamic haveVertical,
-    dynamic haveHorizontal,
-  }) {
-    final listPlacementWithoutCurrent = _listPlacement
-        .where((element) => element.id != _listPlacement[index].id);
-    if (listPlacementWithoutCurrent.isNotEmpty) {
-      final offsetTopLeft = Offset(
-          ratioToPixel(_listPlacement[index].ratioOffset[0], _maxWidth),
-          ratioToPixel(_listPlacement[index].ratioOffset[1], _maxHeight));
-      final offsetBottomRight = Offset(
-          ratioToPixel(
-              _listPlacement[index].ratioOffset[0] +
-                  _listPlacement[index].ratioWidth,
-              _maxWidth),
-          ratioToPixel(
-              _listPlacement[index].ratioOffset[1] +
-                  _listPlacement[index].ratioHeight,
-              _maxHeight));
-      // lay do cao cua cac chieu ngang
-      List<double> listVerticalPosition = [];
-      List<double> listHorizontalPosition = [];
-      listPlacementWithoutCurrent.forEach((element) {
-        if (haveVertical != null) {
-          listVerticalPosition.addAll(
-              _getAxisPositionOfPlacement(element, getTopAndBottom: true));
-        }
-        if (haveHorizontal != null) {
-          listHorizontalPosition.addAll(
-              _getAxisPositionOfPlacement(element, getTopAndBottom: false));
-        }
-      });
-      for (int i = 0; i < listVerticalPosition.length; i++) {
-        // snap vao offsetTopLeft
-        if (_checkInsideDistance(
-            listVerticalPosition[i], offsetTopLeft.dy, 7)) {
-          _listPlacement[index] = _listPlacement[index].copyWith(
-            ratioOffset: List.from([
-              _listPlacement[index].ratioOffset[0],
-              pixelToRatio(listVerticalPosition[i], _maxHeight),
-            ]),
-          );
-        }
-        // snap ra offsetTopLeft
-        if (currentRatio[1] ==
-            pixelToRatio(listVerticalPosition[i], _maxHeight)) {
-          if ((ratioToPixel(_listPlacement[index].previewRatioOffset[1],
-                          _maxHeight) -
-                      listVerticalPosition[i])
-                  .abs() >
-              10) {
-            _listPlacement[index] = _listPlacement[index].copyWith(
-              ratioOffset: List.from([
-                _listPlacement[index].ratioOffset[0],
-                _listPlacement[index].previewRatioOffset[1],
-              ]),
-            );
-          } else {
-            _listPlacement[index].ratioOffset =
-                List.from([newRatio[0], currentRatio[1]]);
-          }
-        }
-
-        // snap vao offsetBottomRight
-        if (_checkInsideDistance(
-            listVerticalPosition[i], offsetBottomRight.dy, 7)) {
-          _listPlacement[index] = _listPlacement[index].copyWith(
-            ratioOffset: List.from([
-              _listPlacement[index].ratioOffset[0],
-              pixelToRatio(listVerticalPosition[i], _maxHeight) -
-                  _listPlacement[index].ratioHeight,
-            ]),
-          );
-        }
-        // snap ra offsetBottomRight
-        if (currentRatio[1] + _listPlacement[index].ratioHeight ==
-            pixelToRatio(listVerticalPosition[i], _maxHeight)) {
-          if ((ratioToPixel(
-                          _listPlacement[index].previewRatioOffset[1] +
-                              _listPlacement[index].ratioHeight,
-                          _maxHeight) -
-                      listVerticalPosition[i])
-                  .abs() >
-              10) {
-            _listPlacement[index] = _listPlacement[index].copyWith(
-              ratioOffset: List.from([
-                _listPlacement[index].ratioOffset[0],
-                _listPlacement[index].previewRatioOffset[1],
-              ]),
-            );
-          } else {
-            _listPlacement[index].ratioOffset = [newRatio[0], currentRatio[1]];
-          }
-        }
-      }
-
-      for (int i = 0; i < listHorizontalPosition.length; i++) {
-        // snap vao offsetTopLeft
-        if (_checkInsideDistance(
-            listHorizontalPosition[i], offsetTopLeft.dx, 7)) {
-          _listPlacement[index] = _listPlacement[index].copyWith(
-            ratioOffset: List.from([
-              pixelToRatio(listHorizontalPosition[i], _maxWidth),
-              _listPlacement[index].ratioOffset[1],
-            ]),
-          );
-        }
-        // snap ra offsetTopLeft
-        if (currentRatio[0] ==
-            pixelToRatio(listHorizontalPosition[i], _maxWidth)) {
-          if ((ratioToPixel(_listPlacement[index].previewRatioOffset[0],
-                          _maxWidth) -
-                      listHorizontalPosition[i])
-                  .abs() >
-              10) {
-            _listPlacement[index] = _listPlacement[index].copyWith(
-              ratioOffset: List.from([
-                _listPlacement[index].previewRatioOffset[0],
-                _listPlacement[index].ratioOffset[1],
-              ]),
-            );
-          } else {
-            _listPlacement[index].ratioOffset = [currentRatio[0], newRatio[1]];
-          }
-        }
-        // snap vao offsetBottomRight
-        if (_checkInsideDistance(
-            listHorizontalPosition[i], offsetBottomRight.dx, 7)) {
-          _listPlacement[index] = _listPlacement[index].copyWith(
-            ratioOffset: List.from([
-              pixelToRatio(listHorizontalPosition[i], _maxWidth) -
-                  _listPlacement[index].ratioWidth,
-              _listPlacement[index].ratioOffset[1],
-            ]),
-          );
-        }
-        // snap ra offsetBottomRight
-        if (currentRatio[0] + _listPlacement[index].ratioWidth ==
-            pixelToRatio(listHorizontalPosition[i], _maxWidth)) {
-          if ((ratioToPixel(
-                          _listPlacement[index].previewRatioOffset[0] +
-                              _listPlacement[index].ratioWidth,
-                          _maxWidth) -
-                      listHorizontalPosition[i])
-                  .abs() >
-              10) {
-            _listPlacement[index] = _listPlacement[index].copyWith(
-              ratioOffset: List.from([
-                _listPlacement[index].previewRatioOffset[0],
-                _listPlacement[index].ratioOffset[1],
-              ]),
-            );
-          } else {
-            _listPlacement[index].ratioOffset = [currentRatio[0], newRatio[1]];
-          }
-        }
-      }
-      widget.onFocusPlacement!(
-        _listPlacement[index],
-        _matrix4Notifiers[index],
-      );
-      setState(() {});
     }
   }
 
@@ -601,6 +406,28 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
           height: _maxHeight + 15,
           child: Stack(
             children: [
+              ..._listOverride[0]
+                  .map<Widget>((e) => Positioned(
+                      left: e,
+                      top: 7,
+                      child: Container(
+                        margin: const EdgeInsets.only(left: 7),
+                        height: _maxHeight,
+                        width: 1,
+                        color: colorRed,
+                      )))
+                  .toList(),
+              ..._listOverride[1]
+                  .map<Widget>((e) => Positioned(
+                      top: e,
+                      left: 8,
+                      child: Container(
+                        margin: const EdgeInsets.only(top: 7),
+                        height: 1,
+                        width: _maxWidth,
+                        color: colorRed,
+                      )))
+                  .toList(),
               Stack(
                 key: _placementFrame,
                 children: _listPlacement.map<Widget>(
@@ -666,6 +493,10 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
                             _listPlacement[index].ratioOffset[0],
                             0
                           ];
+                          _listPlacement[index].previewRatioOffset = [
+                            _listPlacement[index].previewRatioOffset[0],
+                            0
+                          ];
                         }
                         //right
                         if (_listPlacement[index].ratioOffset[0] +
@@ -674,6 +505,10 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
                           _listPlacement[index].ratioOffset = [
                             1 - _listPlacement[index].ratioWidth,
                             _listPlacement[index].ratioOffset[1]
+                          ];
+                          _listPlacement[index].previewRatioOffset = [
+                            1 - _listPlacement[index].ratioWidth,
+                            _listPlacement[index].previewRatioOffset[1]
                           ];
                         }
                         //bottom
@@ -684,15 +519,15 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
                             _listPlacement[index].ratioOffset[0],
                             1 - _listPlacement[index].ratioHeight
                           ];
+                          _listPlacement[index].previewRatioOffset = [
+                            _listPlacement[index].previewRatioOffset[0],
+                            1 - _listPlacement[index].ratioHeight
+                          ];
                         }
-                        setState(() {});
-                        _snapPosition1(
-                            index,
-                            details,
-                            [currentRatioOffsetX, currentRatioOffsetY],
-                            [newRatioOffsetPreviewX, newRatioOffsetPreviewY],
-                            haveHorizontal: 1,
-                            haveVertical: 1);
+                        widget.onFocusPlacement!(
+                          _listPlacement[index],
+                          _matrix4Notifiers[index],
+                        );
                         setState(() {});
                       },
                       onTap: () {
@@ -714,9 +549,9 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
                         }
                       },
                       onPanStart: (details) {
-                        setState(() {
-                          _panStartOffset = details.globalPosition;
-                        });
+                        // setState(() {
+                        //   _panStartOffset = details.globalPosition;
+                        // });
                         widget.onFocusPlacement != null
                             ? widget.onFocusPlacement!(
                                 _listPlacement[index],
@@ -778,33 +613,395 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
                   },
                 ).toList(),
               ),
-              ..._listOverride[0]
-                  .map<Widget>((e) => Positioned(
-                      left: e,
-                      top: 7,
-                      child: Container(
-                        margin: const EdgeInsets.only(left: 7),
-                        height: _maxHeight,
-                        width: 1,
-                        color: colorRed,
-                      )))
-                  .toList(),
-              ..._listOverride[1]
-                  .map<Widget>((e) => Positioned(
-                      top: e,
-                      left: 8,
-                      child: Container(
-                        margin: const EdgeInsets.only(top: 7),
-                        height: 1,
-                        width: _maxWidth,
-                        color: colorRed,
-                      )))
-                  .toList(),
             ],
           ),
         )
       ],
     );
+  }
+
+  // use for top left, top center, center right
+  _snapPositionWidthPoint(
+    int index,
+  ) {
+    final listPlacementWithoutCurrent = _listPlacement
+        .where((element) => element.id != _listPlacement[index].id);
+    if (listPlacementWithoutCurrent.isNotEmpty) {
+      final offsetPoint = Offset(
+          ratioToPixel(_listPlacement[index].ratioOffset[0], _maxWidth),
+          ratioToPixel(_listPlacement[index].ratioOffset[1], _maxHeight));
+      List<double> listVerticalPosition = [];
+      List<double> listHorizontalPosition = [];
+      listPlacementWithoutCurrent.forEach((element) {
+        listVerticalPosition.addAll(
+            _getAxisPositionOfPlacement(element, getTopAndBottom: true));
+        listHorizontalPosition.addAll(
+            _getAxisPositionOfPlacement(element, getTopAndBottom: false));
+      });
+      final currentRatio = List.from(_listPlacement[index].ratioOffset);
+      for (int i = 0; i < listVerticalPosition.length; i++) {
+        // snap vao
+        if (checkInsideDistance(listVerticalPosition[i], offsetPoint.dy, 7)) {
+          _listPlacement[index] = _listPlacement[index].copyWith(
+            ratioOffset: List.from([
+              _listPlacement[index].ratioOffset[0],
+              pixelToRatio(listVerticalPosition[i], _maxHeight),
+            ]),
+            ratioHeight: _listPlacement[index].ratioHeight +
+                _listPlacement[index].ratioOffset[1] -
+                pixelToRatio(listVerticalPosition[i], _maxHeight),
+          );
+        }
+        // snap ra
+        if (currentRatio[1] ==
+            pixelToRatio(listVerticalPosition[i], _maxHeight)) {
+          if ((ratioToPixel(_listPlacement[index].previewRatioOffset[1],
+                          _maxHeight) -
+                      listVerticalPosition[i])
+                  .abs() >
+              5) {
+            _listPlacement[index] = _listPlacement[index].copyWith(
+                ratioOffset: List.from(
+                  [
+                    _listPlacement[index].previewRatioOffset[0],
+                    _listPlacement[index].previewRatioOffset[1],
+                  ],
+                ),
+                ratioHeight: _listPlacement[index].ratioHeight -
+                    (_listPlacement[index].previewRatioOffset[1] -
+                        pixelToRatio(listVerticalPosition[i], _maxHeight)));
+          }
+        }
+      }
+      for (int i = 0; i < listHorizontalPosition.length; i++) {
+        // snap vao
+        if (checkInsideDistance(listHorizontalPosition[i], offsetPoint.dx, 7)) {
+          _listPlacement[index] = _listPlacement[index].copyWith(
+            ratioOffset: List.from([
+              pixelToRatio(listHorizontalPosition[i], _maxWidth),
+              _listPlacement[index].ratioOffset[1],
+            ]),
+            ratioWidth: _listPlacement[index].ratioWidth +
+                _listPlacement[index].ratioOffset[0] -
+                pixelToRatio(listHorizontalPosition[i], _maxWidth),
+          );
+        }
+        // snap ra
+        if (currentRatio[0] ==
+            pixelToRatio(listHorizontalPosition[i], _maxWidth)) {
+          if ((ratioToPixel(_listPlacement[index].previewRatioOffset[0],
+                          _maxWidth) -
+                      listHorizontalPosition[i])
+                  .abs() >
+              5) {
+            _listPlacement[index] = _listPlacement[index].copyWith(
+                ratioOffset:
+                    List.from(_listPlacement[index].previewRatioOffset),
+                ratioWidth: _listPlacement[index].ratioWidth -
+                    (_listPlacement[index].previewRatioOffset[0] -
+                        pixelToRatio(listHorizontalPosition[i], _maxWidth)));
+          }
+        }
+      }
+    }
+  }
+
+  // use for bottom left, bottom center,
+  _snapPositionWidthPoint1(
+    int index,
+  ) {
+    final listPlacementWithoutCurrent = _listPlacement
+        .where((element) => element.id != _listPlacement[index].id);
+    if (listPlacementWithoutCurrent.isNotEmpty) {
+      final offsetPoint = Offset(
+          ratioToPixel(_listPlacement[index].ratioOffset[0], _maxWidth),
+          ratioToPixel(
+              _listPlacement[index].ratioOffset[1] +
+                  _listPlacement[index].ratioHeight,
+              _maxHeight));
+      List<double> listVerticalPosition = [];
+      List<double> listHorizontalPosition = [];
+      listPlacementWithoutCurrent.forEach((element) {
+        listVerticalPosition.addAll(
+            _getAxisPositionOfPlacement(element, getTopAndBottom: true));
+        listHorizontalPosition.addAll(
+            _getAxisPositionOfPlacement(element, getTopAndBottom: false));
+      });
+
+      final currentRatio = List.from([
+        _listPlacement[index].ratioOffset[0],
+        (_listPlacement[index].ratioOffset[1] +
+            _listPlacement[index].ratioHeight)
+      ]);
+
+      for (int i = 0; i < listVerticalPosition.length; i++) {
+        // snap vao
+        if (checkInsideDistance(listVerticalPosition[i], offsetPoint.dy, 7)) {
+          _listPlacement[index] = _listPlacement[index].copyWith(
+            ratioHeight: pixelToRatio(listVerticalPosition[i], _maxHeight) -
+                _listPlacement[index].ratioOffset[1],
+          );
+        }
+        // snap ra
+        if (currentRatio[1] ==
+            pixelToRatio(listVerticalPosition[i], _maxHeight)) {
+          if ((ratioToPixel(
+                          _listPlacement[index].previewHeight +
+                              _listPlacement[index].ratioOffset[1],
+                          _maxHeight) -
+                      listVerticalPosition[i])
+                  .abs() >
+              7) {
+            _listPlacement[index] = _listPlacement[index].copyWith(
+                ratioHeight: _listPlacement[index].previewHeight +
+                    _listPlacement[index].ratioOffset[1]);
+          }
+        }
+      }
+      for (int i = 0; i < listHorizontalPosition.length; i++) {
+        // snap vao
+        if (checkInsideDistance(listHorizontalPosition[i], offsetPoint.dx, 7)) {
+          _listPlacement[index] = _listPlacement[index].copyWith(
+            ratioOffset: List.from([
+              pixelToRatio(listHorizontalPosition[i], _maxWidth),
+              _listPlacement[index].ratioOffset[1]
+            ]),
+            ratioWidth: _listPlacement[index].ratioWidth +
+                _listPlacement[index].ratioOffset[0] -
+                pixelToRatio(listHorizontalPosition[i], _maxWidth),
+          );
+        }
+        // snap ra
+        if (currentRatio[0] ==
+            pixelToRatio(listHorizontalPosition[i], _maxWidth)) {
+          if ((ratioToPixel(_listPlacement[index].previewRatioOffset[0],
+                          _maxWidth) -
+                      listHorizontalPosition[i])
+                  .abs() >
+              5) {
+            _listPlacement[index] = _listPlacement[index].copyWith(
+                ratioOffset: List.from([
+                  _listPlacement[index].previewRatioOffset[0],
+                  _listPlacement[index].ratioOffset[1]
+                ]),
+                ratioWidth: _listPlacement[index].ratioWidth -
+                    (_listPlacement[index].previewRatioOffset[0] -
+                        pixelToRatio(listHorizontalPosition[i], _maxWidth)));
+          }
+        }
+      }
+    }
+  }
+
+  _snapPositionWidthPoint2(
+    int index,
+  ) {
+    final listPlacementWithoutCurrent = _listPlacement
+        .where((element) => element.id != _listPlacement[index].id);
+    if (listPlacementWithoutCurrent.isNotEmpty) {
+      final offsetPoint = Offset(
+          ratioToPixel(
+              _listPlacement[index].ratioOffset[0] +
+                  _listPlacement[index].ratioWidth,
+              _maxWidth),
+          ratioToPixel(_listPlacement[index].ratioOffset[1], _maxHeight));
+      List<double> listVerticalPosition = [];
+      List<double> listHorizontalPosition = [];
+      listPlacementWithoutCurrent.forEach((element) {
+        listVerticalPosition.addAll(
+            _getAxisPositionOfPlacement(element, getTopAndBottom: true));
+        listHorizontalPosition.addAll(
+            _getAxisPositionOfPlacement(element, getTopAndBottom: false));
+      });
+
+      final currentRatio = List.from([
+        _listPlacement[index].ratioOffset[0] + _listPlacement[index].ratioWidth,
+        (_listPlacement[index].ratioOffset[1])
+      ]);
+
+      for (int i = 0; i < listVerticalPosition.length; i++) {
+        // snap vao
+        if (checkInsideDistance(listVerticalPosition[i], offsetPoint.dy, 7)) {
+          _listPlacement[index] = _listPlacement[index].copyWith(
+            ratioOffset: List.from([
+              _listPlacement[index].ratioOffset[0],
+              pixelToRatio(listVerticalPosition[i], _maxHeight)
+            ]),
+            ratioHeight: _listPlacement[index].ratioHeight +
+                (_listPlacement[index].ratioOffset[1] -
+                    pixelToRatio(listVerticalPosition[i], _maxHeight)),
+          );
+        }
+        // snap ra
+        if (currentRatio[1] ==
+            pixelToRatio(listVerticalPosition[i], _maxHeight)) {
+          if ((ratioToPixel(_listPlacement[index].previewHeight, _maxHeight) -
+                      listVerticalPosition[i])
+                  .abs() >
+              7) {
+            _listPlacement[index] = _listPlacement[index].copyWith(
+                ratioOffset: List.from(
+                  [
+                    _listPlacement[index].ratioOffset[0],
+                    _listPlacement[index].previewRatioOffset[1],
+                  ],
+                ),
+                ratioHeight: _listPlacement[index].ratioHeight -
+                    (_listPlacement[index].previewRatioOffset[1] -
+                        pixelToRatio(listVerticalPosition[i], _maxHeight)));
+          }
+        }
+      }
+      for (int i = 0; i < listHorizontalPosition.length; i++) {
+        // snap vao
+        if (checkInsideDistance(listHorizontalPosition[i], offsetPoint.dx, 7)) {
+          _listPlacement[index] = _listPlacement[index].copyWith(
+              ratioWidth: pixelToRatio(listHorizontalPosition[i], _maxWidth) -
+                  _listPlacement[index].ratioOffset[0]);
+        }
+        // snap ra
+        if (currentRatio[0] ==
+            pixelToRatio(listHorizontalPosition[i], _maxWidth)) {
+          if ((ratioToPixel(
+                          _listPlacement[index].previewRatioOffset[0] +
+                              _listPlacement[index].ratioWidth,
+                          _maxWidth) -
+                      listHorizontalPosition[i])
+                  .abs() >
+              7) {
+            _listPlacement[index] = _listPlacement[index].copyWith(
+                ratioWidth: _listPlacement[index].ratioWidth +
+                    (_listPlacement[index].previewRatioOffset[0] -
+                        pixelToRatio(listHorizontalPosition[i], _maxWidth)));
+          }
+        }
+      }
+    }
+  }
+
+  _snapPositionWidthPoint3(
+    int index,
+  ) {
+    final listPlacementWithoutCurrent = _listPlacement
+        .where((element) => element.id != _listPlacement[index].id);
+    if (listPlacementWithoutCurrent.isNotEmpty) {
+      final offsetPoint = Offset(
+          ratioToPixel(
+              _listPlacement[index].ratioOffset[0] +
+                  _listPlacement[index].ratioWidth,
+              _maxWidth),
+          ratioToPixel(
+              _listPlacement[index].ratioOffset[1] +
+                  _listPlacement[index].ratioHeight,
+              _maxHeight));
+      List<double> listVerticalPosition = [];
+      List<double> listHorizontalPosition = [];
+      listPlacementWithoutCurrent.forEach((element) {
+        listVerticalPosition.addAll(
+            _getAxisPositionOfPlacement(element, getTopAndBottom: true));
+        listHorizontalPosition.addAll(
+            _getAxisPositionOfPlacement(element, getTopAndBottom: false));
+      });
+
+      final currentRatio = List.from([
+        _listPlacement[index].ratioOffset[0] + _listPlacement[index].ratioWidth,
+        (_listPlacement[index].ratioOffset[1] +
+            _listPlacement[index].ratioHeight)
+      ]);
+
+      for (int i = 0; i < listVerticalPosition.length; i++) {
+        // snap vao
+        if (checkInsideDistance(listVerticalPosition[i], offsetPoint.dy, 7)) {
+          _listPlacement[index] = _listPlacement[index].copyWith(
+            ratioHeight: _listPlacement[index].ratioHeight -
+                (pixelToRatio(listVerticalPosition[i], _maxHeight) -
+                    _listPlacement[index].ratioOffset[1]),
+          );
+        }
+        // snap ra
+        if (currentRatio[1] ==
+            pixelToRatio(listVerticalPosition[i], _maxHeight)) {
+          if ((ratioToPixel(_listPlacement[index].previewHeight, _maxHeight) -
+                      listVerticalPosition[i])
+                  .abs() >
+              7) {
+            _listPlacement[index] = _listPlacement[index].copyWith(
+                ratioHeight: _listPlacement[index].ratioHeight -
+                    (_listPlacement[index].previewRatioOffset[1] -
+                        pixelToRatio(listVerticalPosition[i], _maxHeight)));
+          }
+        }
+      }
+      for (int i = 0; i < listHorizontalPosition.length; i++) {
+        // snap vao
+        if (checkInsideDistance(listHorizontalPosition[i], offsetPoint.dx, 7)) {
+          _listPlacement[index] = _listPlacement[index].copyWith(
+              ratioWidth: pixelToRatio(listHorizontalPosition[i], _maxWidth) -
+                  _listPlacement[index].ratioOffset[0]);
+        }
+        // snap ra
+        if (currentRatio[0] ==
+            pixelToRatio(listHorizontalPosition[i], _maxWidth)) {
+          if ((ratioToPixel(
+                          _listPlacement[index].previewRatioOffset[0] +
+                              _listPlacement[index].ratioWidth,
+                          _maxWidth) -
+                      listHorizontalPosition[i])
+                  .abs() >
+              7) {
+            _listPlacement[index] = _listPlacement[index].copyWith(
+                ratioWidth: _listPlacement[index].ratioWidth +
+                    (_listPlacement[index].previewRatioOffset[0] -
+                        pixelToRatio(listHorizontalPosition[i], _maxWidth)));
+          }
+        }
+      }
+    }
+  }
+
+  _checkExceedingDrawBoard(int index) {
+    if (_listPlacement[index].ratioHeight > 1) {
+      _listPlacement[index].ratioHeight = 1;
+    }
+    if (_listPlacement[index].ratioWidth > 1) {
+      _listPlacement[index].ratioWidth = 1;
+    }
+    if (_listPlacement[index].previewHeight > 1) {
+      _listPlacement[index].previewHeight = 1;
+    }
+    if (_listPlacement[index].previewWidth > 1) {
+      _listPlacement[index].previewWidth = 1;
+    }
+    if (_listPlacement[index].ratioOffset[0] < 0) {
+      _listPlacement[index].ratioOffset[0] = 0;
+    }
+    if (_listPlacement[index].ratioOffset[1] < 0) {
+      _listPlacement[index].ratioOffset[1] = 0;
+    }
+    if (_listPlacement[index].ratioOffset[0] > 1) {
+      _listPlacement[index].ratioOffset[0] = 1;
+    }
+    if (_listPlacement[index].ratioOffset[1] > 1) {
+      _listPlacement[index].ratioOffset[1] = 1;
+    }
+    if (_listPlacement[index].previewRatioOffset[0] < 0) {
+      _listPlacement[index].previewRatioOffset[0] = 0;
+    }
+    if (_listPlacement[index].previewRatioOffset[1] < 0) {
+      _listPlacement[index].previewRatioOffset[1] = 0;
+    }
+    if (_listPlacement[index].previewRatioOffset[0] > 1) {
+      _listPlacement[index].previewRatioOffset[0] = 1;
+    }
+    if (_listPlacement[index].previewRatioOffset[0] > 1) {
+      _listPlacement[index].previewRatioOffset[0] = 1;
+    }
+
+    widget.onFocusPlacement!(
+      _listPlacement[index],
+      _matrix4Notifiers[index],
+    );
+    setState(() {});
   }
 
   Widget _buildPanGestureWidget(int index) {
@@ -882,137 +1079,8 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
                       _listPlacement[index].previewRatioOffset[1] + ratioDeltaY,
                     ];
 
-                    final listPlacementWithoutCurrent = _listPlacement.where(
-                        (element) => element.id != _listPlacement[index].id);
-                    if (listPlacementWithoutCurrent.isNotEmpty) {
-                      final offsetPoint = Offset(
-                          ratioToPixel(
-                              _listPlacement[index].ratioOffset[0], _maxWidth),
-                          ratioToPixel(_listPlacement[index].ratioOffset[1],
-                              _maxHeight));
-                      List<double> listVerticalPosition = [];
-                      List<double> listHorizontalPosition = [];
-                      listPlacementWithoutCurrent.forEach((element) {
-                        listVerticalPosition.addAll(_getAxisPositionOfPlacement(
-                            element,
-                            getTopAndBottom: true));
-                        listHorizontalPosition.addAll(
-                            _getAxisPositionOfPlacement(element,
-                                getTopAndBottom: false));
-                      });
-                      final currentRatio =
-                          List.from(_listPlacement[index].ratioOffset);
-
-                      for (int i = 0; i < listVerticalPosition.length; i++) {
-                        // snap vao
-                        if (_checkInsideDistance(
-                            listVerticalPosition[i], offsetPoint.dy, 7)) {
-                          _listPlacement[index] =
-                              _listPlacement[index].copyWith(
-                            ratioOffset: List.from([
-                              _listPlacement[index].ratioOffset[0],
-                              pixelToRatio(listVerticalPosition[i], _maxHeight),
-                            ]),
-                            ratioHeight: _listPlacement[index].ratioHeight +
-                                _listPlacement[index].ratioOffset[1] -
-                                pixelToRatio(
-                                    listVerticalPosition[i], _maxHeight),
-                          );
-                          widget.onFocusPlacement!(
-                            _listPlacement[index],
-                            _matrix4Notifiers[index],
-                          );
-                          setState(() {});
-                        }
-                        // snap ra
-                        if (currentRatio[1] ==
-                            pixelToRatio(listVerticalPosition[i], _maxHeight)) {
-                          if ((ratioToPixel(
-                                          _listPlacement[index]
-                                              .previewRatioOffset[1],
-                                          _maxHeight) -
-                                      listVerticalPosition[i])
-                                  .abs() >
-                              10) {
-                            _listPlacement[index] = _listPlacement[index]
-                                .copyWith(
-                                    ratioOffset: List.from(
-                                      [
-                                        _listPlacement[index]
-                                            .previewRatioOffset[0],
-                                        _listPlacement[index]
-                                            .previewRatioOffset[1],
-                                      ],
-                                    ),
-                                    ratioHeight:
-                                        _listPlacement[index].ratioHeight -
-                                            (_listPlacement[index]
-                                                    .previewRatioOffset[1] -
-                                                pixelToRatio(
-                                                    listVerticalPosition[i],
-                                                    _maxHeight)));
-                            widget.onFocusPlacement!(
-                              _listPlacement[index],
-                              _matrix4Notifiers[index],
-                            );
-                            setState(() {});
-                          }
-                        }
-                      }
-                      for (int i = 0; i < listHorizontalPosition.length; i++) {
-                        // snap vao
-                        if (_checkInsideDistance(
-                            listHorizontalPosition[i], offsetPoint.dx, 7)) {
-                          _listPlacement[index] =
-                              _listPlacement[index].copyWith(
-                            ratioOffset: List.from([
-                              pixelToRatio(
-                                  listHorizontalPosition[i], _maxWidth),
-                              _listPlacement[index].ratioOffset[1],
-                            ]),
-                            ratioWidth: _listPlacement[index].ratioWidth +
-                                _listPlacement[index].ratioOffset[0] -
-                                pixelToRatio(
-                                    listHorizontalPosition[i], _maxWidth),
-                          );
-                          widget.onFocusPlacement!(
-                            _listPlacement[index],
-                            _matrix4Notifiers[index],
-                          );
-                          setState(() {});
-                        }
-                        // snap ra
-                        if (currentRatio[0] ==
-                            pixelToRatio(
-                                listHorizontalPosition[i], _maxWidth)) {
-                          if ((ratioToPixel(
-                                          _listPlacement[index]
-                                              .previewRatioOffset[0],
-                                          _maxWidth) -
-                                      listHorizontalPosition[i])
-                                  .abs() >
-                              10) {
-                            _listPlacement[index] = _listPlacement[index]
-                                .copyWith(
-                                    ratioOffset: List.from(_listPlacement[index]
-                                        .previewRatioOffset),
-                                    ratioWidth:
-                                        _listPlacement[index].ratioWidth -
-                                            (_listPlacement[index]
-                                                    .previewRatioOffset[0] -
-                                                pixelToRatio(
-                                                    listHorizontalPosition[i],
-                                                    _maxWidth)));
-                            widget.onFocusPlacement!(
-                              _listPlacement[index],
-                              _matrix4Notifiers[index],
-                            );
-                            setState(() {});
-                          }
-                        }
-                      }
-                    }
-                    setState(() {});
+                    _snapPositionWidthPoint(index);
+                    _checkExceedingDrawBoard(index);
                   },
                   onPanEnd: (details) {},
                 ),
@@ -1031,8 +1099,6 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
                       ];
                       if (_listPlacement[index].ratioHeight > ratioDeltaY) {
                         _listPlacement[index].ratioHeight -= ratioDeltaY;
-                        _listPlacement[index].previewRatioOffset =
-                            List.from(_listPlacement[index].ratioOffset);
                         setState(() {});
                       }
                     } else {
@@ -1044,11 +1110,16 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
                         if (_listPlacement[index].ratioHeight > ratioDeltaY) {
                           _listPlacement[index].ratioHeight -= ratioDeltaY;
                         }
-                        _listPlacement[index].previewRatioOffset =
-                            List.from(_listPlacement[index].ratioOffset);
                         setState(() {});
                       }
                     }
+                    _listPlacement[index].previewRatioOffset = [
+                      _listPlacement[index].previewRatioOffset[0],
+                      _listPlacement[index].previewRatioOffset[1] + ratioDeltaY,
+                    ];
+                    _listPlacement[index].previewHeight += ratioDeltaY;
+                    _snapPositionWidthPoint(index);
+                    _checkExceedingDrawBoard(index);
                   },
                   onPanStart: (details) {
                     setState(() {});
@@ -1060,9 +1131,9 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
                   13,
                   margin: const EdgeInsets.only(bottom: 6),
                   onPanUpdate: (details) {
-                    final ratioDeltaX =
+                    double ratioDeltaX =
                         pixelToRatio(details.delta.dx, _maxWidth);
-                    final ratioDeltaY =
+                    double ratioDeltaY =
                         pixelToRatio(details.delta.dy, _maxHeight);
 
                     if (ratioDeltaY < 0) {
@@ -1094,9 +1165,15 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
                         _listPlacement[index].ratioHeight -= ratioDeltaY;
                       }
                     }
-                    _listPlacement[index].previewRatioOffset =
-                        List.from(_listPlacement[index].ratioOffset);
-                    setState(() {});
+                    _listPlacement[index].previewRatioOffset = List.from([
+                      _listPlacement[index].previewRatioOffset[0] + ratioDeltaX,
+                      _listPlacement[index].previewRatioOffset[1] + ratioDeltaY,
+                    ]);
+                    _listPlacement[index].previewWidth += ratioDeltaX;
+                    _listPlacement[index].previewHeight += ratioDeltaY;
+
+                    _snapPositionWidthPoint2(index);
+                    _checkExceedingDrawBoard(index);
                   },
                   onPanStart: (p0) {},
                 )
@@ -1134,11 +1211,15 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
                         if (_listPlacement[index].ratioWidth > ratioDeltaX) {
                           _listPlacement[index].ratioWidth -= ratioDeltaX;
                         }
-                        _listPlacement[index].previewRatioOffset =
-                            List.from(_listPlacement[index].ratioOffset);
-                        setState(() {});
+                        _listPlacement[index].previewRatioOffset = List.from([
+                          _listPlacement[index].previewRatioOffset[0] +
+                              ratioDeltaX,
+                          _listPlacement[index].previewRatioOffset[1],
+                        ]);
                       }
                     }
+                    _snapPositionWidthPoint2(index);
+                    _checkExceedingDrawBoard(index);
                   },
                   onPanStart: (details) {},
                 ),
@@ -1152,19 +1233,25 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
                         pixelToRatio(details.delta.dx, _maxWidth);
                     if (ratioDeltaX < 0) {
                       _listPlacement[index].ratioWidth += ratioDeltaX;
-                      _listPlacement[index].previewRatioOffset =
-                          List.from(_listPlacement[index].ratioOffset);
-                      setState(() {});
+                      _listPlacement[index].previewRatioOffset = List.from([
+                        _listPlacement[index].previewRatioOffset[0] +
+                            ratioDeltaX,
+                        _listPlacement[index].previewRatioOffset[1],
+                      ]);
                     } else {
                       if (_listPlacement[index].ratioWidth +
                               _listPlacement[index].ratioOffset[0] <
                           1) {
                         _listPlacement[index].ratioWidth += ratioDeltaX;
-                        _listPlacement[index].previewRatioOffset =
-                            List.from(_listPlacement[index].ratioOffset);
-                        setState(() {});
+                        _listPlacement[index].previewRatioOffset = List.from([
+                          _listPlacement[index].previewRatioOffset[0] +
+                              ratioDeltaX,
+                          _listPlacement[index].previewRatioOffset[1],
+                        ]);
                       }
                     }
+                    _snapPositionWidthPoint2(index);
+                    _checkExceedingDrawBoard(index);
                   },
                   onPanStart: (details) {},
                 )
@@ -1210,9 +1297,15 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
                       }
                       _listPlacement[index].ratioHeight += ratioDeltaY;
                     }
-                    _listPlacement[index].previewRatioOffset =
-                        List.from(_listPlacement[index].ratioOffset);
-                    setState(() {});
+                    _listPlacement[index].previewRatioOffset = List.from([
+                      _listPlacement[index].previewRatioOffset[0] + ratioDeltaX,
+                      _listPlacement[index].previewRatioOffset[1] + ratioDeltaY,
+                    ]);
+                    _listPlacement[index].previewWidth += ratioDeltaX;
+                    _listPlacement[index].previewHeight += ratioDeltaY;
+
+                    _snapPositionWidthPoint1(index);
+                    _checkExceedingDrawBoard(index);
                   },
                   onPanStart: (details) {},
                 ),
@@ -1229,15 +1322,67 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
                               _listPlacement[index].ratioOffset[1] <
                           1) {
                         _listPlacement[index].ratioHeight += ratioDeltaY;
-                        _listPlacement[index].previewRatioOffset =
-                            List.from(_listPlacement[index].ratioOffset);
+                        _listPlacement[index].previewRatioOffset = List.from([
+                          _listPlacement[index].previewRatioOffset[0],
+                          _listPlacement[index].previewRatioOffset[1] +
+                              ratioDeltaY,
+                        ]);
                         setState(() {});
                       }
                     } else {
                       _listPlacement[index].ratioHeight += ratioDeltaY;
-                      _listPlacement[index].previewRatioOffset =
-                          List.from(_listPlacement[index].ratioOffset);
+                      _listPlacement[index].previewRatioOffset = List.from([
+                        _listPlacement[index].previewRatioOffset[0],
+                        _listPlacement[index].previewRatioOffset[1] +
+                            ratioDeltaY,
+                      ]);
                       setState(() {});
+                    }
+                    //
+                    final listPlacementWithoutCurrent = _listPlacement.where(
+                        (element) => element.id != _listPlacement[index].id);
+                    if (listPlacementWithoutCurrent.isNotEmpty) {
+                      _listPlacement[index].previewHeight += ratioDeltaY;
+                      final offsetPoint = Offset(
+                          ratioToPixel(_listPlacement[index].ratioOffset[0],
+                                  _maxWidth) +
+                              _listPlacement[index].ratioWidth / 2,
+                          ratioToPixel(
+                              _listPlacement[index].ratioOffset[1] +
+                                  _listPlacement[index].ratioHeight,
+                              _maxHeight));
+                      List<double> listVerticalPosition = [];
+                      listPlacementWithoutCurrent.forEach((element) {
+                        listVerticalPosition.addAll(_getAxisPositionOfPlacement(
+                            element,
+                            getTopAndBottom: true));
+                      });
+                      double newRatioHeight = _listPlacement[index].ratioHeight;
+                      for (int i = 0; i < listVerticalPosition.length; i++) {
+                        // snap vao
+                        if (checkInsideDistance(
+                            listVerticalPosition[i], offsetPoint.dy, 7)) {
+                          newRatioHeight = (pixelToRatio(
+                                  listVerticalPosition[i], _maxHeight) -
+                              _listPlacement[index].ratioOffset[1]);
+                        }
+                        // snap ra x
+                        if ((_listPlacement[index].ratioOffset[1] +
+                                _listPlacement[index].ratioHeight) ==
+                            pixelToRatio(listVerticalPosition[i], _maxHeight)) {
+                          if ((ratioToPixel(_listPlacement[index].previewHeight,
+                                          _maxHeight) -
+                                      listVerticalPosition[i])
+                                  .abs() >
+                              7) {
+                            newRatioHeight =
+                                _listPlacement[index].previewHeight;
+                          }
+                        }
+                      }
+                      _listPlacement[index] = _listPlacement[index]
+                          .copyWith(ratioHeight: newRatioHeight);
+                      _checkExceedingDrawBoard(index);
                     }
                   },
                   onPanStart: (details) {},
@@ -1271,9 +1416,12 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
                       _listPlacement[index].ratioWidth += ratioDeltaX;
                       _listPlacement[index].ratioHeight += ratioDeltaY;
                     }
-                    _listPlacement[index].previewRatioOffset =
-                        List.from(_listPlacement[index].ratioOffset);
-                    setState(() {});
+                    _listPlacement[index].previewRatioOffset = List.from([
+                      _listPlacement[index].previewRatioOffset[0] + ratioDeltaX,
+                      _listPlacement[index].previewRatioOffset[1] + ratioDeltaY,
+                    ]);
+                    _snapPositionWidthPoint3(index);
+                    _checkExceedingDrawBoard(index);
                   },
                   onPanStart: (details) {},
                 )

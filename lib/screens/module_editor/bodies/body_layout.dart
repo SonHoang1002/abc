@@ -260,6 +260,10 @@ class _LayoutBodyState extends State<LayoutBody> {
                     : 0.25) /
                 2
       ],
+      previewWidth: 0.3,
+      previewHeight: _project.paper != null
+          ? (0.3 * _project.paper!.width / _project.paper!.height)
+          : 0.25,
       placementAttribute: PLACEMENT_ATTRIBUTE,
     );
     return newPlacement;
@@ -682,6 +686,7 @@ class _LayoutBodyState extends State<LayoutBody> {
                           final newPlacement = _createNewPlacement();
                           _listPlacement.add(newPlacement);
                           _listPlacementPreventive.add(newPlacement);
+                          _selectedPlacement = _listPlacement.last;
                         });
                         widget.reRenderFunction();
                       },
@@ -797,7 +802,8 @@ class _LayoutBodyState extends State<LayoutBody> {
                                 _listPlacementPreventive
                                     .removeAt(indexPreventive);
                               }
-                              _listPlacementPreventive = List.from(_project.placements ?? []);
+                              _listPlacementPreventive =
+                                  List.from(_project.placements ?? []);
                               _selectedPlacement = null;
                               setState(() {});
                               widget.reRenderFunction();
