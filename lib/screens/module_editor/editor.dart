@@ -399,7 +399,6 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   }
 
   void _showBottomSheetLayout() {
-    _project.getInfor();
     showModalBottomSheet(
         context: context,
         builder: (context) {

@@ -5,6 +5,8 @@ let gesture
 
 let position0 = Point
 
+let interactingEdges = Set()
+
 // goi lien tuc
 func gestureDetect() {
     if state == began {
@@ -12,28 +14,34 @@ func gestureDetect() {
         // position0 = view.position
         rect0 = view.frame
         position0 = gesture.globalposition
+
+        interactingEdges.removeAll()
+        if touchTop {
+          interactingEdges.add(top)
+        }
+        ... 3 cai con lai
         return
     }
 
     if state == changed {
         // goi lien tuc sau lan began
         let translation = globalposition - position0
-        let x0, x1, y0, y1 = rect0 + translation
+        let x0, x1, y0, y1 = rect0
+        if touchTop {
+          y0 += translation.y
 
-        // let translation = gesture.translation // do dich chuyen cua gesture
-        // let newX = position0.x + translation.x
-        // let newY = position0.y + translation.y
+          for all_other_y {
+            if y0 close to y_i {
+              y0 = y_i
+            }
+          }
 
-        for all other views {
-            if abs(newX - x_i) < delta do {
-                newX = x_i
-            }
-            if abs(newY - y_i) < delta do {
-                newY = y_i
-            }
+          y0 = min(y0, maxY)
+          ...
         }
+        .. tuong tu 3 cai con lai
 
-        view.position = Point(newX, newY)
+        let rect2 = Rect(x0, y0, x1-x0, y1-y0)
 
         return
     }
@@ -41,3 +49,58 @@ func gestureDetect() {
     // check truong hop finish
     // code finish
 }
+
+
+
+// dot top right
+
+                    // _listPlacement[index].previewRatioOffset = List.from([
+                    //   _listPlacement[index].previewRatioOffset[0] + ratioDeltaX,
+                    //   _listPlacement[index].previewRatioOffset[1] + ratioDeltaY,
+                    // ]);
+                    // _listPlacement[index].previewWidth += ratioDeltaX;
+                    // _listPlacement[index].previewHeight += ratioDeltaY;
+
+if (ratioDeltaY < 0) {
+                      if (_listPlacement[index].ratioOffset[1] > 0) {
+                        _listPlacement[index].ratioOffset = [
+                          _listPlacement[index].ratioOffset[0],
+                          _listPlacement[index].ratioOffset[1] + ratioDeltaY
+                        ];
+                        _listPlacement[index].previewRatioOffset = List.from([
+                          _listPlacement[index].previewRatioOffset[0],
+                          _listPlacement[index].previewRatioOffset[1] +
+                              ratioDeltaY,
+                        ]);
+
+                        if (_listPlacement[index].ratioHeight > ratioDeltaY) {
+                          _listPlacement[index].ratioHeight -= ratioDeltaY;
+                          _listPlacement[index].previewHeight -= ratioDeltaY;
+                        }
+                      }
+                    } else if (ratioDeltaX > 0) {
+                      if (_listPlacement[index].ratioWidth +
+                              _listPlacement[index].ratioOffset[0] <
+                          1) {
+                        _listPlacement[index].ratioWidth += ratioDeltaX;
+                        _listPlacement[index].previewWidth += ratioDeltaX;
+                      }
+                    } else {
+                      _listPlacement[index].ratioOffset = [
+                        _listPlacement[index].ratioOffset[0],
+                        _listPlacement[index].ratioOffset[1] + ratioDeltaY
+                      ];
+                      _listPlacement[index].previewRatioOffset = List.from([
+                        _listPlacement[index].previewRatioOffset[0],
+                        _listPlacement[index].previewRatioOffset[1] +
+                            ratioDeltaY,
+                      ]);
+
+                      _listPlacement[index].ratioWidth += ratioDeltaX;
+                      _listPlacement[index].previewWidth += ratioDeltaX;
+
+                      if (_listPlacement[index].ratioHeight > ratioDeltaY) {
+                        _listPlacement[index].ratioHeight -= ratioDeltaY;
+                        _listPlacement[index].previewHeight -= ratioDeltaY;
+                      }
+                    }
