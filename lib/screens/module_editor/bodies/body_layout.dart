@@ -66,6 +66,7 @@ class _LayoutBodyState extends State<LayoutBody> {
   late Offset _alignmentDialogOffset;
   late bool _isShowAlignmentDialog;
   late List<Placement> _listPlacementPreventive;
+  late List<GlobalKey> _listGlobalKey = [];
 
   @override
   void initState() {
@@ -108,6 +109,7 @@ class _LayoutBodyState extends State<LayoutBody> {
         _project.paper!.height / _project.paper!.width * _ratioTarget[0]
       ];
     }
+    _listGlobalKey = _listPlacement.map((e) => GlobalKey()).toList();
     _isShowAlignmentDialog = false;
   }
 
@@ -605,9 +607,10 @@ class _LayoutBodyState extends State<LayoutBody> {
           },
           child: Column(children: [
             Expanded(
-                child: WDragZoomImageTest(
+                child: WDragZoomImageTest1(
               backgroundColor: _currentLayoutColor,
               listPlacement: _listPlacement,
+              listGlobalKey: _listGlobalKey,
               matrix4Notifiers: _matrix4Notifiers,
               onUpdatePlacement: (placementList, placement, matrix4) {
                 _listPlacement = placementList;
@@ -687,6 +690,7 @@ class _LayoutBodyState extends State<LayoutBody> {
                           final newPlacement = _createNewPlacement();
                           _listPlacement.add(newPlacement);
                           _listPlacementPreventive.add(newPlacement);
+                          _listGlobalKey.add(GlobalKey());
                           _selectedPlacement = _listPlacement.last;
                         });
                         widget.reRenderFunction();
@@ -796,6 +800,7 @@ class _LayoutBodyState extends State<LayoutBody> {
                               if (index != -1) {
                                 _listPlacement.removeAt(index);
                                 _matrix4Notifiers.removeAt(index);
+                                _listGlobalKey.removeAt(index);
                               }
                               final indexPreventive = _listPlacementPreventive
                                   .indexOf(_selectedPlacement!);
