@@ -605,7 +605,7 @@ class _LayoutBodyState extends State<LayoutBody> {
           },
           child: Column(children: [
             Expanded(
-                child: WDragZoomImageTest1(
+                child: WDragZoomImageTest(
               backgroundColor: _currentLayoutColor,
               listPlacement: _listPlacement,
               matrix4Notifiers: _matrix4Notifiers,

@@ -10,6 +10,7 @@ import 'package:photo_to_pdf/widgets/w_text_content.dart';
 class WDragZoomImageTest1 extends StatefulWidget {
   final Color backgroundColor;
   final List<Placement> listPlacement;
+  final List<GlobalKey> listGlobalKey;
   final List<ValueNotifier<Matrix4>> matrix4Notifiers;
   final Placement? selectedPlacement;
   final PaperAttribute? paperAttribute;
@@ -30,6 +31,7 @@ class WDragZoomImageTest1 extends StatefulWidget {
       {super.key,
       required this.backgroundColor,
       required this.listPlacement,
+      required this.listGlobalKey,
       required this.matrix4Notifiers,
       required this.onUpdatePlacement,
       this.selectedPlacement,
