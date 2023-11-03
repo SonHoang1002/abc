@@ -12,9 +12,6 @@ EdgeInsets? caculatePadding(Project project, List<double> widthAndHeight,
       inputUnit, targetUnit, project.paddingAttribute?.verticalPadding ?? 0);
   final convertHorizontalPadding = convertUnit(
       inputUnit, targetUnit, project.paddingAttribute?.horizontalPadding ?? 0);
-  // print("inputUnit ${inputUnit.getInfor()}");
-  // print("targetUnit ${targetUnit.getInfor()}");
-  // print("project.paddingAttribute? ${project.paddingAttribute?.getInfor()}");
   return EdgeInsets.symmetric(
     vertical: 1 /
         2 *
@@ -38,9 +35,6 @@ pw.EdgeInsets? caculatePdfPadding(Project project, List<double> widthAndHeight,
       inputUnit, targetUnit, project.paddingAttribute?.verticalPadding ?? 0);
   final convertHorizontalPadding = convertUnit(
       inputUnit, targetUnit, project.paddingAttribute?.horizontalPadding ?? 0);
-  // print("inputUnit ${inputUnit.getInfor()}");
-  // print("targetUnit ${targetUnit.getInfor()}");
-  // print("project.paddingAttribute? ${project.paddingAttribute?.getInfor()}");
   return pw.EdgeInsets.symmetric(
     vertical: 1 /
         2 *

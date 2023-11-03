@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/helpers/change_list.dart';
 import 'package:photo_to_pdf/helpers/check_distance.dart';
 import 'package:photo_to_pdf/helpers/convert.dart';
+import 'package:photo_to_pdf/helpers/extract_list.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/tests/extensions.dart';
@@ -61,6 +63,8 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
 
   final GlobalKey _testKey = GlobalKey();
   late Offset _startOffset;
+  // luu khoang cach giua diem cham (doi voi selectedPlacement) so voi ben trai vaf ben tren cuar placement dang duoc focus
+  late List<double> _listPositionOfPointer;
 
   @override
   void dispose() {
@@ -100,6 +104,44 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
   double _getWidthOfImage(int index) {
     final result = _listPlacement[index].ratioWidth * _maxWidth;
     return result;
+  }
+
+  List<Offset> _getGlobalPositionPlacement(int index) {
+    final renderBox = widget.listGlobalKey[index].currentContext
+        ?.findRenderObject() as RenderBox;
+
+    final dotTopLeft = renderBox.localToGlobal(Offset.zero);
+    final dotTopCenter = Offset(
+        dotTopLeft.dx + _maxWidth * _listPlacement[index].ratioWidth / 2,
+        dotTopLeft.dy);
+    final dotTopRight = Offset(
+        dotTopLeft.dx + _maxWidth * _listPlacement[index].ratioWidth,
+        dotTopLeft.dy);
+
+    final dotCenterLeft = Offset(dotTopLeft.dx,
+        dotTopLeft.dy + _maxHeight * _listPlacement[index].ratioHeight / 2);
+    final dotCenterRight = Offset(
+        dotTopLeft.dx + _maxWidth * _listPlacement[index].ratioWidth,
+        dotTopLeft.dy + _maxHeight * _listPlacement[index].ratioHeight / 2);
+
+    final dotBottomLeft = Offset(dotTopLeft.dx,
+        dotTopLeft.dy + _maxHeight * _listPlacement[index].ratioHeight + 10);
+    final dotBottomCenter = Offset(
+        dotTopLeft.dx + _maxWidth * _listPlacement[index].ratioWidth / 2,
+        dotTopLeft.dy + _maxHeight * _listPlacement[index].ratioHeight + 10);
+    final dotBottomRight = Offset(
+        dotTopLeft.dx + _maxWidth * _listPlacement[index].ratioWidth,
+        dotTopLeft.dy + _maxHeight * _listPlacement[index].ratioHeight + 10);
+    return [
+      dotTopLeft,
+      dotTopCenter,
+      dotTopRight,
+      dotCenterLeft,
+      dotCenterRight,
+      dotBottomLeft,
+      dotBottomCenter,
+      dotBottomRight
+    ];
   }
 
   List<double> _getWidthAndHeight() {
@@ -160,166 +202,263 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
     return _buildCustomArea();
   }
 
-  int? _getCurrentPlacement(Offset startOffset) {
+  List? _onFocusPlacement(Offset startOffset) {
     final RmaxWidthToWidth = _maxWidth / _size.width;
     final RmaxHeightToHeight = _maxHeight / _size.height;
-    print('${RmaxWidthToWidth},${RmaxHeightToHeight}');
-    List<Placement> listConvertPlacement = _listPlacement.map((e) {
-      return e.copyWith(
-        ratioOffset: _changeValueOfList(
-            e.ratioOffset, [RmaxWidthToWidth, RmaxHeightToHeight], 4),
-        ratioHeight: e.ratioHeight,
-        ratioWidth: e.ratioWidth,
-      );
-    }).toList();
-    print("startOffset ${startOffset}");
-    for (int i = 0; i < listConvertPlacement.length; i++) {
-      Offset dotTopLeft = Offset(
-          listConvertPlacement[i].ratioOffset[0] * _size.width,
-          listConvertPlacement[i].ratioOffset[1] * _size.height);
-      Offset dotBottomRight = Offset(
-          (listConvertPlacement[i].ratioOffset[0] +
-                  listConvertPlacement[i].ratioWidth) *
-              _size.width,
-          (listConvertPlacement[i].ratioOffset[1] +
-                  listConvertPlacement[i].ratioHeight) *
-              _size.height);
-      print("dotTopLeft ${dotTopLeft}, dotBottomRight ${dotBottomRight}");
-      if ((dotTopLeft.dx < startOffset.dx &&
-              startOffset.dx < dotBottomRight.dx) &&
-          (dotTopLeft.dy < startOffset.dy &&
-              startOffset.dy < dotBottomRight.dy)) {
-        return i;
+    int? index;
+    final newOffset = Offset(
+        startOffset.dx * RmaxWidthToWidth, startOffset.dy * RmaxHeightToHeight);
+
+    for (int i = 0; i < widget.listGlobalKey.length; i++) {
+      List<Offset> offsetPlacement = _getGlobalPositionPlacement(i);
+      if (_containOffset(startOffset, offsetPlacement[0], offsetPlacement[7])) {
+        _listPositionOfPointer = [
+          (startOffset.dx - offsetPlacement[0].dx) * RmaxWidthToWidth,
+          (startOffset.dy - offsetPlacement[0].dy) * RmaxHeightToHeight,
+        ];
+        index = i;
       }
+    }
+    String message = '';
+    if (index != null) {
+      _selectedPlacement = _listPlacement[index].copyWith();
+      final allOffset = _getGlobalPositionPlacement(index);
+      print("startOffset ${startOffset}");
+      print("allOffset[0] ${allOffset[0]}");
+      if (allOffset[0].dy - 7 < startOffset.dy * RmaxHeightToHeight &&
+          startOffset.dy * RmaxHeightToHeight < allOffset[0].dy) {
+        print("top edge");
+      }
+      widget.onFocusPlacement!(_listPlacement[index], _matrix4Notifiers[index]);
+      setState(() {});
+    } else {
+      widget.onCancelFocusPlacement!();
+      setState(() {});
     }
   }
 
-  /// [operation]: 0 -> +
-  ///
-  /// [operation]: 1 -> -
-  ///
-  /// [operation]: 2 -> x
-  ///
-  /// [operation]: 3 -> /
-  List<double> _changeValueOfList(
-      List<double> listRoot, List<double> listValue, int operation) {
-    switch (operation) {
-      case 0:
-        return [
-          listRoot[0] + listValue[0],
-          listRoot[1] + listValue[1],
-        ];
-      case 1:
-        return [
-          listRoot[0] - listValue[0],
-          listRoot[1] - listValue[1],
-        ];
-      case 2:
-        return [
-          listRoot[0] * listValue[0],
-          listRoot[1] * listValue[1],
-        ];
-      case 3:
-        return [
-          listRoot[0] / listValue[0],
-          listRoot[1] / listValue[1],
-        ];
-      default:
-        return [listRoot[0], listRoot[1]];
+  bool _containOffset(
+      Offset checkOffset, Offset startOffset, Offset endOffset) {
+    return (startOffset.dx <= checkOffset.dx &&
+            checkOffset.dx <= endOffset.dx) &&
+        (startOffset.dy <= checkOffset.dy && checkOffset.dy <= endOffset.dy);
+  }
+
+  _translatePlacement(Placement selectedPlacement, DragUpdateDetails details) {
+    int indexOfFocusPlacement =
+        _listPlacement.map((e) => e.id).toList().indexOf(selectedPlacement.id);
+    if (indexOfFocusPlacement != -1) {
+      final deltaGlobalPosition = details.globalPosition - _startOffset;
+
+      final RmaxWidthToWidth = _maxWidth / _size.width;
+      final RmaxHeightToHeight = _maxHeight / _size.height;
+
+      List<Placement> listPlacementWithoutCurrent = List.from(_listPlacement);
+      listPlacementWithoutCurrent.removeAt(indexOfFocusPlacement);
+      List<GlobalKey> listGlobalKeyWithoutCurrent =
+          List.from(widget.listGlobalKey);
+      listGlobalKeyWithoutCurrent.removeAt(indexOfFocusPlacement);
+
+      List<double> listVerticalPosition =
+          convertNestedListToList(listGlobalKeyWithoutCurrent.map((e) {
+        int index = listGlobalKeyWithoutCurrent.indexOf(e);
+        List<Offset> listOffset = _getGlobalPositionPlacement(index);
+        return changeValueOfList([listOffset[0].dy, listOffset[7].dy],
+            [RmaxHeightToHeight, RmaxHeightToHeight], 2);
+      }).toList());
+      List<double> listHorizontalPosition =
+          convertNestedListToList(listGlobalKeyWithoutCurrent.map((e) {
+        int index = listGlobalKeyWithoutCurrent.indexOf(e);
+        List<Offset> listOffset = _getGlobalPositionPlacement(index);
+        return [listOffset[0].dx, listOffset[1].dx];
+      }).toList());
+
+      final newDetailsGlobalPosition = Offset(
+          details.globalPosition.dx * RmaxWidthToWidth,
+          details.globalPosition.dy * RmaxHeightToHeight);
+      final newPlacement = selectedPlacement.copyWith(ratioOffset: [
+        _selectedPlacement!.ratioOffset[0] + deltaGlobalPosition.dx / _maxWidth,
+        _selectedPlacement!.ratioOffset[1] +
+            deltaGlobalPosition.dy / _maxHeight,
+      ]);
+      // for (int i = 0; i < listVerticalPosition.length; i++) {
+      //   if (checkInsideDistance(
+      //       newDetailsGlobalPosition.dy, listVerticalPosition[i], 3)) {}
+      // }
+
+      _listPlacement[indexOfFocusPlacement] = newPlacement;
     }
   }
 
   Widget _buildCustomArea() {
     final areaBox =
         _drawAreaKey.currentContext?.findRenderObject() as RenderBox?;
-    return GestureDetector(
-      onPanStart: (details) {
-        print(_getCurrentPlacement(details.globalPosition));
-      },
-      onTap: () {},
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
+    return Stack(
+      children: [
+        GestureDetector(
+          onPanStart: (details) {
+            _startOffset = details.globalPosition;
+            _onFocusPlacement(details.globalPosition);
+          },
+          onPanUpdate: (details) {
+            // tinh do chenh lech cua global position
+            if (_selectedPlacement != null) {
+              final index = _listPlacement
+                  .map((e) => e.id)
+                  .toList()
+                  .indexOf(_selectedPlacement!.id);
+              _translatePlacement(_listPlacement[index], details);
+              //left
+              if (_listPlacement[index].ratioOffset[0] <= 0) {
+                _listPlacement[index].ratioOffset = [
+                  0,
+                  _listPlacement[index].ratioOffset[1]
+                ];
+                _listPlacement[index].previewRatioOffset = [
+                  0,
+                  _listPlacement[index].previewRatioOffset[1]
+                ];
+              }
+              //top
+              if (_listPlacement[index].ratioOffset[1] <= 0) {
+                _listPlacement[index].ratioOffset = [
+                  _listPlacement[index].ratioOffset[0],
+                  0
+                ];
+                _listPlacement[index].previewRatioOffset = [
+                  _listPlacement[index].previewRatioOffset[0],
+                  0
+                ];
+              }
+              //right
+              if (_listPlacement[index].ratioOffset[0] +
+                      _listPlacement[index].ratioWidth >=
+                  1) {
+                _listPlacement[index].ratioOffset = [
+                  1 - _listPlacement[index].ratioWidth,
+                  _listPlacement[index].ratioOffset[1]
+                ];
+                _listPlacement[index].previewRatioOffset = [
+                  1 - _listPlacement[index].ratioWidth,
+                  _listPlacement[index].previewRatioOffset[1]
+                ];
+              }
+              //bottom
+              if (_listPlacement[index].ratioOffset[1] +
+                      _listPlacement[index].ratioHeight >=
+                  1) {
+                _listPlacement[index].ratioOffset = [
+                  _listPlacement[index].ratioOffset[0],
+                  1 - _listPlacement[index].ratioHeight
+                ];
+                _listPlacement[index].previewRatioOffset = [
+                  _listPlacement[index].previewRatioOffset[0],
+                  1 - _listPlacement[index].ratioHeight
+                ];
+              }
+              widget.onFocusPlacement!(
+                  _listPlacement[index], _matrix4Notifiers[index]);
+              setState(() {});
+            }
+          },
+          onTapDown: (details) {
+            _startOffset = details.globalPosition;
+            _onFocusPlacement(details.globalPosition);
+          },
+          child: Stack(
             alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(vertical: 5),
-            child: Container(
-              key: _drawAreaKey,
-              width: _maxWidth,
-              height: _maxHeight,
-              decoration:
-                  BoxDecoration(color: widget.backgroundColor, boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  spreadRadius: 0.5,
-                  blurRadius: 5,
-                  offset: const Offset(0, 1),
+            children: [
+              Container(
+                alignment: Alignment.center,
+                padding: const EdgeInsets.symmetric(vertical: 5),
+                child: Container(
+                  key: _drawAreaKey,
+                  width: _maxWidth,
+                  height: _maxHeight,
+                  decoration:
+                      BoxDecoration(color: widget.backgroundColor, boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      spreadRadius: 0.5,
+                      blurRadius: 5,
+                      offset: const Offset(0, 1),
+                    ),
+                  ]),
                 ),
-              ]),
-            ),
-          ),
-          Container(
-            alignment: Alignment.center,
-            width: _maxWidth + 15,
-            height: _maxHeight + 15,
-            child: Stack(
-              children: [
-                Stack(
-                  children: _listPlacement.map<Widget>(
-                    (e) {
-                      final index = _listPlacement.indexOf(e);
-                      return Stack(
-                        children: [
-                          Positioned(
-                            key: widget.listGlobalKey[index],
-                            top: _listPlacement[index].ratioOffset[1] *
-                                _maxHeight,
-                            left: _listPlacement[index].ratioOffset[0] *
-                                _maxWidth,
-                            child: Stack(children: [
-                              Container(
-                                margin: const EdgeInsets.all(7),
-                                child: Image.asset(
-                                  "${pathPrefixImage}image_demo.png",
-                                  fit: BoxFit.cover,
-                                  height: _getHeightOfImage(index),
-                                  width: _getWidthOfImage(index),
-                                ),
-                              ),
-                              Positioned.fill(
-                                  child: Center(
-                                child: Container(
-                                  height: 25,
-                                  width: 25,
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12.5),
-                                      color: colorBlue),
-                                  child: Center(
-                                      child: WTextContent(
-                                    value:
-                                        "${(widget.listPlacementPreventive!.indexWhere((element) => element.id == _listPlacement[index].id)) + 1}",
-                                    textColor: colorWhite,
-                                    textSize: 10,
+              ),
+              Container(
+                alignment: Alignment.center,
+                width: _maxWidth + 15,
+                height: _maxHeight + 15,
+                child: Stack(
+                  children: [
+                    Stack(
+                      children: _listPlacement.map<Widget>(
+                        (e) {
+                          final index = _listPlacement.indexOf(e);
+                          return Stack(
+                            children: [
+                              Positioned(
+                                key: widget.listGlobalKey[index],
+                                top: _listPlacement[index].ratioOffset[1] *
+                                    _maxHeight,
+                                left: _listPlacement[index].ratioOffset[0] *
+                                    _maxWidth,
+                                child: Stack(children: [
+                                  Container(
+                                    margin: const EdgeInsets.all(7),
+                                    child: Image.asset(
+                                      "${pathPrefixImage}image_demo.png",
+                                      fit: BoxFit.cover,
+                                      height: _getHeightOfImage(index),
+                                      width: _getWidthOfImage(index),
+                                    ),
+                                  ),
+                                  Positioned.fill(
+                                      child: Center(
+                                    child: Container(
+                                      height: 25,
+                                      width: 25,
+                                      decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(12.5),
+                                          color: colorBlue),
+                                      child: Center(
+                                          child: WTextContent(
+                                        value:
+                                            "${(widget.listPlacementPreventive!.indexWhere((element) => element.id == _listPlacement[index].id)) + 1}",
+                                        textColor: colorWhite,
+                                        textSize: 10,
+                                      )),
+                                    ),
                                   )),
-                                ),
-                              )),
-                              widget.selectedPlacement?.id ==
-                                      _listPlacement[index].id
-                                  ? Positioned.fill(
-                                      child: _buildPanGestureWidget(index))
-                                  : const SizedBox()
-                            ]),
-                          ),
-                        ],
-                      );
-                    },
-                  ).toList(),
+                                  widget.selectedPlacement?.id ==
+                                          _listPlacement[index].id
+                                      ? Positioned.fill(
+                                          child: _buildPanGestureWidget(index))
+                                      : const SizedBox()
+                                ]),
+                              ),
+                            ],
+                          );
+                        },
+                      ).toList(),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          )
-        ],
-      ),
+              )
+            ],
+          ),
+        ),
+        // Positioned.fill(
+        //   top: _startOffset.dy,
+        //   left: _startOffset.dx,
+        //   child: Container(
+        //       height: 10,
+        //       width: 10,
+        //       decoration: BoxDecoration(border: Border.all(color: colorRed))),
+        // )
+      ],
     );
   }
 
@@ -418,11 +557,11 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
       Key? key}) {
     return GestureDetector(
       key: key,
-      onPanUpdate: (details) {
-        onPanUpdate!(details);
-        widget.onUpdatePlacement(
-            _listPlacement, _listPlacement[index], _matrix4Notifiers[index]);
-      },
+      // onPanUpdate: (details) {
+      //   onPanUpdate!(details);
+      //   widget.onUpdatePlacement(
+      //       _listPlacement, _listPlacement[index], _matrix4Notifiers[index]);
+      // },
       onTap: onTap,
       onPanStart: onPanStart,
       child: Container(

@@ -58,7 +58,6 @@ List _phan_tac_du_lieu_tung_page(List<int> layout, List list) {
 
 // list: [q,w,e,r,t,y,u,i,o,p,a,s,d,f]
 
-
 // layout: [1] => [[[q]],[[w]],[[e]],[[r]],[[t]],[[y]],[[u]],[[i]],[[o]],[[p]],[[[a]]],[[s]],[[d]],[[f]]];
 
 // layout: [1,2] => [
@@ -74,5 +73,11 @@ List _phan_tac_du_lieu_tung_page(List<int> layout, List list) {
 //   [[u],[i,o],[p,a,s]],
 //   [[d],[f,null],[null,null,null]]]
 
-
-
+/// List<List<double>>  to List<double>
+List<double> convertNestedListToList(List<List<double>> list) {
+  List<double> resultList = [];
+  for (List<double> sublist in list) {
+    resultList.addAll(sublist);
+  }
+  return resultList;
+}

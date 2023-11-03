@@ -50,6 +50,122 @@ func gestureDetect() {
     // code finish
 }
 
+
+// Copyright (c) 2019, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+import 'dart:math';
+
+import 'package:flutter/material.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  final String title;
+
+  const MyHomePage({
+    Key? key,
+    required this.title,
+  }) : super(key: key);
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: const DrawDraggableRectangle(),
+    );
+  }
+}
+
+class DrawDraggableRectangle extends StatefulWidget {
+  const DrawDraggableRectangle({super.key});
+
+  @override
+  State<DrawDraggableRectangle> createState() => _DrawDraggableRectangleState();
+}
+
+class _DrawDraggableRectangleState extends State<DrawDraggableRectangle> {
+  double zoneHeight = 122;
+  double zoneWidth = 112;
+  late List<double> topYs;
+  late List<double> leftXs;
+  late List<double> initXs = [];
+  late List<double> initYs = [];
+
+  @override
+  void initState() {
+    super.initState();
+    topYs = List<double>.generate(2, (index) => Random().nextDouble()).toList();
+    leftXs =
+        List<double>.generate(2, (index) => Random().nextDouble()).toList();
+    initXs = List.from(leftXs);
+    initYs = List.from(topYs);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: topYs.map((e) {
+        final index = topYs.indexOf(e);
+        return Positioned(
+          top: topYs[index],
+          left: leftXs[index],
+          child: GestureDetector(
+            onPanStart: (DragStartDetails details) {
+              setState(() {
+                initXs[index] = details.globalPosition.dx;
+                initYs[index] = details.globalPosition.dy;
+              });
+            },
+            onPanUpdate: (DragUpdateDetails details) {
+              final dx = details.globalPosition.dx - initXs[index];
+              final dy = details.globalPosition.dy - initYs[index];
+              initXs[index] = details.globalPosition.dx;
+              initYs[index] = details.globalPosition.dy;
+              setState(() {
+                topYs[index] = (topYs[index] + dy).clamp(0.0, double.infinity);
+                leftXs[index] =
+                    (leftXs[index] + dx).clamp(0.0, double.infinity);
+              });
+              
+            },
+            child: Container(
+              height: zoneHeight,
+              width: zoneWidth,
+              decoration: const BoxDecoration(
+                color: Colors.red,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
@@ -964,3 +1080,6 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
     );
   }
 }
+
+
+0.769601195264912,0.4596713021491782

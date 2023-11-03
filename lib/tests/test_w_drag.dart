@@ -226,6 +226,7 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
     return _buildCustomArea();
   }
 
+
   /// !!!! [haveVertical], [haveHorizontal] PROPERTY IS USED TO ANNOUNCE TO USE FOR APPLY VERTICAL, HORIZONTAL CHECK
   void _snapPosition(
     int index,
@@ -1371,6 +1372,8 @@ class _WDragZoomImageTestState extends State<WDragZoomImageTest> {
                     }
                     _snapPositionWidthPoint2(index);
                     _checkExceedingDrawBoard(index);
+                    print(
+                        'details.globalPosition dot bottom right ${details.globalPosition},${details.primaryDelta}');
                   },
                   onPanStart: (details) {},
                 )

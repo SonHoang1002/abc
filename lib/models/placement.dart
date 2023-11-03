@@ -77,7 +77,7 @@ class Placement {
 
   void getInfor() {
     print(
-        "Placement id: ${this.id}, Placement ratioHeight: ${this.ratioHeight}, Placement ratioWidth: ${this.ratioWidth}, Placement ratioOffset: ${this.ratioOffset}, Placement placementAttribute: ${this.placementAttribute?.getInfor()} ");
+        "Placement id: ${id}, Placement ratioHeight: ${ratioHeight}, Placement ratioWidth: ${ratioWidth}, Placement ratioOffset: ${ratioOffset}, Placement placementAttribute: ${placementAttribute?.getInfor()} ");
   }
 }
 
@@ -139,6 +139,6 @@ class PlacementAttribute {
   }
 
   String getInfor() {
-    return "PlacementAttribute horizontal: ${this.horizontal}, PlacementAttribute vertical: ${this.vertical}, PlacementAttribute top: ${this.top}, PlacementAttribute left: ${this.left}, PlacementAttribute right: ${this.right}, PlacementAttribute bottom: ${this.bottom}, PlacementAttribute unit: ${this.unit?.getInfor()}";
+    return "PlacementAttribute horizontal: ${horizontal}, PlacementAttribute vertical: ${vertical}, PlacementAttribute top: ${top}, PlacementAttribute left: ${left}, PlacementAttribute right: ${right}, PlacementAttribute bottom: ${bottom}, PlacementAttribute unit: ${unit?.getInfor()}";
   }
 }
