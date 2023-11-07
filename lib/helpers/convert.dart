@@ -102,3 +102,7 @@ pw.Alignment? convertAlignmentToPdfAlignment(Alignment? alignment) {
       return null;
   }
 }
+
+Offset convertOffset(Offset offset, List<double> ratios) {
+  return Offset(offset.dx * ratios[0], offset.dy * ratios[1]);
+}
