@@ -4,7 +4,6 @@ import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_background.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_dialogs.dart';
-import 'package:photo_to_pdf/tests/test_w_drag.dart';
 import 'package:photo_to_pdf/tests/test_w_drag_1.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:flutter/material.dart';
