@@ -4,6 +4,7 @@ import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_background.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_dialogs.dart';
+import 'package:photo_to_pdf/tests/drag_2.dart';
 import 'package:photo_to_pdf/tests/test_w_drag_1.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:flutter/material.dart';
@@ -254,18 +255,6 @@ class _LayoutBodyState extends State<LayoutBody> {
                     : 0.25) /
                 2
       ],
-      previewRatioOffset: [
-        0.5 - 0.15,
-        0.5 -
-            (_project.paper != null
-                    ? (0.3 * _project.paper!.width / _project.paper!.height)
-                    : 0.25) /
-                2
-      ],
-      previewWidth: 0.3,
-      previewHeight: _project.paper != null
-          ? (0.3 * _project.paper!.width / _project.paper!.height)
-          : 0.25,
       placementAttribute: PLACEMENT_ATTRIBUTE,
     );
     return newPlacement;
@@ -606,66 +595,27 @@ class _LayoutBodyState extends State<LayoutBody> {
           },
           child: Column(children: [
             Expanded(
-                child: WDragZoomImageTest1(
+                child: WDragZoomImageTest2(
               backgroundColor: _currentLayoutColor,
-              listPlacement: _listPlacement,
+              // listPlacement: _listPlacement,
               listGlobalKey: _listGlobalKey,
               matrix4Notifiers: _matrix4Notifiers,
-              onUpdatePlacement: (placementList, placement, matrix4) {
-                _listPlacement = placementList;
-                // if (placement != null && matrix4 != null) {
-                //   int index = _listPlacement.indexWhere(
-                //     (element) {
-                //       return element.id == placement.id;
-                //     },
-                //   );
-                //   if (index != -1) {
-                //     _matrix4Notifiers.removeAt(index);
-                //     _matrix4Notifiers.add(matrix4);
-                //     _listPlacement.removeAt(index);
-                //     _listPlacement.add(placement);
-                //   }
-
-                //   Future.delayed(const Duration(milliseconds: 50), () {
-                //     setState(() {
-                //       _selectedPlacement = placement;
-                //     });
-                //     widget.reRenderFunction();
-                //   });
-                // }
-                setState(() {});
+              rerenderFunction: () {
                 widget.reRenderFunction();
               },
-              onFocusPlacement: (placement, matrix4) {
-                setState(() {
-                  int index = _listPlacement.indexWhere(
-                    (element) {
-                      return element.id == placement.id;
-                    },
-                  );
-                  if (index != -1) {
-                    _matrix4Notifiers.removeAt(index);
-                    _matrix4Notifiers.add(matrix4);
-                    _listPlacement.removeAt(index);
-                    _listPlacement.add(placement);
-                  }
-                });
-                Future.delayed(const Duration(milliseconds: 50), () {
-                  setState(() {
-                    _selectedPlacement = placement;
-                  });
-                  widget.reRenderFunction();
-                });
-
-                // setState(() {
-                // _selectedPlacement = placement;
-                // });
-                // widget.reRenderFunction();
-              },
-              onCancelFocusPlacement: _disablePlacement,
-              selectedPlacement: _selectedPlacement,
               paperAttribute: _project.paper,
-              listPlacementPreventive: _listPlacementPreventive,
+              listRectangle1: _listPlacement
+                  .map((e) => Rectangle1(
+                      id: e.id,
+                      x: e.ratioOffset[0] * 100,
+                      y: e.ratioOffset[1] * 100,
+                      width: e.ratioWidth * 100,
+                      height: e.ratioHeight * 100))
+                  .toList(),
+              onUpdateRectangle1: (
+                List<Rectangle1> rectangles,
+                Rectangle1? focusRectangle,
+              ) {},
             )),
             WSpacer(height: 10),
             SizedBox(

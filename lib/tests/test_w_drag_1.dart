@@ -173,7 +173,7 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
     ];
   }
 
-  List<dynamic>? _onFocusPlacement(Offset startOffset) {
+  void _onFocusPlacement(Offset startOffset) {
     final RmaxWidthToWidth = _maxWidth / _size.width;
     final RmaxHeightToHeight = _maxHeight / _size.height;
     int? index;
@@ -271,6 +271,8 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
         _startOffset = details.globalPosition;
         _onFocusPlacement(details.globalPosition);
         if (_selectedPlacement != null) {
+          _listVerticalPosition.clear();
+          _listHorizontalPosition.clear();
           int indexOfFocusPlacement = _listPlacement
               .map((e) => e.id)
               .toList()
@@ -302,101 +304,201 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
       },
       onPanUpdate: (details) {
         if (_selectedPlacement != null) {
-          final RmaxWidthToWidth = _maxWidth / _size.width;
-          final RmaxHeightToHeight = _maxHeight / _size.height;
-
+          final ratio = [_maxWidth / _size.width, _maxHeight / _size.height];
+          List<List<double>> newListOverride = [[], []];
+          _listOverride = [[], []];
           final indexOfFocusPlacement = _listPlacement
               .map((e) => e.id)
               .toList()
               .indexOf(_selectedPlacement!.id);
-          Placement selectedPlacement = _listPlacement[indexOfFocusPlacement];
-
           final newDetailsLocalPosition = Offset(
-              details.globalPosition.dx * RmaxWidthToWidth,
-              details.globalPosition.dy * RmaxHeightToHeight);
-
+              details.globalPosition.dx * ratio[0],
+              details.globalPosition.dy * ratio[1]);
           // translation
           Offset deltaGlobalPosition = details.globalPosition - _startOffset;
           // new placement
           Placement newPlacement = _listPlacement[indexOfFocusPlacement];
           // thay doi kich thuoc va vi tri cua placement
+          double px = newPlacement.ratioOffset[0];
+          double py = newPlacement.ratioOffset[1];
+          double pWidth = newPlacement.ratioWidth;
+          double pHeight = newPlacement.ratioHeight;
           if (_kiem_tra_xem_dang_o_canh_nao.isNotEmpty) {
+            // for selected canh
+            // top: y1 = ...
+            // left: x1 = ..
+            // right: x2 = ..
+            // bottom: y2 = ...
+
+            // snap
+            // for canh doc
+            //    gan x1: x1 = ..; x2 co the can di chuyen theo x1
+            //    gan x2: x2 = ..; x1 co the can di chuyen theo x2
+            // for canh ngang
+            //    gan y1: y1 = ..; y2 co the can di chuyen theo y1
+            //    gan y2: y2 = ..; y1 co the can di chuyen theo y2
             for (var ele in _kiem_tra_xem_dang_o_canh_nao) {
               switch (ele) {
                 case "top":
                   final newRatioOffset1 = _selectedPlacement!.ratioOffset[1] +
                       deltaGlobalPosition.dy / _maxHeight;
                   if (newRatioOffset1 > 0) {
-                    newPlacement = selectedPlacement.copyWith(
-                        ratioHeight: _selectedPlacement!.ratioHeight -
-                            deltaGlobalPosition.dy / _maxHeight,
-                        ratioWidth: newPlacement.ratioWidth,
-                        ratioOffset: [
-                          newPlacement.ratioOffset[0],
-                          newRatioOffset1
-                        ]);
+                    pHeight = _selectedPlacement!.ratioHeight -
+                        deltaGlobalPosition.dy / _maxHeight;
+                    py = newRatioOffset1;
                   }
                 case "bottom":
                   final newRatioHeight = _selectedPlacement!.ratioHeight +
                       deltaGlobalPosition.dy / _maxHeight;
                   if (newRatioHeight + newPlacement.ratioOffset[1] < 1) {
-                    newPlacement.ratioHeight = newRatioHeight;
+                    pHeight = newRatioHeight;
                   }
                 case "left":
                   final newRatioOffset0 = _selectedPlacement!.ratioOffset[0] +
                       deltaGlobalPosition.dx / _maxWidth;
                   if (newRatioOffset0 > 0) {
-                    newPlacement = selectedPlacement.copyWith(
-                        ratioWidth: _selectedPlacement!.ratioWidth -
-                            deltaGlobalPosition.dx / _maxWidth,
-                        ratioHeight: newPlacement.ratioHeight,
-                        ratioOffset: [
-                          newRatioOffset0,
-                          newPlacement.ratioOffset[1]
-                        ]);
+                    pWidth = _selectedPlacement!.ratioWidth -
+                        deltaGlobalPosition.dx / _maxWidth;
+                    px = newRatioOffset0;
                   }
                 case "right":
                   final newRatioHeight = _selectedPlacement!.ratioWidth +
                       deltaGlobalPosition.dx / _maxWidth;
                   if (newRatioHeight + newPlacement.ratioOffset[0] < 1) {
-                    newPlacement.ratioWidth = _selectedPlacement!.ratioWidth +
+                    pWidth = _selectedPlacement!.ratioWidth +
                         deltaGlobalPosition.dx / _maxWidth;
                   }
                 default:
                   break;
               }
             }
+            // canh ngang
+            print("_listPositionOfPointer[3] ${_listPositionOfPointer[3]}");
+            for (int i = 0; i < _listVerticalPosition.length; i++) {
+              if (checkInsideDistance(
+                      _listVerticalPosition[i],
+                      newDetailsLocalPosition.dy + _listPositionOfPointer[3],
+                      3) &&
+                  _kiem_tra_xem_dang_o_canh_nao.contains("bottom")) {
+                print("drag bottom inside");
+                final deltaSnap = (_listVerticalPosition[i] -
+                        (newDetailsLocalPosition.dy +
+                            _listPositionOfPointer[3])) /
+                    _maxHeight /
+                    ratio[0];
+                pHeight += deltaSnap;
+                newListOverride[1].add(py + pHeight);
+              }
+              if (checkInsideDistance(
+                      _listVerticalPosition[i],
+                      newDetailsLocalPosition.dy - _listPositionOfPointer[1],
+                      3) &&
+                  _kiem_tra_xem_dang_o_canh_nao.contains("top")) {
+                print("drag top inside");
+                final deltaSnap = (_listVerticalPosition[i] -
+                        (newDetailsLocalPosition.dy -
+                            _listPositionOfPointer[1])) /
+                    _maxHeight /
+                    ratio[1];
+                py += deltaSnap;
+                pHeight -= deltaSnap;
+                newListOverride[1].add(py);
+              }
+            }
+            for (int i = 0; i < _listHorizontalPosition.length; i++) {
+              if (checkInsideDistance(
+                      _listHorizontalPosition[i],
+                      newDetailsLocalPosition.dx - _listPositionOfPointer[0],
+                      3) &&
+                  _kiem_tra_xem_dang_o_canh_nao.contains("left")) {
+                print("left inside");
+                final deltaSnap = (_listHorizontalPosition[i] -
+                        (newDetailsLocalPosition.dx -
+                            _listPositionOfPointer[0])) /
+                    _maxWidth /
+                    ratio[0];
+                px += deltaSnap;
+                pWidth -= deltaSnap;
+                newListOverride[0].add(px);
+              }
+              if (checkInsideDistance(
+                      _listHorizontalPosition[i],
+                      newDetailsLocalPosition.dx + _listPositionOfPointer[2],
+                      3) &&
+                  _kiem_tra_xem_dang_o_canh_nao.contains("right")) {
+                print("drag right inside");
+                final deltaSnap = (_listHorizontalPosition[i] -
+                        (newDetailsLocalPosition.dx +
+                            _listPositionOfPointer[2])) /
+                    _maxWidth /
+                    ratio[0];
+                pWidth += deltaSnap;
+                newListOverride[0].add(px + pWidth);
+              }
+            }
           } else {
-            newPlacement = selectedPlacement.copyWith(ratioOffset: [
-              _selectedPlacement!.ratioOffset[0] +
-                  deltaGlobalPosition.dx / _maxWidth,
-              _selectedPlacement!.ratioOffset[1] +
-                  deltaGlobalPosition.dy / _maxHeight
-            ]);
-          }
-          // check snap //
-          // canh ngang
-          // height, width , x , y
-          double newRatioHeight,
-              newRatioWidth,
-              newRatioOffset0,
-              newRatioOffset1;
-          for (int i = 0; i < _listVerticalPosition.length; i++) {
-            // top
-            if (checkInsideDistance(_listVerticalPosition[i],
-                newDetailsLocalPosition.dy - _listPositionOfPointer[1], 5)) {
-              print("top inside");
-              print(
-                  "newPlacement.ratioOffset[1] ${newPlacement.ratioOffset[1] * _maxHeight}");
-              print("_listVerticalPosition[i] ${_listVerticalPosition[i]}");
-              // newPlacement.ratioOffset[1] =
-              //     _listVerticalPosition[i] / _maxHeight * RmaxHeightToHeight;
+            px = _selectedPlacement!.ratioOffset[0] +
+                deltaGlobalPosition.dx / _maxWidth;
+            py = _selectedPlacement!.ratioOffset[1] +
+                deltaGlobalPosition.dy / _maxHeight;
+            // check snap thay doi vi tri
+            for (int i = 0; i < _listVerticalPosition.length; i++) {
+              if (checkInsideDistance(_listVerticalPosition[i],
+                  newDetailsLocalPosition.dy - _listPositionOfPointer[1], 3)) {
+                print("top inside");
+                // cong them doan delta ( chua dung duoc gan gia tri cua _listVerticalPosition[i])
+                final deltaSnap = (_listVerticalPosition[i] -
+                        (newDetailsLocalPosition.dy -
+                            _listPositionOfPointer[1])) /
+                    _maxHeight /
+                    ratio[1];
+                py += deltaSnap;
+                newListOverride[1].add(newPlacement.ratioOffset[1]);
+              }
+              if (checkInsideDistance(_listVerticalPosition[i],
+                  newDetailsLocalPosition.dy + _listPositionOfPointer[3], 3)) {
+                // khong the dung yen nhu cac canh khac la nhu the nao ????
+                print("bottom inside");
+                final deltaSnap = (_listVerticalPosition[i] -
+                        (newDetailsLocalPosition.dy +
+                            _listPositionOfPointer[3])) /
+                    _maxHeight /
+                    ratio[0];
+                py += deltaSnap;
+                final result =
+                    newPlacement.ratioOffset[1] + newPlacement.ratioHeight;
+                print('result ${result}');
+                newListOverride[1].add(py + pHeight);
+              }
             }
-            if (checkInsideDistance(_listVerticalPosition[i],
-                newDetailsLocalPosition.dy + _listPositionOfPointer[3], 5)) {
-              print("bottom inside");
+            for (int i = 0; i < _listHorizontalPosition.length; i++) {
+              if (checkInsideDistance(_listHorizontalPosition[i],
+                  newDetailsLocalPosition.dx - _listPositionOfPointer[0], 3)) {
+                print("left inside");
+                final deltaSnap = (_listHorizontalPosition[i] -
+                        (newDetailsLocalPosition.dx -
+                            _listPositionOfPointer[0])) /
+                    _maxWidth /
+                    ratio[0];
+                px += deltaSnap;
+                newListOverride[0].add(newPlacement.ratioOffset[0]);
+              }
+              if (checkInsideDistance(_listHorizontalPosition[i],
+                  newDetailsLocalPosition.dx + _listPositionOfPointer[2], 3)) {
+                print("right inside");
+                final deltaSnap = (_listHorizontalPosition[i] -
+                        (newDetailsLocalPosition.dx +
+                            _listPositionOfPointer[2])) /
+                    _maxWidth /
+                    ratio[0];
+                px += deltaSnap;
+                newListOverride[0].add(px + pWidth);
+              }
             }
           }
+          newPlacement = newPlacement.copyWith(
+              ratioHeight: pHeight, ratioWidth: pWidth, ratioOffset: [px, py]);
+          _listOverride = newListOverride;
 
           //left
           if (newPlacement.ratioOffset[0] <= 0) {
@@ -432,11 +534,9 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
         setState(() {
           _selectedPlacement = null;
           _kiem_tra_xem_dang_o_canh_nao.clear();
-          _listVerticalPosition.clear();
-          _listHorizontalPosition.clear();
         });
       },
-      onTapDown: (details) {
+      onTapUp: (details) {
         _startOffset = details.globalPosition;
         _onFocusPlacement(details.globalPosition);
       },
@@ -518,6 +618,30 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
                     },
                   ).toList(),
                 ),
+                if (widget.selectedPlacement != null)
+                  ..._listOverride[0]
+                      .map<Widget>((e) => Positioned(
+                          left: e * _maxWidth,
+                          top: 7,
+                          child: Container(
+                            height: _maxHeight,
+                            margin: const EdgeInsets.only(left: 7),
+                            width: 1,
+                            color: colorRed,
+                          )))
+                      .toList(),
+                if (widget.selectedPlacement != null)
+                  ..._listOverride[1]
+                      .map<Widget>((e) => Positioned(
+                          top: e * _maxHeight,
+                          left: 8,
+                          child: Container(
+                            height: 1,
+                            margin: const EdgeInsets.only(top: 7),
+                            width: _maxWidth,
+                            color: colorRed,
+                          )))
+                      .toList(),
               ],
             ),
           )
@@ -612,26 +736,15 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
     );
   }
 
-  Widget _buildDotDrag(int index, double size,
-      {void Function(DragUpdateDetails details)? onPanUpdate,
-      void Function(DragStartDetails)? onPanStart,
-      void Function(DragEndDetails)? onPanEnd,
-      void Function()? onTap,
-      EdgeInsets? margin,
-      Key? key}) {
-    return GestureDetector(
-      key: key,
-      onTap: onTap,
-      onPanStart: onPanStart,
-      child: Container(
-        height: size,
-        width: size,
-        margin: margin,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(size / 2),
-          border: Border.all(color: Colors.blue, width: 2),
-        ),
+  Widget _buildDotDrag(int index, double size, {EdgeInsets? margin}) {
+    return Container(
+      height: size,
+      width: size,
+      margin: margin,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(size / 2),
+        border: Border.all(color: Colors.blue, width: 2),
       ),
     );
   }
