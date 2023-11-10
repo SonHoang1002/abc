@@ -8,24 +8,24 @@
   ///
   /// [operation]: 3 -> /
   List<double> changeValueOfList(
-      List<double> listRoot, List<double> listValue, int operation) {
+      List<double> listRoot, List<double> listValue, String operation) {
     switch (operation) {
-      case 0:
+      case "+":
         return [
           listRoot[0] + listValue[0],
           listRoot[1] + listValue[1],
         ];
-      case 1:
+      case "-":
         return [
           listRoot[0] - listValue[0],
           listRoot[1] - listValue[1],
         ];
-      case 2:
+      case "*":
         return [
           listRoot[0] * listValue[0],
           listRoot[1] * listValue[1],
         ];
-      case 3:
+      case "/":
         return [
           listRoot[0] / listValue[0],
           listRoot[1] / listValue[1],

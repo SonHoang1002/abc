@@ -12,6 +12,10 @@ class Rectangle1 {
       required this.y,
       required this.width,
       required this.height});
+      @override
+  String toString() {
+    return "Rectangle1 {id: $id, x: $x, y: $y,width: $width, height: $height}";
+  }
 }
 
 class Placement {

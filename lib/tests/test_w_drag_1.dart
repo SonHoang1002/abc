@@ -362,9 +362,9 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
                     px = newRatioOffset0;
                   }
                 case "right":
-                  final newRatioHeight = _selectedPlacement!.ratioWidth +
+                  final newRatioWidth = _selectedPlacement!.ratioWidth +
                       deltaGlobalPosition.dx / _maxWidth;
-                  if (newRatioHeight + newPlacement.ratioOffset[0] < 1) {
+                  if (newRatioWidth + newPlacement.ratioOffset[0] < 1) {
                     pWidth = _selectedPlacement!.ratioWidth +
                         deltaGlobalPosition.dx / _maxWidth;
                   }
@@ -373,22 +373,7 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
               }
             }
             // canh ngang
-            print("_listPositionOfPointer[3] ${_listPositionOfPointer[3]}");
             for (int i = 0; i < _listVerticalPosition.length; i++) {
-              if (checkInsideDistance(
-                      _listVerticalPosition[i],
-                      newDetailsLocalPosition.dy + _listPositionOfPointer[3],
-                      3) &&
-                  _kiem_tra_xem_dang_o_canh_nao.contains("bottom")) {
-                print("drag bottom inside");
-                final deltaSnap = (_listVerticalPosition[i] -
-                        (newDetailsLocalPosition.dy +
-                            _listPositionOfPointer[3])) /
-                    _maxHeight /
-                    ratio[0];
-                pHeight += deltaSnap;
-                newListOverride[1].add(py + pHeight);
-              }
               if (checkInsideDistance(
                       _listVerticalPosition[i],
                       newDetailsLocalPosition.dy - _listPositionOfPointer[1],
@@ -404,6 +389,25 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
                 pHeight -= deltaSnap;
                 newListOverride[1].add(py);
               }
+              if (checkInsideDistance(
+                      _listVerticalPosition[i],
+                      newDetailsLocalPosition.dy + _listPositionOfPointer[3],
+                      3) &&
+                  _kiem_tra_xem_dang_o_canh_nao.contains("bottom")) {
+                print("drag bottom inside");
+                final deltaSnap = (_listVerticalPosition[i] -
+                        (newDetailsLocalPosition.dy +
+                            _listPositionOfPointer[3])) /
+                    _maxHeight /
+                    ratio[0];
+                pHeight += deltaSnap;
+                if (checkInsideDistance(
+                    _listVerticalPosition[i],
+                    newDetailsLocalPosition.dy + _listPositionOfPointer[3],
+                    2)) {
+                  newListOverride[1].add(py + pHeight);
+                }
+              }
             }
             for (int i = 0; i < _listHorizontalPosition.length; i++) {
               if (checkInsideDistance(
@@ -411,7 +415,6 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
                       newDetailsLocalPosition.dx - _listPositionOfPointer[0],
                       3) &&
                   _kiem_tra_xem_dang_o_canh_nao.contains("left")) {
-                print("left inside");
                 final deltaSnap = (_listHorizontalPosition[i] -
                         (newDetailsLocalPosition.dx -
                             _listPositionOfPointer[0])) /
@@ -426,7 +429,6 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
                       newDetailsLocalPosition.dx + _listPositionOfPointer[2],
                       3) &&
                   _kiem_tra_xem_dang_o_canh_nao.contains("right")) {
-                print("drag right inside");
                 final deltaSnap = (_listHorizontalPosition[i] -
                         (newDetailsLocalPosition.dx +
                             _listPositionOfPointer[2])) /
@@ -453,7 +455,12 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
                     _maxHeight /
                     ratio[1];
                 py += deltaSnap;
-                newListOverride[1].add(newPlacement.ratioOffset[1]);
+                if (checkInsideDistance(
+                    _listVerticalPosition[i],
+                    newDetailsLocalPosition.dy - _listPositionOfPointer[1],
+                    2)) {
+                  newListOverride[1].add(newPlacement.ratioOffset[1]);
+                }
               }
               if (checkInsideDistance(_listVerticalPosition[i],
                   newDetailsLocalPosition.dy + _listPositionOfPointer[3], 3)) {
@@ -468,7 +475,12 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
                 final result =
                     newPlacement.ratioOffset[1] + newPlacement.ratioHeight;
                 print('result ${result}');
-                newListOverride[1].add(py + pHeight);
+                if (checkInsideDistance(
+                    _listVerticalPosition[i],
+                    newDetailsLocalPosition.dy + _listPositionOfPointer[3],
+                    2)) {
+                  newListOverride[1].add(py + pHeight);
+                }
               }
             }
             for (int i = 0; i < _listHorizontalPosition.length; i++) {
@@ -532,7 +544,6 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
       },
       onPanEnd: (details) {
         setState(() {
-          _selectedPlacement = null;
           _kiem_tra_xem_dang_o_canh_nao.clear();
         });
       },
@@ -568,53 +579,11 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
             child: Stack(
               children: [
                 Stack(
-                  children: _listPlacement.map<Widget>(
+                  children: _listPlacement
+                      .where((element) => element.id != _selectedPlacement?.id)
+                      .map<Widget>(
                     (e) {
-                      final index = _listPlacement.indexOf(e);
-                      return Stack(
-                        children: [
-                          Positioned(
-                            key: widget.listGlobalKey[index],
-                            top: _listPlacement[index].ratioOffset[1] *
-                                _maxHeight,
-                            left: _listPlacement[index].ratioOffset[0] *
-                                _maxWidth,
-                            child: Stack(children: [
-                              Container(
-                                padding: const EdgeInsets.all(7),
-                                child: Image.asset(
-                                  "${pathPrefixImage}image_demo.png",
-                                  fit: BoxFit.cover,
-                                  height: _getHeightOfImage(index),
-                                  width: _getWidthOfImage(index),
-                                ),
-                              ),
-                              Positioned.fill(
-                                  child: Center(
-                                child: Container(
-                                  height: 25,
-                                  width: 25,
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12.5),
-                                      color: colorBlue),
-                                  child: Center(
-                                      child: WTextContent(
-                                    value:
-                                        "${(widget.listPlacementPreventive!.indexWhere((element) => element.id == _listPlacement[index].id)) + 1}",
-                                    textColor: colorWhite,
-                                    textSize: 10,
-                                  )),
-                                ),
-                              )),
-                              widget.selectedPlacement?.id ==
-                                      _listPlacement[index].id
-                                  ? Positioned.fill(
-                                      child: _buildPanGestureWidget(index))
-                                  : const SizedBox()
-                            ]),
-                          ),
-                        ],
-                      );
+                      return _buildPlacementItem(e);
                     },
                   ).toList(),
                 ),
@@ -642,11 +611,63 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
                             color: colorRed,
                           )))
                       .toList(),
+                if (_selectedPlacement != null)
+                  _buildPlacementItem(_selectedPlacement!)
               ],
             ),
           )
         ],
       ),
+    );
+  }
+
+  Widget _buildPlacementItem(Placement placement) {
+    final index = _listPlacement
+        .map(
+          (e) => e.id,
+        )
+        .toList()
+        .indexOf(placement.id);
+
+    return Stack(
+      children: [
+        Positioned(
+          key: widget.listGlobalKey[index],
+          top: _listPlacement[index].ratioOffset[1] * _maxHeight,
+          left: _listPlacement[index].ratioOffset[0] * _maxWidth,
+          child: Stack(children: [
+            Container(
+              padding: const EdgeInsets.all(7),
+              child: Image.asset(
+                "${pathPrefixImage}image_demo.png",
+                fit: BoxFit.cover,
+                height: _getHeightOfImage(index),
+                width: _getWidthOfImage(index),
+              ),
+            ),
+            Positioned.fill(
+                child: Center(
+              child: Container(
+                height: 25,
+                width: 25,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12.5),
+                    color: colorBlue),
+                child: Center(
+                    child: WTextContent(
+                  value:
+                      "${(widget.listPlacementPreventive!.indexWhere((element) => element.id == _listPlacement[index].id)) + 1}",
+                  textColor: colorWhite,
+                  textSize: 10,
+                )),
+              ),
+            )),
+            widget.selectedPlacement?.id == _listPlacement[index].id
+                ? Positioned.fill(child: _buildPanGestureWidget(index))
+                : const SizedBox()
+          ]),
+        ),
+      ],
     );
   }
 

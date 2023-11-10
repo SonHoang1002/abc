@@ -3,8 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/helpers/change_list.dart';
 import 'package:photo_to_pdf/helpers/check_distance.dart';
-import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/helpers/extract_list.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/models/project.dart';
@@ -48,35 +48,34 @@ class WDragZoomImageTest2 extends StatefulWidget {
 
 class _WDragZoomImageTest2State extends State<WDragZoomImageTest2> {
   late Size _size;
-  // List<ValueNotifier<Matrix4>> _matrix4Notifiers = [];
   List<Rectangle1> _listRectangle1 = [];
-  final GlobalKey _drawAreaKey = GlobalKey();
-  // late List<double> _ratioTarget;
+  final GlobalKey _drawAreaKey = GlobalKey(debugLabel: "_drawAreaKey");
+
+  final GlobalKey _childContainerKey =
+      GlobalKey(debugLabel: "_childContainerKey");
   late double _maxHeight;
   late double _maxWidth;
   Rectangle1? _selectedRectangle1;
   late Offset _startOffset;
   // luu khoang cach giua diem cham (doi voi selectedRectangle1) so voi ben trai vaf ben tren cuar Rectangle1 dang duoc focus
-  late List<double> _listPositionOfPointer;
   late List _kiem_tra_xem_dang_o_canh_nao = [];
   late List<double> _listVerticalPosition = [];
   late List<double> _listHorizontalPosition = [];
-  // [0]: override width // [1]: override height
-  final List<List<double>> _listOverride = [[], []];
+  // [0]: override ver // [1]: override hori
+  List<List<double>> _listOverride = [[], []];
 
   late List<GlobalKey> _listGlobalKey;
   int? _indexOfFocusRect;
+  late bool _isInside = false;
+  final GlobalKey _testKey = GlobalKey();
+
+  Offset? _dotTopLeft;
   @override
   void initState() {
     super.initState();
     _selectedRectangle1 = widget.selectedRectangle1;
-    _listRectangle1 = [1, 2, 3, 4, 5]
-        .map((e) => Rectangle1(
-            height: 200,
-            width: 200,
-            id: e,
-            x: Random().nextDouble() * 256,
-            y: Random().nextDouble() * 256))
+    _listRectangle1 = [1, 2]
+        .map((e) => Rectangle1(height: 150, width: 150, id: e, x: 50, y: 50))
         .toList();
     _listGlobalKey = _listRectangle1.map((e) => GlobalKey()).toList();
   }
@@ -101,15 +100,12 @@ class _WDragZoomImageTest2State extends State<WDragZoomImageTest2> {
   }
 
   /// [[dotTopLeft],[dotTopCenter],[dotTopRight],[dotCenterLeft],[dotCenterRight],[dotBottomLeft],[dotBottomCenter],[dotBottomRight]]
-  List<Offset> _getLocalDotPosition(
+  List<Offset> _getGlobalDotPosition(
     int index,
   ) {
     final renderBox =
         _listGlobalKey[index].currentContext?.findRenderObject() as RenderBox;
-
     final dotTopLeft = renderBox.localToGlobal(Offset.zero);
-    // dotTopLeft =
-    //   Offset(dotTopLeft.dx * RmaxWidthToWidth, dotTopLeft.dy * RmaxHeightToHeight);
     final dotTopCenter =
         Offset(dotTopLeft.dx + _listRectangle1[index].width / 2, dotTopLeft.dy);
     final dotTopRight =
@@ -137,6 +133,30 @@ class _WDragZoomImageTest2State extends State<WDragZoomImageTest2> {
     ];
   }
 
+  ///
+  /// [edgeTop,edgeBottom,edgeLeft,edgeRight]
+  ///
+  List<Offset> _getGlobalEdgePosition(int index) {
+    final renderBox =
+        _listGlobalKey[index].currentContext?.findRenderObject() as RenderBox;
+    Offset dotTopLeft = renderBox.localToGlobal(Offset.zero);
+    final edgeTop = dotTopLeft;
+    final edgeLeft = dotTopLeft;
+    final edgeRight =
+        Offset(dotTopLeft.dx + _listRectangle1[index].width, dotTopLeft.dy);
+    final edgeBottom = Offset(dotTopLeft.dx + _listRectangle1[index].width,
+        dotTopLeft.dy + _listRectangle1[index].height);
+    return [
+      edgeTop,
+      edgeBottom,
+      edgeLeft,
+      edgeRight,
+    ];
+  }
+
+  ///
+  /// [edgeTop,edgeBottom,edgeLeft,edgeRight]
+  ///
   List<Offset> _getLocalEdgePosition(int index) {
     final renderBox =
         _listGlobalKey[index].currentContext?.findRenderObject() as RenderBox;
@@ -155,15 +175,39 @@ class _WDragZoomImageTest2State extends State<WDragZoomImageTest2> {
     ];
   }
 
+  _showDotAndBlueLine(int index) {
+    // tim vi tri cua rect so voi view trang tri
+    // tra ra 2 diem
+    final drawRenderBox =
+        _drawAreaKey.currentContext?.findRenderObject() as RenderBox;
+    Size drawSize = drawRenderBox.size;
+    Offset gChildOffset =
+        (_childContainerKey.currentContext?.findRenderObject() as RenderBox)
+            .localToGlobal(Offset.zero);
+    Offset gParentOffset = drawRenderBox.localToGlobal(Offset.zero);
+    _doDichChuyen = gChildOffset - gParentOffset;
+    print("selected: ${_selectedRectangle1.toString()}");
+    print("gChildOffset: ${gChildOffset}");
+    print("gParentOffset: ${gParentOffset}");
+    Offset dotTopLeft = Offset(
+      _selectedRectangle1!.x,
+      _selectedRectangle1!.y,
+    );
+    _dotTopLeft = dotTopLeft.translate(_doDichChuyen.dx, _doDichChuyen.dy);
+  }
+
   void _onFocusRectangle1(Offset startOffset) {
     int? index = _checkInsideRectangle(startOffset);
     if (index != null) {
-      _selectedRectangle1 = _listRectangle1[index];
       _indexOfFocusRect = index;
+      _selectedRectangle1 = _listRectangle1[index];
+      _showDotAndBlueLine(index);
       setState(() {});
       widget.rerenderFunction();
     } else {
       _selectedRectangle1 = null;
+      _indexOfFocusRect = null;
+      _dotTopLeft = null;
       setState(() {});
       widget.rerenderFunction();
     }
@@ -173,21 +217,21 @@ class _WDragZoomImageTest2State extends State<WDragZoomImageTest2> {
     int? index;
     final newStartOffset = startOffset;
     for (int i = 0; i < _listRectangle1.length; i++) {
-      List<Offset> offsetDots = _getLocalDotPosition(i);
-      List<Offset> offsetEdges = _getLocalEdgePosition(i);
+      List<Offset> offsetDots = _getGlobalDotPosition(i);
+      List<Offset> offsetEdges = _getGlobalEdgePosition(i);
       if (containOffset(newStartOffset, offsetDots[0], offsetDots[7])) {
         index = i;
         _kiem_tra_xem_dang_o_canh_nao = [];
-        if ((offsetEdges[0].dy - newStartOffset.dy).abs() < 20) {
+        if ((offsetEdges[0].dy - newStartOffset.dy).abs() < 30) {
           _kiem_tra_xem_dang_o_canh_nao.add("top");
         }
-        if ((offsetEdges[1].dy - newStartOffset.dy).abs() < 20) {
+        if ((offsetEdges[1].dy - newStartOffset.dy).abs() < 30) {
           _kiem_tra_xem_dang_o_canh_nao.add("bottom");
         }
-        if ((offsetEdges[2].dx - newStartOffset.dx) < 20) {
+        if ((offsetEdges[2].dx - newStartOffset.dx).abs() < 30) {
           _kiem_tra_xem_dang_o_canh_nao.add("left");
         }
-        if ((offsetEdges[3].dx - newStartOffset.dx).abs() < 20) {
+        if ((offsetEdges[3].dx - newStartOffset.dx).abs() < 30) {
           _kiem_tra_xem_dang_o_canh_nao.add("right");
         }
       }
@@ -198,29 +242,132 @@ class _WDragZoomImageTest2State extends State<WDragZoomImageTest2> {
   bool _checkInsideCurrentRectangle(Offset startOffset, {bool? checkEdge}) {
     bool isInside = false;
     if (_indexOfFocusRect != null) {
-      List<Offset> offsetDots = _getLocalDotPosition(_indexOfFocusRect!);
-      if (containOffset(startOffset, offsetDots[0], offsetDots[7])) {
+      List<Offset> offsetDots = _getGlobalDotPosition(_indexOfFocusRect!);
+      if (containOffset(startOffset, offsetDots[0] + const Offset(-50, -50),
+          offsetDots[7] + const Offset(50, 50))) {
         isInside = true;
         if (checkEdge == true) {
           _kiem_tra_xem_dang_o_canh_nao = [];
-          List<Offset> offsetEdges = _getLocalEdgePosition(_indexOfFocusRect!);
+          List<Offset> offsetEdges = _getGlobalEdgePosition(_indexOfFocusRect!);
           List _kiem_tra_xem_dang_o_canh_nao_1 = [];
-          if ((offsetEdges[0].dy - startOffset.dy).abs() < 20) {
+          if ((offsetEdges[0].dy - startOffset.dy).abs() < 50) {
             _kiem_tra_xem_dang_o_canh_nao_1.add("top");
           }
-          if ((offsetEdges[1].dy - startOffset.dy).abs() < 20) {
+          if ((offsetEdges[1].dy - startOffset.dy).abs() < 50) {
             _kiem_tra_xem_dang_o_canh_nao_1.add("bottom");
           }
-          if ((offsetEdges[2].dx - startOffset.dx) < 20) {
+          if ((offsetEdges[2].dx - startOffset.dx).abs() < 50) {
             _kiem_tra_xem_dang_o_canh_nao_1.add("left");
           }
-          if ((offsetEdges[3].dx - startOffset.dx).abs() < 20) {
+          if ((offsetEdges[3].dx - startOffset.dx).abs() < 50) {
             _kiem_tra_xem_dang_o_canh_nao_1.add("right");
           }
+          _kiem_tra_xem_dang_o_canh_nao = _kiem_tra_xem_dang_o_canh_nao_1;
         }
       }
     }
     return isInside;
+  }
+
+  Widget _buildCustomArea() {
+    return GestureDetector(
+      onTapUp: (details) {
+        _onFocusRectangle1(details.globalPosition);
+      },
+      key: _testKey,
+      child: Stack(
+        key: _drawAreaKey,
+        alignment: Alignment.center,
+        children: [
+          // view trang (shadow + thut vao trong) bao gom cac rect
+          Container(
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(vertical: 5),
+            child: Container(
+              key: _childContainerKey,
+              width: _maxWidth,
+              height: _maxHeight,
+              decoration:
+                  BoxDecoration(color: widget.backgroundColor, boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  spreadRadius: 0.5,
+                  blurRadius: 5,
+                  offset: const Offset(0, 1),
+                ),
+              ]),
+              child: Stack(children: [
+                ..._listRectangle1
+                    .where((element) => element.id != _selectedRectangle1?.id)
+                    .toList()
+                    .map<Widget>(
+                  (e) {
+                    return _buildRectangle1(e);
+                  },
+                ).toList(),
+                if (_selectedRectangle1 != null)
+                  _buildRectangle1(_selectedRectangle1!),
+              ]),
+            ),
+          ),
+          // view trang tri( duong do, duong xanh, hinh tron)
+          Container(
+            color: transparent,
+            child: Stack(children: [
+              ..._listOverride[0]
+                  .map<Widget>((e) => Positioned(
+                      left: e,
+                      child: Container(
+                        height: _maxHeight,
+                        margin: const EdgeInsets.only(left: 7),
+                        width: 1,
+                        color: colorRed,
+                      )))
+                  .toList(),
+              ..._listOverride[1]
+                  .map<Widget>((e) => Positioned(
+                      top: e,
+                      child: Container(
+                        height: 1,
+                        margin: const EdgeInsets.only(top: 7),
+                        width: _maxWidth,
+                        color: colorRed,
+                      )))
+                  .toList(),
+              _buildDots()
+            ]),
+          ),
+        ],
+      ),
+    );
+  }
+
+  _buildDots() {
+    if (_selectedRectangle1 != null && _dotTopLeft != null) {
+      // top (left-center-right), center (left, right), bottom (left-center-right)
+      List<Offset> listDots = [
+        _dotTopLeft!,
+        _dotTopLeft! + Offset(_selectedRectangle1!.width / 2, 0),
+        _dotTopLeft! + Offset(_selectedRectangle1!.width, 0),
+        // center
+        _dotTopLeft! + Offset(0, _selectedRectangle1!.height / 2),
+        _dotTopLeft! +
+            Offset(
+              _selectedRectangle1!.width,
+              _selectedRectangle1!.height / 2,
+            ),
+        _dotTopLeft! + Offset(0, _selectedRectangle1!.height),
+        _dotTopLeft! +
+            Offset(_selectedRectangle1!.width / 2, _selectedRectangle1!.height),
+        _dotTopLeft! +
+            Offset(_selectedRectangle1!.width, _selectedRectangle1!.height),
+      ];
+      Widget result = Stack(
+        children: listDots.map((e) => _buildDotDrag(13, e)).toList(),
+      );
+      return result;
+    }
+    return const SizedBox();
   }
 
   double _getHeightOfImage(int index) {
@@ -265,127 +412,14 @@ class _WDragZoomImageTest2State extends State<WDragZoomImageTest2> {
     return [width, height];
   }
 
-  Widget _buildCustomArea() {
-    return GestureDetector(
-      onTapUp: (details) {
-        _onFocusRectangle1(details.globalPosition);
-      },
-      onPanUpdate: (details) {
-        bool _isInside = _checkInsideCurrentRectangle(details.globalPosition);
-        if (_isInside && _indexOfFocusRect != null) {
-          if (_selectedRectangle1 != null) {
-            Rectangle1 newRectangle1;
-            // translation
-            double x = _selectedRectangle1!.x;
-            double y = _selectedRectangle1!.y;
-            double x1, y1;
-            Offset deltaGlobalPosition = details.globalPosition - _startOffset;
-            newRectangle1 = Rectangle1(
-                id: _selectedRectangle1!.id,
-                x: x + deltaGlobalPosition.dx,
-                y: y + deltaGlobalPosition.dy,
-                width: _selectedRectangle1!.width,
-                height: _selectedRectangle1!.height);
-            // check limit
-            //left
-            newRectangle1.x = max(0, newRectangle1.x);
-            //top
-            newRectangle1.y = max(0, newRectangle1.y);
-            //right
-            if (newRectangle1.x + newRectangle1.width > _maxWidth) {
-              newRectangle1.x = _maxWidth - newRectangle1.width;
-            }
-            //bottom
-            if (newRectangle1.y + newRectangle1.height > _maxHeight) {
-              newRectangle1.y = _maxHeight - newRectangle1.height;
-            }
-            print(
-                "_kiem_tra_xem_dang_o_canh_nao ${_kiem_tra_xem_dang_o_canh_nao}");
-            _listRectangle1[_indexOfFocusRect!] = newRectangle1;
-            setState(() {});
-            widget.rerenderFunction();
-          }
-        }
-      },
-      onPanStart: (details) {
-        if (_indexOfFocusRect != null) {
-          _selectedRectangle1 = _listRectangle1[_indexOfFocusRect!];
-        }
-        // check drag from edge ??
-
-        _startOffset = details.globalPosition;
-        setState(() {});
-        widget.rerenderFunction();
-      },
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(vertical: 5),
-            child: Container(
-              key: _drawAreaKey,
-              width: _maxWidth,
-              height: _maxHeight,
-              decoration:
-                  BoxDecoration(color: widget.backgroundColor, boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  spreadRadius: 0.5,
-                  blurRadius: 5,
-                  offset: const Offset(0, 1),
-                ),
-              ]),
-            ),
-          ),
-          Container(
-            alignment: Alignment.center,
-            width: _maxWidth + 15,
-            height: _maxHeight + 15,
-            child: Stack(
-              children: [
-                Stack(
-                  children: _listRectangle1
-                      .where((element) => element.id != _selectedRectangle1?.id)
-                      .toList()
-                      .map<Widget>(
-                    (e) {
-                      return _buildRectangle1(e);
-                    },
-                  ).toList(),
-                ),
-                if (_selectedRectangle1 != null)
-                  _buildRectangle1(_selectedRectangle1!),
-                if (widget.selectedRectangle1 != null)
-                  ..._listOverride[0]
-                      .map<Widget>((e) => Positioned(
-                          left: e * _maxWidth,
-                          top: 7,
-                          child: Container(
-                            height: _maxHeight,
-                            margin: const EdgeInsets.only(left: 7),
-                            width: 1,
-                            color: colorRed,
-                          )))
-                      .toList(),
-                if (widget.selectedRectangle1 != null)
-                  ..._listOverride[1]
-                      .map<Widget>((e) => Positioned(
-                          top: e * _maxHeight,
-                          left: 8,
-                          child: Container(
-                            height: 1,
-                            margin: const EdgeInsets.only(top: 7),
-                            width: _maxWidth,
-                            color: colorRed,
-                          )))
-                      .toList(),
-              ],
-            ),
-          )
-        ],
-      ),
-    );
+  int? _snap(double x, List<double> list) {
+    // List<double> results = [];
+    for (int i = 0; i < list.length; i++) {
+      if ((x - list[i]).abs() < 5) {
+        return i;
+      }
+    }
+    return null;
   }
 
   Widget _buildRectangle1(Rectangle1? rectangle1) {
@@ -424,118 +458,37 @@ class _WDragZoomImageTest2State extends State<WDragZoomImageTest2> {
                     color: colorBlue),
                 child: Center(
                     child: WTextContent(
-                  value: "X",
-                  // "${(widget.listRectangle1Preventive!.indexWhere((element) => element.id == _listRectangle1[index].id)) + 1}",
+                  value: "${_index}",
                   textColor: colorWhite,
                   textSize: 10,
                 )),
               ),
             )),
-            _selectedRectangle1?.id == _listRectangle1[_index].id
-                ? Positioned.fill(child: _buildPanGestureWidget(_index))
-                : const SizedBox()
           ]),
         ),
       ],
     );
   }
 
-  Widget _buildPanGestureWidget(int index) {
-    return Stack(
-      children: [
-        Positioned.fill(
-            child: Container(
-          margin: const EdgeInsets.all(6),
-          decoration:
-              BoxDecoration(border: Border.all(color: colorBlue, width: 1.5)),
-        )),
-        Column(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // dot top left
-                _buildDotDrag(
-                  index,
-                  13,
-                  margin: const EdgeInsets.only(bottom: 7, top: 1, left: 1),
-                ),
-                // dot top center
-                _buildDotDrag(
-                  index,
-                  9,
-                  margin: const EdgeInsets.only(bottom: 6),
-                ),
-                // dot top right
-                _buildDotDrag(
-                  index,
-                  13,
-                  margin: const EdgeInsets.only(bottom: 6),
-                )
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                //dot center left
-                _buildDotDrag(
-                  index,
-                  9,
-                  margin: const EdgeInsets.only(left: 3),
-                ),
-                // dot center right
-                _buildDotDrag(
-                  index,
-                  9,
-                  margin: const EdgeInsets.only(right: 2),
-                )
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // dot bottom left
-                _buildDotDrag(
-                  index,
-                  13,
-                  margin: const EdgeInsets.only(top: 11, left: 0.5),
-                ),
-                // dot bottom center
-                _buildDotDrag(
-                  index,
-                  9,
-                  margin: const EdgeInsets.only(top: 12, bottom: 0.5),
-                ),
-                // dot bottom right
-                _buildDotDrag(
-                  index,
-                  13,
-                  margin: const EdgeInsets.only(top: 11),
-                )
-              ],
-            ),
-          ],
+  Widget _buildDotDrag(double size, Offset offset, {EdgeInsets? margin}) {
+    return Positioned(
+      top: offset.dy,
+      left: offset.dx,
+      child: Container(
+        height: size,
+        width: size,
+        margin: margin,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(size / 2),
+          border: Border.all(color: Colors.blue, width: 2),
         ),
-      ],
+      ),
     );
   }
 
-  Widget _buildDotDrag(int index, double size, {EdgeInsets? margin}) {
-    return Container(
-      height: size,
-      width: size,
-      margin: margin,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(size / 2),
-        border: Border.all(color: Colors.blue, width: 2),
-      ),
-    );
+  Offset _doDichChuyen = Offset.zero;
+  Offset dichChuyen(Offset from) {
+    return from.translate(_doDichChuyen.dx, _doDichChuyen.dy);
   }
 }

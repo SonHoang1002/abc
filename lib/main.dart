@@ -57,21 +57,10 @@ Future<void> redoSystemStyle(bool darkMode) async {
     ));
   } else {
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent, // Not relevant to this issue
+      statusBarColor: Colors.transparent,
     ));
   }
 }
-
-
-// void main() {
-//   runApp(const MaterialApp(
-//     home: Scaffold(
-//       body: Center(
-//         child: TestDrag(),
-//       ),
-//     ),
-//   ));
-// }
 
 
 

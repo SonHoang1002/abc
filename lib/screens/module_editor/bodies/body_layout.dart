@@ -597,7 +597,6 @@ class _LayoutBodyState extends State<LayoutBody> {
             Expanded(
                 child: WDragZoomImageTest2(
               backgroundColor: _currentLayoutColor,
-              // listPlacement: _listPlacement,
               listGlobalKey: _listGlobalKey,
               matrix4Notifiers: _matrix4Notifiers,
               rerenderFunction: () {
