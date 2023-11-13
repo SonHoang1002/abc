@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/models/project.dart';
 
 class Rectangle1 {
@@ -12,9 +13,13 @@ class Rectangle1 {
       required this.y,
       required this.width,
       required this.height});
-      @override
+  @override
   String toString() {
     return "Rectangle1 {id: $id, x: $x, y: $y,width: $width, height: $height}";
+  }
+
+  Offset get getOffset {
+    return Offset(x, y);
   }
 }
 
@@ -57,7 +62,6 @@ class Placement {
       'ratioOffset': ratioOffset,
       'placementAttribute':
           placementAttribute != null ? placementAttribute!.toJson() : null,
-
     };
   }
 
@@ -67,11 +71,9 @@ class Placement {
       ratioWidth: json['ratioWidth'],
       ratioHeight: json['ratioHeight'],
       ratioOffset: [json['ratioOffset'][0], json['ratioOffset'][1]],
-    
       placementAttribute: json['placementAttribute'] != null
           ? PlacementAttribute.fromJson(json['placementAttribute'])
           : null,
-    
     );
   }
 

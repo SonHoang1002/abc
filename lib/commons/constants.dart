@@ -214,3 +214,5 @@ const double mm = inch / 25.4;
 
 const String SHARE_APP_LINK =
     "https://play.google.com/store/apps/details?id=com.tapuniverse.phototopdf&pli=1";
+
+const double DOT_SIZE = 11;

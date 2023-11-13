@@ -64,8 +64,7 @@ class _LayoutBodyState extends State<LayoutBody> {
   late Color _currentLayoutColor;
   late List<double> _ratioTarget;
   late Offset _alignmentDialogOffset;
-  late bool _isShowAlignmentDialog;
-  late List<Placement> _listPlacementPreventive;
+  late bool _isShowAlignmentDialog; 
   late List<GlobalKey> _listGlobalKey = [];
 
   @override
@@ -93,10 +92,8 @@ class _LayoutBodyState extends State<LayoutBody> {
 
     _paddingOptions = _project.paddingAttribute ?? PADDING_OPTIONS;
     _spacingOptions = _project.spacingAttribute ?? SPACING_OPTIONS;
-    _currentLayoutColor = _project.backgroundColor;
-    // _listPlacement = _project.placements ?? [];
-    _listPlacement = (_project.placements ?? []);
-    _listPlacementPreventive = List.from(_project.placements ?? []);
+    _currentLayoutColor = _project.backgroundColor; 
+    _listPlacement = (_project.placements ?? []); 
     _listPlacement.forEach((_) {
       _matrix4Notifiers.add(ValueNotifier<Matrix4>(Matrix4.identity()));
     });
@@ -602,19 +599,37 @@ class _LayoutBodyState extends State<LayoutBody> {
               rerenderFunction: () {
                 widget.reRenderFunction();
               },
+              selectedPlacement: _selectedPlacement,
               paperAttribute: _project.paper,
-              listRectangle1: _listPlacement
-                  .map((e) => Rectangle1(
-                      id: e.id,
-                      x: e.ratioOffset[0] * 100,
-                      y: e.ratioOffset[1] * 100,
-                      width: e.ratioWidth * 100,
-                      height: e.ratioHeight * 100))
-                  .toList(),
-              onUpdateRectangle1: (
-                List<Rectangle1> rectangles,
-                Rectangle1? focusRectangle,
-              ) {},
+              listPlacement: _listPlacement,
+              onUpdatePlacement: (List<Rectangle1> rectangles,
+                  Rectangle1? focusRectangle, List<double> ratios) {
+                //parse rectangle to placement
+                List<Placement> newListPlacement = [];
+                for (int i = 0; i < rectangles.length; i++) {
+                  newListPlacement.add(_listPlacement[i].copyWith(
+                    ratioOffset: [
+                      rectangles[i].x / ratios[0],
+                      rectangles[i].y / ratios[1]
+                    ],
+                    ratioHeight: rectangles[i].height / ratios[1],
+                    ratioWidth: rectangles[i].width / ratios[0],
+                  ));
+                }
+                _listPlacement = newListPlacement;
+
+                if (focusRectangle != null) {
+                  final indexSelectedRect = rectangles.indexOf(focusRectangle);
+                  if (indexSelectedRect != -1) {
+                    _selectedPlacement = _listPlacement[indexSelectedRect];
+                  }
+                }
+                setState(() {});
+                widget.reRenderFunction();
+              },
+              onCancelFocusRectangle1: () {
+                _disablePlacement();
+              },
             )),
             WSpacer(height: 10),
             SizedBox(
@@ -636,8 +651,7 @@ class _LayoutBodyState extends State<LayoutBody> {
                           _matrix4Notifiers
                               .add(ValueNotifier(Matrix4.identity()));
                           final newPlacement = _createNewPlacement();
-                          _listPlacement.add(newPlacement);
-                          _listPlacementPreventive.add(newPlacement);
+                          _listPlacement.add(newPlacement); 
                           _listGlobalKey.add(GlobalKey());
                           _selectedPlacement = _listPlacement.last;
                         });
@@ -744,20 +758,12 @@ class _LayoutBodyState extends State<LayoutBody> {
                             padding: EdgeInsets.zero,
                             onPressed: () {
                               final index =
-                                  _listPlacement.indexOf(_selectedPlacement!);
+                                  _listPlacement.map((e) => e.id).toList().indexOf(_selectedPlacement!.id);
                               if (index != -1) {
                                 _listPlacement.removeAt(index);
                                 _matrix4Notifiers.removeAt(index);
                                 _listGlobalKey.removeAt(index);
                               }
-                              final indexPreventive = _listPlacementPreventive
-                                  .indexOf(_selectedPlacement!);
-                              if (indexPreventive != -1) {
-                                _listPlacementPreventive
-                                    .removeAt(indexPreventive);
-                              }
-                              _listPlacementPreventive =
-                                  List.from(_project.placements ?? []);
                               _selectedPlacement = null;
                               setState(() {});
                               widget.reRenderFunction();
