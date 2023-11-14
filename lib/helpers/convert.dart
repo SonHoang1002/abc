@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/random_number.dart';
+import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:pdf/widgets.dart' as pw;
 
@@ -105,4 +106,14 @@ pw.Alignment? convertAlignmentToPdfAlignment(Alignment? alignment) {
 
 Offset convertOffset(Offset offset, List<double> ratios) {
   return Offset(offset.dx * ratios[0], offset.dy * ratios[1]);
+}
+
+Rectangle1? placementToRectangle(Placement? pl, List<double> ratios) {
+  if(pl==null ) return null;
+  return Rectangle1(
+      id: pl.id,
+      x: pl.ratioOffset[0] * ratios[0],
+      y: pl.ratioOffset[1] * ratios[1],
+      width: pl.ratioWidth * ratios[0],
+      height: pl.ratioHeight * ratios[1]);
 }

@@ -1,17 +1,17 @@
 import 'package:photo_to_pdf/commons/colors.dart';
+import 'package:photo_to_pdf/helpers/change_list.dart';
 import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_background.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_dialogs.dart';
-import 'package:photo_to_pdf/tests/drag_2.dart';
-import 'package:photo_to_pdf/tests/test_w_drag_1.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/screens/module_editor/editor_padding_spacing.dart';
+import 'package:photo_to_pdf/widgets/w_drag_zoom_image.dart';
 import 'package:photo_to_pdf/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_layout_suggestion.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
@@ -592,7 +592,7 @@ class _LayoutBodyState extends State<LayoutBody> {
           },
           child: Column(children: [
             Expanded(
-                child: WDragZoomImageTest2(
+                child: WDragZoomImage(
               backgroundColor: _currentLayoutColor,
               listGlobalKey: _listGlobalKey,
               matrix4Notifiers: _matrix4Notifiers,
@@ -622,6 +622,8 @@ class _LayoutBodyState extends State<LayoutBody> {
                   final indexSelectedRect = rectangles.indexOf(focusRectangle);
                   if (indexSelectedRect != -1) {
                     _selectedPlacement = _listPlacement[indexSelectedRect];
+                    _listPlacement.removeAt(indexSelectedRect);
+                    _listPlacement.add(_selectedPlacement!);
                   }
                 }
                 setState(() {});

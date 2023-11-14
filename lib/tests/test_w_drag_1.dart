@@ -55,9 +55,7 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
   late double _maxHeight;
   late double _maxWidth;
   Placement? _selectedPlacement;
-
-  // test element
-
+ 
   late Offset _startOffset;
   // luu khoang cach giua diem cham (doi voi selectedPlacement) so voi ben trai vaf ben tren cuar placement dang duoc focus
   late List<double> _listPositionOfPointer;
@@ -116,8 +114,6 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
     final RmaxHeightToHeight = _maxHeight / _size.height;
 
     final dotTopLeft = renderBox.localToGlobal(Offset.zero);
-    // dotTopLeft =
-    //   Offset(dotTopLeft.dx * RmaxWidthToWidth, dotTopLeft.dy * RmaxHeightToHeight);
     final dotTopCenter = Offset(
         dotTopLeft.dx + _maxWidth * _listPlacement[index].ratioWidth / 2,
         dotTopLeft.dy);
@@ -155,8 +151,6 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
     final renderBox = widget.listGlobalKey[index].currentContext
         ?.findRenderObject() as RenderBox;
     Offset dotTopLeft = renderBox.localToGlobal(Offset.zero);
-    // dotTopLeft = Offset(
-    //     dotTopLeft.dx * RmaxWidthToWidth, dotTopLeft.dy * RmaxHeightToHeight);
     final edgeTop = dotTopLeft;
     final edgeLeft = dotTopLeft;
     final edgeRight = Offset(
@@ -214,7 +208,6 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
         }
       }
     }
-    String message = '';
     if (index != null) {
       _selectedPlacement = _listPlacement[index].copyWith();
       widget.onFocusPlacement!(_listPlacement[index], _matrix4Notifiers[index]);
