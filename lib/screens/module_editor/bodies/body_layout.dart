@@ -1,5 +1,4 @@
 import 'package:photo_to_pdf/commons/colors.dart';
-import 'package:photo_to_pdf/helpers/change_list.dart';
 import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/models/placement.dart';
@@ -604,10 +603,11 @@ class _LayoutBodyState extends State<LayoutBody> {
               listPlacement: _listPlacement,
               onUpdatePlacement: (List<Rectangle1> rectangles,
                   Rectangle1? focusRectangle, List<double> ratios) {
-                //parse rectangle to placement
+                // parse rectangle to placement
                 List<Placement> newListPlacement = [];
                 for (int i = 0; i < rectangles.length; i++) {
-                  newListPlacement.add(_listPlacement[i].copyWith(
+                  newListPlacement.add(
+                    _listPlacement[i].copyWith(
                     ratioOffset: [
                       rectangles[i].x / ratios[0],
                       rectangles[i].y / ratios[1]

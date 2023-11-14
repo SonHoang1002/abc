@@ -108,8 +108,8 @@ Offset convertOffset(Offset offset, List<double> ratios) {
   return Offset(offset.dx * ratios[0], offset.dy * ratios[1]);
 }
 
-Rectangle1? placementToRectangle(Placement? pl, List<double> ratios) {
-  if(pl==null ) return null;
+Rectangle1? convertPlacementToRectangle(Placement? pl, List<double> ratios) {
+  if (pl == null) return null;
   return Rectangle1(
       id: pl.id,
       x: pl.ratioOffset[0] * ratios[0],

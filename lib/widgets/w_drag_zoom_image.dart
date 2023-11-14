@@ -1,12 +1,10 @@
-
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
-import 'package:photo_to_pdf/helpers/change_list.dart';
 import 'package:photo_to_pdf/helpers/check_distance.dart';
 import 'package:photo_to_pdf/helpers/convert.dart';
-import 'package:photo_to_pdf/helpers/extract_list.dart'; 
+import 'package:photo_to_pdf/helpers/extract_list.dart';
 import 'package:photo_to_pdf/helpers/snap.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/models/project.dart';
@@ -50,7 +48,6 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
   List<Rectangle1> _listRectangle1 = [];
   final GlobalKey _drawAreaKey = GlobalKey(debugLabel: "_drawAreaKey");
   final GlobalKey _gestureKey = GlobalKey(debugLabel: "_gestureKey");
-  final GlobalKey _testKey = GlobalKey(debugLabel: "_gestureKey");
 
   final GlobalKey _childContainerKey =
       GlobalKey(debugLabel: "_childContainerKey");
@@ -107,10 +104,10 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
     _maxHeight = _getWidthAndHeight()[1];
     _maxWidth = _getWidthAndHeight()[0];
     _listRectangle1 = widget.listPlacement.map((pl) {
-      return placementToRectangle(pl, [_maxWidth, _maxHeight])!;
+      return convertPlacementToRectangle(pl, [_maxWidth, _maxHeight])!;
     }).toList();
-    _selectedRectangle1 =
-        placementToRectangle(widget.selectedPlacement, [_maxWidth, _maxHeight]);
+    _selectedRectangle1 = convertPlacementToRectangle(
+        widget.selectedPlacement, [_maxWidth, _maxHeight]);
     if (_selectedRectangle1 != null) {
       final index = _getIndexSelectedRectangle(_selectedRectangle1!);
       _dotTopLeft = _listRectangle1[index].getOffset.translate(
@@ -208,7 +205,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
         List<Rectangle1>.from(_listRectangle1);
     List<GlobalKey> listCheckGlobalkey =
         List<GlobalKey>.from(widget.listGlobalKey);
-    if (_selectedRectangle1 != null) { 
+    if (_selectedRectangle1 != null) {
       int indexOfSelectedRect =
           _getIndexSelectedRectangle(_selectedRectangle1!);
       if (indexOfSelectedRect != -1) {
@@ -220,7 +217,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
         listCheckGlobalkey.add(currentGlobalkey);
       }
     }
-     
+
     int? index;
     Rectangle1? currentRect;
     final newStartOffset = startOffset;
@@ -385,6 +382,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
         y += dy;
         x1 += dx;
         y1 += dy;
+
         // snap
         double globalX = renderBoxStack.localToGlobal(Offset(x, 0)).dx;
         double globalY = renderBoxStack.localToGlobal(Offset(0, y)).dy;
@@ -538,30 +536,36 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
             width: _size.width,
             height: _size.height,
             color: transparent,
-            child: Stack(alignment: Alignment.center, children: [
-              ..._listOverride[0]
-                  .map<Widget>((e) => Positioned(
-                      left: e,
-                      child: Container(
-                        height: _maxHeight,
-                        margin: const EdgeInsets.only(left: DOT_SIZE / 2),
-                        width: 1,
-                        color: colorRed,
-                      )))
-                  .toList(),
-              ..._listOverride[1]
-                  .map<Widget>((e) => Positioned(
-                      top: e,
-                      child: Container(
-                        height: 1,
-                        margin: const EdgeInsets.only(top: DOT_SIZE / 2),
-                        width: _maxWidth,
-                        color: colorRed,
-                      )))
-                  .toList(),
-              _buildBlueLine(),
-              _buildDots()
-            ]),
+            child: Stack(
+                alignment: Alignment.center,
+                children: _selectedRectangle1 != null
+                    ? [
+                        ..._listOverride[0]
+                            .map<Widget>((e) => Positioned(
+                                left: e,
+                                child: Container(
+                                  height: _maxHeight,
+                                  margin:
+                                      const EdgeInsets.only(left: DOT_SIZE / 2),
+                                  width: 1,
+                                  color: colorRed,
+                                )))
+                            .toList(),
+                        ..._listOverride[1]
+                            .map<Widget>((e) => Positioned(
+                                top: e,
+                                child: Container(
+                                  height: 1,
+                                  margin:
+                                      const EdgeInsets.only(top: DOT_SIZE / 2),
+                                  width: _maxWidth,
+                                  color: colorRed,
+                                )))
+                            .toList(),
+                        _buildBlueLine(),
+                        _buildDots()
+                      ]
+                    : []),
           ),
         ],
       ),
@@ -569,7 +573,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
   }
 
   Widget _buildBlueLine() {
-    if (_dotTopLeft != null && _selectedRectangle1 != null) {
+    if (_dotTopLeft != null) {
       int index = _getIndexSelectedRectangle(_selectedRectangle1!);
       final currentRect = _listRectangle1[index];
       return Stack(
@@ -607,7 +611,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
   }
 
   Widget _buildDots() {
-    if (_dotTopLeft != null && _selectedRectangle1 != null) {
+    if (_dotTopLeft != null) {
       int index = _getIndexSelectedRectangle(_selectedRectangle1!);
       final currentRect = _listRectangle1[index];
       List<Offset> listDots = [
@@ -670,5 +674,3 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
     return [width, height];
   }
 }
-
-

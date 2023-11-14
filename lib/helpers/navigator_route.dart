@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:photo_to_pdf/widgets/w_opaque_cupertino.dart';
 
 popNavigator(BuildContext context) {
   Navigator.pop(context);
