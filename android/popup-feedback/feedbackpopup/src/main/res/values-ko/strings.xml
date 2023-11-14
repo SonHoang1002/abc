@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FeedbackPopup</string>
+    <string name="txt_title_popup">당신의 경험을 평가해주세요</string>
+    <string name="txt_thanks_you">감사합니다!</string>
+    <string name="txt_write_feedback">피드백 작성하기</string>
+    <string name="txt_dismiss">닫기</string>
+    <string name="txt_title_popup_confirm">피드백을 소중히 여깁니다</string>
+    <string name="txt_title_confirm">어떤 문제가 있나요?</string>
+    <string name="txt_thanks">감사합니다!</string>
+    <string name="txt_please_rate_this_app">이 앱을 평가해 주세요.</string>
+    <string name="txt_rate_this_app">이 앱 평가하기</string>
+</resources>

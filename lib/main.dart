@@ -1,24 +1,39 @@
 import 'dart:io';
+import 'package:android_id/android_id.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
 import 'package:photo_to_pdf/commons/themes.dart';
+import 'package:photo_to_pdf/helpers/firebase_helper.dart';
 import 'package:photo_to_pdf/material_with_them.dart';
 import 'package:photo_to_pdf/services/isar_project_service.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const flutter_riverpod.ProviderScope(child: MyApp()));
-  final result = await IsarProjectService().sizeOfIsarsProject();
-  print("sizeOfIsarsProject ${result}");
+  await Firebase.initializeApp();
+
+  runApp(const flutter_riverpod.ProviderScope(
+    child: MyApp(),
+  ));
+  // check dark mode
   Brightness themeMode =
       SchedulerBinding.instance.platformDispatcher.platformBrightness;
   bool darkMode = themeMode == Brightness.dark;
   redoSystemStyle(darkMode);
+
+  // check length isar db
+  final result = await IsarProjectService().sizeOfIsarsProject();
+  print("sizeOfIsarsProject ${result}");
+
+  // add new user who are using this app
+  sendFirebaseAndroidId();
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -61,6 +76,3 @@ Future<void> redoSystemStyle(bool darkMode) async {
     ));
   }
 }
-
-
-

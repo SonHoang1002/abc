@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">FeedbackPopup</string>
+    <string name="txt_title_popup">Please rate your experience</string>
+    <string name="txt_thanks_you">Thank you!</string>
+    <string name="txt_write_feedback">Write a Feedback</string>
+    <string name="txt_dismiss">Dismiss</string>
+    <string name="txt_title_popup_confirm">We value your feedback.</string>
+    <string name="txt_title_confirm">Is there any problem?</string>
+    <string name="txt_thanks">Thanks!</string>
+    <string name="txt_please_rate_this_app">Please rate this app.</string>
+    <string name="txt_rate_this_app">Rate this app</string>
+</resources>

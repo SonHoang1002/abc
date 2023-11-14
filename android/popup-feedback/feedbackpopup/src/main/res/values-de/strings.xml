@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FeedbackPopup</string>
+    <string name="txt_title_popup">Bitte bewerten Sie Ihr Erlebnis</string>
+    <string name="txt_thanks_you">Danke!</string>
+    <string name="txt_write_feedback">Eine Rückmeldung schreiben</string>
+    <string name="txt_dismiss">Schließen</string>
+    <string name="txt_title_popup_confirm">Wir schätzen Ihr Feedback.</string>
+    <string name="txt_title_confirm">Gibt es ein Problem?</string>
+    <string name="txt_thanks">Danke!</string>
+    <string name="txt_please_rate_this_app">Bitte bewerten Sie diese App.</string>
+    <string name="txt_rate_this_app">Diese App bewerten</string>
+</resources>

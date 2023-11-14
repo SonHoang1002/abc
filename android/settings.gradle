@@ -17,4 +17,7 @@ pluginManagement {
 
 include ":app"
 
+include(":popup-feedback")
+project(":popup-feedback").projectDir = new File("./popup-feedback/feedbackpopup")
+
 apply from: "${settings.ext.flutterSdkPath}/packages/flutter_tools/gradle/app_plugin_loader.gradle"

@@ -50,34 +50,35 @@ class Setting extends StatelessWidget {
                 textColor: Theme.of(context).textTheme.displayLarge!.color,
                 textAlign: TextAlign.start,
               ),
-              GestureDetector(
-                  onTap: () {
-                    bool isDarkMode =
-                        Provider.of<ThemeManager>(context, listen: false)
-                            .isDarkMode;
-                    if (isDarkMode) {
-                      Provider.of<ThemeManager>(context, listen: false)
-                          .toggleTheme("light");
-                    } else {
-                      Provider.of<ThemeManager>(context, listen: false)
-                          .toggleTheme("dark");
-                    }
-                  },
-                  child: Container(
-                      height: 30,
-                      width: 30,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15),
-                          color: Theme.of(context).canvasColor),
-                      child: Icon(
-                          Provider.of<ThemeManager>(context).isDarkMode
-                              ? FontAwesomeIcons.sun
-                              : FontAwesomeIcons.moon,
-                          size: 15,
-                          color: Theme.of(context)
-                              .textTheme
-                              .displayLarge!
-                              .color))),
+              const SizedBox()
+              // GestureDetector(
+              //     onTap: () {
+              //       bool isDarkMode =
+              //           Provider.of<ThemeManager>(context, listen: false)
+              //               .isDarkMode;
+              //       if (isDarkMode) {
+              //         Provider.of<ThemeManager>(context, listen: false)
+              //             .toggleTheme("light");
+              //       } else {
+              //         Provider.of<ThemeManager>(context, listen: false)
+              //             .toggleTheme("dark");
+              //       }
+              //     },
+              //     child: Container(
+              //         height: 30,
+              //         width: 30,
+              //         decoration: BoxDecoration(
+              //             borderRadius: BorderRadius.circular(15),
+              //             color: Theme.of(context).canvasColor),
+              //         child: Icon(
+              //             Provider.of<ThemeManager>(context).isDarkMode
+              //                 ? FontAwesomeIcons.sun
+              //                 : FontAwesomeIcons.moon,
+              //             size: 15,
+              //             color: Theme.of(context)
+              //                 .textTheme
+              //                 .displayLarge!
+              //                 .color))),
             ],
           ),
         ),

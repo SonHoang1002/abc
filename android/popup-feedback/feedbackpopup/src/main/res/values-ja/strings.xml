@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FeedbackPopup</string>
+    <string name="txt_title_popup">ご体験を評価してください</string>
+    <string name="txt_thanks_you">ありがとうございます！</string>
+    <string name="txt_write_feedback">フィードバックを投稿</string>
+    <string name="txt_dismiss">閉じる</string>
+    <string name="txt_title_popup_confirm">私たちはあなたのフィードバックを大切にしています</string>
+    <string name="txt_title_confirm">何か問題はありますか？</string>
+    <string name="txt_thanks">ありがとう！</string>
+    <string name="txt_please_rate_this_app">このアプリを評価してください</string>
+    <string name="txt_rate_this_app">このアプリを評価</string>
+</resources>

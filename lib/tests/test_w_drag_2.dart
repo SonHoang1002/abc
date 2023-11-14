@@ -1373,8 +1373,6 @@
 //                     }
 //                     _snapPositionWidthPoint2(index);
 //                     _checkExceedingDrawBoard(index);
-//                     print(
-//                         'details.globalPosition dot bottom right ${details.globalPosition},${details.primaryDelta}');
 //                   },
 //                   onPanStart: (details) {},
 //                 )

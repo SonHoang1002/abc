@@ -373,7 +373,26 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                 .dy;
           }
         }
+
+        // y = min(y1 - 50, max(0, y));
+        // x = min(x1 - 50, max(0, x));
+        // x1 = min(_maxWidth, max(x + 50, x1));
+        // y1 = min(_maxHeight, max(y + 50, y1));
       } else {
+        //  var deltaX = deltaGlobalPosition.dx;
+        //  var deltaY = deltaGlobalPosition.dy;
+        //  // khong vuot qua maxwidth, va tut qua muc 0
+        //  x += deltaX;
+        //  y += deltaY;
+        //  x1 +=deltaX;
+        //  y1 += deltaY;
+
+        //  x = max(0,min(x1,_maxWidth));
+        // //  x !<0 && a!>_maxWidth
+        //  y = max(0,min(y1, _maxHeight));
+        //  x1 = min(_maxWidth,x1);
+        //  y1 = min(_maxHeight,y1);
+
         var dx = deltaGlobalPosition.dx;
         dx = max(-x, min(dx, _maxWidth - x1));
         var dy = deltaGlobalPosition.dy;

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <View
+        android:id="@+id/layout_bg"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@drawable/bg_main"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/layout_popup"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="118dp"
+        android:layout_marginEnd="18dp"
+        android:layout_marginBottom="54dp"
+        android:background="@drawable/bg_layout"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="3:2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/txt_title_confirm"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="24dp"
+            android:gravity="center"
+            android:text="@string/txt_title_popup_confirm"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:padding="6dp">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_dismiss"
+                style="@style/ThemeMaterialButtonColor"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="16sp"
+                android:layout_weight="1"
+
+                android:background="@drawable/bg_button"
+                android:text="@string/txt_dismiss"
+                android:textAllCaps="false"
+                android:textStyle="bold" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_write_feedback"
+                style="@style/ThemeMaterialButtonColor"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8sp"
+                android:layout_marginEnd="16dp"
+                android:layout_weight="2"
+                android:background="@drawable/bg_button"
+                android:text="@string/txt_write_feedback"
+                android:textAllCaps="false"
+                android:textColor="@color/primary"
+                android:textStyle="bold" />
+
+
+        </TableRow>
+
+    </LinearLayout>
+
+    <!--    </androidx.cardview.widget.CardView>-->
+
+</androidx.constraintlayout.widget.ConstraintLayout>

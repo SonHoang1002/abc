@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 import 'dart:ui';
 
+import 'package:photo_to_pdf/helpers/firebase_helper.dart';
+import 'package:photo_to_pdf/helpers/show_popup_review.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/helpers/pdf/create_pdf.dart';
@@ -336,9 +338,6 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                           buildBottomButton(
                               context: context,
                               onApply: () async {
-                                // await createAndPreviewPdf(_project, context,
-                                //     _getRatioProject(LIST_RATIO_PDF),
-                                //     compressValue: _sliderCompressionValue);
                                 setState(() {
                                   _isLoading = true;
                                 });
@@ -353,8 +352,12 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                     await Share.shareXFiles([
                                   XFile(result[0].path),
                                 ]);
-                                print(
-                                    "shareResult on Save to function: ${shareResult.toString()}");
+                                var isRating = await checkRating();
+                                // check xem da danh gia hay chua
+                                if (!isRating) {
+                                  // await ShowPopupReview.showPopupReview();
+                                  await updateRating();
+                                }
                               },
                               onCancel: () async {
                                 ref

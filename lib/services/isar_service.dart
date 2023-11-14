@@ -1,12 +1,10 @@
 import 'package:photo_to_pdf/models/isar/project_model.dart';
-import 'package:photo_to_pdf/models/isar/test_model.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
 class IsarService {
   static Isar? _instance;
   static final List<CollectionSchema<dynamic>> _schemas = [
-    TestModelSchema,
     ProjectIsarSchema
     ];
 
