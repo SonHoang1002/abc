@@ -355,7 +355,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                 var isRating = await checkRating();
                                 // check xem da danh gia hay chua
                                 if (!isRating) {
-                                  // await ShowPopupReview.showPopupReview();
+                                  await ShowPopupReview.showPopupReview();
                                   await updateRating();
                                 }
                               },
