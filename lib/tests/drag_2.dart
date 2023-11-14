@@ -1,15 +1,16 @@
-import 'dart:developer' as d;
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/check_distance.dart';
 import 'package:photo_to_pdf/helpers/extract_list.dart';
 import 'package:photo_to_pdf/helpers/parse_placement_to_rect.dart';
+import 'package:photo_to_pdf/helpers/snap.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/models/project.dart';
-import 'package:photo_to_pdf/widgets/w_text_content.dart';
+import 'package:photo_to_pdf/widgets/blue_line.dart';
+import 'package:photo_to_pdf/widgets/dot_item.dart';
+import 'package:photo_to_pdf/widgets/rectangle_item.dart';
 
 class WDragZoomImageTest2 extends StatefulWidget {
   final Color backgroundColor;
@@ -46,6 +47,8 @@ class _WDragZoomImageTest2State extends State<WDragZoomImageTest2> {
   late Size _size;
   List<Rectangle1> _listRectangle1 = [];
   final GlobalKey _drawAreaKey = GlobalKey(debugLabel: "_drawAreaKey");
+  final GlobalKey _gestureKey = GlobalKey(debugLabel: "_gestureKey");
+  final GlobalKey _testKey = GlobalKey(debugLabel: "_gestureKey");
 
   final GlobalKey _childContainerKey =
       GlobalKey(debugLabel: "_childContainerKey");
@@ -54,21 +57,12 @@ class _WDragZoomImageTest2State extends State<WDragZoomImageTest2> {
   late double _maxWidth;
   Rectangle1? _selectedRectangle1;
   late Offset _startOffset;
-  // luu khoang cach giua diem cham (doi voi selectedRectangle1) so voi ben trai vaf ben tren cuar Rectangle1 dang duoc focus
   late List _kiem_tra_xem_dang_o_canh_nao = [];
   // global position
-  late List<double> _listVerticalPosition = [];
-  // global position
-  late List<double> _listHorizontalPosition = [];
+  late List<double> _listVerticalPosition = [], _listHorizontalPosition = [];
   // [0]: override ver // [1]: override hori
   List<List<double>> _listOverride = [[], []];
-
-  // late List<GlobalKey> _listGlobalKey;
-
-  // int? _indexOfFocusRect;
   late bool _isInside = false;
-  final GlobalKey _gestureKey = GlobalKey(debugLabel: "_gestureKey");
-
   Offset? _dotTopLeft;
   late Offset _deltaPositionBoard;
   late Offset _gestureBoardOffset;
@@ -76,13 +70,15 @@ class _WDragZoomImageTest2State extends State<WDragZoomImageTest2> {
   @override
   void initState() {
     super.initState();
-    // _listRectangle1 = [1, 2, 3]
-    //     .map((e) => Rectangle1(height: 150, width: 150, id: e, x: 50, y: 50))
-    //     .toList();
-    // _listGlobalKey = _listRectangle1.map((e) => GlobalKey()).toList();
-
     _deltaPositionBoard = Offset.zero;
     _gestureBoardOffset = Offset.zero;
+    // _listRectangle1 = [
+    //   1,
+    //   2,
+    // ].map((e) {
+    //   return Rectangle1(height: 150, width: 150, id: e, x: 50, y: 50);
+    // }).toList();
+    // _listGlobalKey = _listRectangle1.map((e) => GlobalKey()).toList();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       Offset offsetRectangleBoard =
           (_childContainerKey.currentContext?.findRenderObject() as RenderBox)
@@ -91,9 +87,9 @@ class _WDragZoomImageTest2State extends State<WDragZoomImageTest2> {
           (_drawAreaKey.currentContext?.findRenderObject() as RenderBox)
               .localToGlobal(Offset.zero);
       _deltaPositionBoard = offsetRectangleBoard - offsetBodyLayout;
-      final renderBoxBoard =
-          _gestureKey.currentContext?.findRenderObject() as RenderBox;
-      _gestureBoardOffset = renderBoxBoard.localToGlobal( Offset.zero);
+      _gestureBoardOffset =
+          (_gestureKey.currentContext?.findRenderObject() as RenderBox)
+              .localToGlobal(Offset.zero);
     });
   }
 
@@ -105,53 +101,52 @@ class _WDragZoomImageTest2State extends State<WDragZoomImageTest2> {
 
   @override
   Widget build(BuildContext context) {
+    _size = MediaQuery.sizeOf(context);
     _maxHeight = _getWidthAndHeight()[1];
-    
     _maxWidth = _getWidthAndHeight()[0];
     _listRectangle1 = widget.listPlacement.map((pl) {
       return placementToRectangle(pl, [_maxWidth, _maxHeight])!;
     }).toList();
     _selectedRectangle1 =
         placementToRectangle(widget.selectedPlacement, [_maxWidth, _maxHeight]);
-    if (_selectedRectangle1 != null &&
-        !widget.listPlacement
-            .map((e) => e.id)
-            .toList()
-            .contains(_selectedRectangle1!.id)) {
-      _selectedRectangle1 = null;
+    if (_selectedRectangle1 != null) {
+      final index = _getIndexSelectedRectangle(_selectedRectangle1!);
+      _dotTopLeft = _listRectangle1[index].getOffset.translate(
+          _deltaPositionBoard.dx - DOT_SIZE / 2,
+          _deltaPositionBoard.dy - DOT_SIZE / 2);
     }
-    _showDots();
     return _buildCustomArea();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _size = MediaQuery.sizeOf(context);
-  }
-
   /// [[dotTopLeft],[dotTopCenter],[dotTopRight],[dotCenterLeft],[dotCenterRight],[dotBottomLeft],[dotBottomCenter],[dotBottomRight]]
-  List<Offset> _getGlobalDotPosition(
-    int index,
-  ) {
-    final renderBox = widget.listGlobalKey[index].currentContext
+  List<Offset> _getGlobalDotPosition(int index,
+      {List<Rectangle1>? additionalListRect,
+      List<GlobalKey>? additionalListGlobalkey}) {
+    List<Rectangle1> listCheckRectangle = additionalListRect ?? _listRectangle1;
+    List<GlobalKey> listCheckGlobalkey =
+        additionalListGlobalkey ?? widget.listGlobalKey;
+
+    final renderBox = listCheckGlobalkey[index]
+        .currentContext
         ?.findRenderObject() as RenderBox;
     final dotTopLeft = renderBox.localToGlobal(Offset.zero);
-    final dotTopCenter =
-        Offset(dotTopLeft.dx + _listRectangle1[index].width / 2, dotTopLeft.dy);
+    final dotTopCenter = Offset(
+        dotTopLeft.dx + listCheckRectangle[index].width / 2, dotTopLeft.dy);
     final dotTopRight =
-        Offset(dotTopLeft.dx + _listRectangle1[index].width, dotTopLeft.dy);
+        Offset(dotTopLeft.dx + listCheckRectangle[index].width, dotTopLeft.dy);
     final dotCenterLeft = Offset(
-        dotTopLeft.dx, dotTopLeft.dy + _listRectangle1[index].height / 2);
-    final dotCenterRight = Offset(dotTopLeft.dx + _listRectangle1[index].width,
-        dotTopLeft.dy + _listRectangle1[index].height / 2);
+        dotTopLeft.dx, dotTopLeft.dy + listCheckRectangle[index].height / 2);
+    final dotCenterRight = Offset(
+        dotTopLeft.dx + listCheckRectangle[index].width,
+        dotTopLeft.dy + listCheckRectangle[index].height / 2);
     final dotBottomLeft =
-        Offset(dotTopLeft.dx, dotTopLeft.dy + _listRectangle1[index].height); //
+        Offset(dotTopLeft.dx, dotTopLeft.dy + listCheckRectangle[index].height);
     final dotBottomCenter = Offset(
-        dotTopLeft.dx + _listRectangle1[index].width / 2,
-        dotTopLeft.dy + _listRectangle1[index].height);
-    final dotBottomRight = Offset(dotTopLeft.dx + _listRectangle1[index].width,
-        dotTopLeft.dy + _listRectangle1[index].height);
+        dotTopLeft.dx + listCheckRectangle[index].width / 2,
+        dotTopLeft.dy + listCheckRectangle[index].height);
+    final dotBottomRight = Offset(
+        dotTopLeft.dx + listCheckRectangle[index].width,
+        dotTopLeft.dy + listCheckRectangle[index].height);
     return [
       dotTopLeft,
       dotTopCenter,
@@ -165,17 +160,23 @@ class _WDragZoomImageTest2State extends State<WDragZoomImageTest2> {
   }
 
   /// [edgeTop, edgeBottom, edgeLeft, edgeRight]
-  ///
-  List<Offset> _getGlobalEdgePosition(int index) {
-    final renderBox = widget.listGlobalKey[index].currentContext
+  List<Offset> _getGlobalEdgePosition(int index,
+      {List<Rectangle1>? additionalList,
+      List<GlobalKey>? additionalListGlobalkey}) {
+    List<Rectangle1> listCheckRectangle = additionalList ?? _listRectangle1;
+    List<GlobalKey> listCheckGlobalkey =
+        additionalListGlobalkey ?? widget.listGlobalKey;
+
+    final renderBox = listCheckGlobalkey[index]
+        .currentContext
         ?.findRenderObject() as RenderBox;
     Offset dotTopLeft = renderBox.localToGlobal(Offset.zero);
     final edgeTop = dotTopLeft;
     final edgeLeft = dotTopLeft;
     final edgeRight =
-        Offset(dotTopLeft.dx + _listRectangle1[index].width, dotTopLeft.dy);
-    final edgeBottom = Offset(dotTopLeft.dx + _listRectangle1[index].width,
-        dotTopLeft.dy + _listRectangle1[index].height);
+        Offset(dotTopLeft.dx + listCheckRectangle[index].width, dotTopLeft.dy);
+    final edgeBottom = Offset(dotTopLeft.dx + listCheckRectangle[index].width,
+        dotTopLeft.dy + listCheckRectangle[index].height);
     return [
       edgeTop,
       edgeBottom,
@@ -184,53 +185,69 @@ class _WDragZoomImageTest2State extends State<WDragZoomImageTest2> {
     ];
   }
 
-  void _showDots() {
-    if (_selectedRectangle1 != null) {
-      final index = _getIndexSelectedRectangle(_selectedRectangle1!);
-      _dotTopLeft = _listRectangle1[index].getOffset.translate(
-          _deltaPositionBoard.dx - DOT_SIZE / 2,
-          _deltaPositionBoard.dy - DOT_SIZE / 2);
-    }
-  }
-
-  void _onFocusRectangle1(Offset startOffset) {
+  void _onFocusRectangle(Offset startOffset) {
     int? index = _checkInsideRectangle(startOffset);
     if (index != null) {
       _selectedRectangle1 = _listRectangle1[index];
-      _showDots();
       setState(() {});
       widget.rerenderFunction();
       _updatePlacement();
     } else {
       _selectedRectangle1 = null;
       _dotTopLeft = null;
-      widget.onCancelFocusRectangle1!=null ?  widget.onCancelFocusRectangle1!():null;
+      widget.onCancelFocusRectangle1 != null
+          ? widget.onCancelFocusRectangle1!()
+          : null;
     }
   }
 
   int? _checkInsideRectangle(Offset startOffset) {
+    List<Rectangle1> listCheckRectangle =
+        List<Rectangle1>.from(_listRectangle1);
+    List<GlobalKey> listCheckGlobalkey =
+        List<GlobalKey>.from(widget.listGlobalKey);
+    if (_selectedRectangle1 != null) {
+      int indexOfSelectedRect =
+          _getIndexSelectedRectangle(_selectedRectangle1!);
+      if (indexOfSelectedRect != -1) {
+        final currentGlobalkey = widget.listGlobalKey[indexOfSelectedRect];
+        listCheckRectangle.removeAt(indexOfSelectedRect);
+        listCheckRectangle.add(_selectedRectangle1!);
+
+        listCheckGlobalkey.removeAt(indexOfSelectedRect);
+        listCheckGlobalkey.add(currentGlobalkey);
+      }
+    }
     int? index;
+    Rectangle1? currentRect;
     final newStartOffset = startOffset;
-    for (int i = 0; i < _listRectangle1.length; i++) {
-      List<Offset> offsetDots = _getGlobalDotPosition(i);
-      List<Offset> offsetEdges = _getGlobalEdgePosition(i);
+    for (int i = 0; i < listCheckRectangle.length; i++) {
+      List<Offset> offsetDots = _getGlobalDotPosition(i,
+          additionalListRect: listCheckRectangle,
+          additionalListGlobalkey: listCheckGlobalkey);
+      List<Offset> offsetEdges = _getGlobalEdgePosition(i,
+          additionalList: listCheckRectangle,
+          additionalListGlobalkey: listCheckGlobalkey);
       if (containOffset(newStartOffset, offsetDots[0], offsetDots[7])) {
-        index = i;
+        // index = i;
+        currentRect = listCheckRectangle[i];
         _kiem_tra_xem_dang_o_canh_nao = [];
-        if ((offsetEdges[0].dy - newStartOffset.dy).abs() < 30) {
+        if ((offsetEdges[0].dy - newStartOffset.dy).abs() < 20) {
           _kiem_tra_xem_dang_o_canh_nao.add("top");
         }
-        if ((offsetEdges[1].dy - newStartOffset.dy).abs() < 30) {
+        if ((offsetEdges[1].dy - newStartOffset.dy).abs() < 20) {
           _kiem_tra_xem_dang_o_canh_nao.add("bottom");
         }
-        if ((offsetEdges[2].dx - newStartOffset.dx).abs() < 30) {
+        if ((offsetEdges[2].dx - newStartOffset.dx).abs() < 20) {
           _kiem_tra_xem_dang_o_canh_nao.add("left");
         }
-        if ((offsetEdges[3].dx - newStartOffset.dx).abs() < 30) {
+        if ((offsetEdges[3].dx - newStartOffset.dx).abs() < 20) {
           _kiem_tra_xem_dang_o_canh_nao.add("right");
         }
       }
     }
+    index =
+        currentRect != null ? _getIndexSelectedRectangle(currentRect) : null;
     return index;
   }
 
@@ -258,7 +275,9 @@ class _WDragZoomImageTest2State extends State<WDragZoomImageTest2> {
           if ((offsetEdges[3].dx - startOffset.dx).abs() < 50) {
             _kiem_tra_xem_dang_o_canh_nao_1.add("right");
           }
-          _kiem_tra_xem_dang_o_canh_nao = _kiem_tra_xem_dang_o_canh_nao_1;
+          if (_kiem_tra_xem_dang_o_canh_nao_1.length <= 2) {
+            _kiem_tra_xem_dang_o_canh_nao = _kiem_tra_xem_dang_o_canh_nao_1;
+          }
         }
       }
     }
@@ -274,207 +293,204 @@ class _WDragZoomImageTest2State extends State<WDragZoomImageTest2> {
     return _listRectangle1.map((e) => e.id).toList().indexOf(rect1.id);
   }
 
+  void _onPanUpdate(DragUpdateDetails details) {
+    if (_isInside && _selectedRectangle1 != null) {
+      int index = _getIndexSelectedRectangle(_selectedRectangle1!);
+      Rectangle1 newRectangle1;
+      double x1 = _selectedRectangle1!.x + _selectedRectangle1!.width;
+      double y1 = _selectedRectangle1!.y + _selectedRectangle1!.height;
+      double y = _selectedRectangle1!.y;
+      double x = _selectedRectangle1!.x;
+      // translation
+      Offset deltaGlobalPosition = details.globalPosition - _startOffset;
+      List<List<double>> newListOverride = [[], []];
+
+      // this stack is parent of rectangles
+      final renderBoxStack =
+          _stackKey.currentContext?.findRenderObject() as RenderBox;
+      final gestureBox =
+          (_gestureKey.currentContext?.findRenderObject() as RenderBox);
+      if (_kiem_tra_xem_dang_o_canh_nao.isNotEmpty) {
+        if (_kiem_tra_xem_dang_o_canh_nao.contains("top")) {
+          y += deltaGlobalPosition.dy;
+          y = min(y1 - 50, max(0, y));
+          double globalY = renderBoxStack.localToGlobal(Offset(0, y)).dy;
+          int? index = snapPosition(globalY, _listVerticalPosition);
+          if (index != null) {
+            Offset gPosition = gestureBox
+                .globalToLocal(Offset(0, _listVerticalPosition[index]));
+            newListOverride[1].add(gPosition.dy - DOT_SIZE / 2);
+            y = renderBoxStack
+                .globalToLocal(Offset(0, _listVerticalPosition[index]))
+                .dy;
+          }
+        }
+        if (_kiem_tra_xem_dang_o_canh_nao.contains("left")) {
+          x += deltaGlobalPosition.dx;
+          x = min(x1 - 50, max(0, x));
+          double globalX = renderBoxStack.localToGlobal(Offset(x, 0)).dx;
+          int? index = snapPosition(globalX, _listHorizontalPosition);
+          if (index != null) {
+            newListOverride[0].add(_listHorizontalPosition[index] -
+                _gestureBoardOffset.dx -
+                DOT_SIZE / 2);
+            x = renderBoxStack
+                .globalToLocal(Offset(_listHorizontalPosition[index], 0))
+                .dx;
+          }
+        }
+        if (_kiem_tra_xem_dang_o_canh_nao.contains("right")) {
+          x1 += deltaGlobalPosition.dx;
+          x1 = min(_maxWidth, max(x + 50, x1));
+          double globalX = renderBoxStack.localToGlobal(Offset(x1, 0)).dx;
+          int? index = snapPosition(
+            globalX,
+            _listHorizontalPosition,
+          );
+          if (index != null) {
+            newListOverride[0].add(_listHorizontalPosition[index] -
+                _gestureBoardOffset.dx -
+                DOT_SIZE / 2);
+            x1 = renderBoxStack
+                .globalToLocal(Offset(_listHorizontalPosition[index], 0))
+                .dx;
+          }
+        }
+        if (_kiem_tra_xem_dang_o_canh_nao.contains("bottom")) {
+          y1 += deltaGlobalPosition.dy;
+          y1 = min(_maxHeight, max(y + 50, y1));
+          double globalY = renderBoxStack.localToGlobal(Offset(0, y1)).dy;
+          int? index = snapPosition(
+            globalY,
+            _listVerticalPosition,
+          );
+          if (index != null) {
+            Offset gPosition = gestureBox
+                .globalToLocal(Offset(0, _listVerticalPosition[index]));
+            newListOverride[1].add(gPosition.dy - DOT_SIZE / 2);
+            y1 = renderBoxStack
+                .globalToLocal(Offset(0, _listVerticalPosition[index]))
+                .dy;
+          }
+        }
+      } else {
+        var dx = deltaGlobalPosition.dx;
+        dx = max(-x, min(dx, _maxWidth - x1));
+        var dy = deltaGlobalPosition.dy;
+        dy = max(-y, min(dy, _maxHeight - y1));
+        x += dx;
+        y += dy;
+        x1 += dx;
+        y1 += dy;
+        // snap
+        double globalX = renderBoxStack.localToGlobal(Offset(x, 0)).dx;
+        double globalY = renderBoxStack.localToGlobal(Offset(0, y)).dy;
+        double globalX1 = renderBoxStack.localToGlobal(Offset(x1, 0)).dx;
+        double globalY1 = renderBoxStack.localToGlobal(Offset(0, y1)).dy;
+        //snap hor
+        int? indexX = snapPosition(globalX, _listHorizontalPosition);
+        if (indexX != null) {
+          newListOverride[0].add(_listHorizontalPosition[indexX] -
+              _gestureBoardOffset.dx -
+              DOT_SIZE / 2);
+          x = renderBoxStack
+              .globalToLocal(Offset(_listHorizontalPosition[indexX], 0))
+              .dx;
+          x1 += _listHorizontalPosition[indexX] - globalX;
+        }
+        int? indexX1 = snapPosition(globalX1, _listHorizontalPosition);
+        if (indexX1 != null) {
+          newListOverride[0].add(_listHorizontalPosition[indexX1] -
+              _gestureBoardOffset.dx -
+              DOT_SIZE / 2);
+          x1 = renderBoxStack
+              .globalToLocal(Offset(_listHorizontalPosition[indexX1], 0))
+              .dx;
+          x += _listHorizontalPosition[indexX1] - globalX1;
+        }
+        //snap ver
+        int? indexY = snapPosition(globalY, _listVerticalPosition);
+        if (indexY != null) {
+          newListOverride[1].add(_listVerticalPosition[indexY] -
+              _gestureBoardOffset.dy -
+              DOT_SIZE / 2);
+          y = renderBoxStack
+              .globalToLocal(Offset(0, _listVerticalPosition[indexY]))
+              .dy;
+          y1 += _listVerticalPosition[indexY] - globalY;
+        }
+        int? indexY1 = snapPosition(globalY1, _listVerticalPosition);
+        if (indexY1 != null) {
+          newListOverride[1].add(_listVerticalPosition[indexY1] -
+              _gestureBoardOffset.dy -
+              DOT_SIZE / 2);
+          y1 = renderBoxStack
+              .globalToLocal(Offset(0, _listVerticalPosition[indexY1]))
+              .dy;
+          y += _listVerticalPosition[indexY1] - globalY1;
+        }
+      }
+      _listOverride = newListOverride;
+      newRectangle1 = Rectangle1(
+          id: _selectedRectangle1!.id,
+          x: x,
+          y: y,
+          width: x1 - x,
+          height: y1 - y);
+      //gan
+      _listRectangle1[index] = newRectangle1;
+      setState(() {});
+      widget.rerenderFunction();
+      _updatePlacement();
+    }
+  }
+
+  void _onPanStart(DragStartDetails details) {
+    if (_selectedRectangle1 != null) {
+      int index = _getIndexSelectedRectangle(_selectedRectangle1!);
+      _selectedRectangle1 = _listRectangle1[index];
+      _isInside =
+          _checkInsideCurrentRectangle(details.globalPosition, checkEdge: true);
+      _listVerticalPosition.clear();
+      _listHorizontalPosition.clear();
+      if (_listRectangle1.isNotEmpty) {
+        List<GlobalKey> listGlobalKeyWithoutCurrent =
+            List<GlobalKey>.from(widget.listGlobalKey);
+
+        List<Offset> listDeleteEdges = _getGlobalDotPosition(index);
+        _listVerticalPosition =
+            convertNestedListToList(listGlobalKeyWithoutCurrent.map((e) {
+          int index = listGlobalKeyWithoutCurrent.indexOf(e);
+          List<Offset> listEdges = _getGlobalDotPosition(index);
+          return [listEdges[1].dy, listEdges[6].dy];
+        }).toList());
+        _listVerticalPosition.remove(listDeleteEdges[1].dy);
+        _listVerticalPosition.remove(listDeleteEdges[6].dy);
+
+        _listHorizontalPosition =
+            convertNestedListToList(listGlobalKeyWithoutCurrent.map((e) {
+          int index = listGlobalKeyWithoutCurrent.indexOf(e);
+          List<Offset> listEdges = _getGlobalDotPosition(index);
+          return [listEdges[0].dx, listEdges[2].dx];
+        }).toList());
+        _listHorizontalPosition.remove(listDeleteEdges[0].dx);
+        _listHorizontalPosition.remove(listDeleteEdges[2].dx);
+      }
+    }
+    _startOffset = details.globalPosition;
+    setState(() {});
+    widget.rerenderFunction();
+    _updatePlacement();
+  }
+
   Widget _buildCustomArea() {
     return GestureDetector(
       key: _gestureKey,
       onTapUp: (details) {
-        _onFocusRectangle1(details.globalPosition);
+        _onFocusRectangle(details.globalPosition);
       },
-      onTapDown: (details) {
-        int? index = _checkInsideRectangle(details.globalPosition);
-      },
-      onPanUpdate: (details) {
-        if (_isInside && _selectedRectangle1 != null) {
-          int index = _getIndexSelectedRectangle(_selectedRectangle1!);
-          Rectangle1 newRectangle1;
-          double x1 = _selectedRectangle1!.x + _selectedRectangle1!.width;
-          double y1 = _selectedRectangle1!.y + _selectedRectangle1!.height;
-          double y = _selectedRectangle1!.y;
-          double x = _selectedRectangle1!.x;
-          // translation
-          Offset deltaGlobalPosition = details.globalPosition - _startOffset;
-          List<List<double>> newListOverride = [[], []];
-
-          // this stack is parent of rectangles
-          final renderBoxStack =
-              _stackKey.currentContext?.findRenderObject() as RenderBox;
-
-          if (_kiem_tra_xem_dang_o_canh_nao.isNotEmpty) {
-            if (_kiem_tra_xem_dang_o_canh_nao.contains("top")) {
-              y += deltaGlobalPosition.dy;
-              // parse local to global to use compare to global vertical positions
-              double globalY = renderBoxStack.localToGlobal(Offset(0, y)).dy;
-              int? index = _snap(globalY, _listVerticalPosition);
-              if (index != null) {
-                final newRedPosition = _listVerticalPosition[index] -
-                    _gestureBoardOffset.dy -
-                    DOT_SIZE / 2;
-                print("_gestureBoardOffset ${_gestureBoardOffset}");
-                newListOverride[1].add(newRedPosition);
-                y = renderBoxStack
-                    .globalToLocal(Offset(0, _listVerticalPosition[index]))
-                    .dy;
-              }
-            }
-            if (_kiem_tra_xem_dang_o_canh_nao.contains("left")) {
-              x += deltaGlobalPosition.dx;
-              double globalX = renderBoxStack.localToGlobal(Offset(x, 0)).dx;
-              int? index = _snap(globalX, _listHorizontalPosition);
-              if (index != null) {
-                newListOverride[0].add(_listHorizontalPosition[index] -
-                    _gestureBoardOffset.dx -
-                    DOT_SIZE / 2);
-                x = renderBoxStack
-                    .globalToLocal(Offset(_listHorizontalPosition[index], 0))
-                    .dx;
-              }
-            }
-            if (_kiem_tra_xem_dang_o_canh_nao.contains("right")) {
-              x1 += deltaGlobalPosition.dx;
-              double globalX = renderBoxStack.localToGlobal(Offset(x1, 0)).dx;
-              int? index = _snap(
-                globalX,
-                _listHorizontalPosition,
-              );
-              if (index != null) {
-                newListOverride[0].add(_listHorizontalPosition[index] -
-                    _gestureBoardOffset.dx -
-                    DOT_SIZE / 2);
-                x1 = renderBoxStack
-                    .globalToLocal(Offset(_listHorizontalPosition[index], 0))
-                    .dx;
-              }
-            }
-            if (_kiem_tra_xem_dang_o_canh_nao.contains("bottom")) {
-              y1 += deltaGlobalPosition.dy;
-              double globalY = renderBoxStack.localToGlobal(Offset(0, y1)).dy;
-              int? index = _snap(
-                globalY,
-                _listVerticalPosition,
-              );
-              if (index != null) {
-                newListOverride[1].add(_listVerticalPosition[index] -
-                    _gestureBoardOffset.dy -
-                    DOT_SIZE / 2);
-                y1 = renderBoxStack
-                    .globalToLocal(Offset(0, _listVerticalPosition[index]))
-                    .dy;
-              }
-            }
-            x = min(_maxWidth, max(0, x));
-            x1 = min(_maxWidth, max(0, x1));
-            y = min(_maxHeight, max(0, y));
-            y1 = min(_maxHeight, max(0, y1));
-          } else {
-            var dx = deltaGlobalPosition.dx;
-            dx = max(-x, min(dx, _maxWidth - x1));
-            var dy = deltaGlobalPosition.dy;
-            dy = max(-y, min(dy, _maxHeight - y1));
-            x += dx;
-            y += dy;
-            x1 += dx;
-            y1 += dy;
-
-            // snap
-            double globalX = renderBoxStack.localToGlobal(Offset(x, 0)).dx;
-            double globalY = renderBoxStack.localToGlobal(Offset(0, y)).dy;
-            double globalX1 = renderBoxStack.localToGlobal(Offset(x1, 0)).dx;
-            double globalY1 = renderBoxStack.localToGlobal(Offset(0, y1)).dy;
-            //snap hor
-            int? indexX = _snap(globalX, _listHorizontalPosition);
-            if (indexX != null) {
-              newListOverride[0].add(_listHorizontalPosition[indexX] -
-                  _gestureBoardOffset.dx -
-                  DOT_SIZE / 2);
-              x = renderBoxStack
-                  .globalToLocal(Offset(_listHorizontalPosition[indexX], 0))
-                  .dx;
-              x1 += _listHorizontalPosition[indexX] - globalX;
-            }
-            int? indexX1 = _snap(globalX1, _listHorizontalPosition);
-            if (indexX1 != null) {
-              newListOverride[0].add(_listHorizontalPosition[indexX1] -
-                  _gestureBoardOffset.dx -
-                  DOT_SIZE / 2);
-              x1 = renderBoxStack
-                  .globalToLocal(Offset(_listHorizontalPosition[indexX1], 0))
-                  .dx;
-              x += _listHorizontalPosition[indexX1] - globalX1;
-            }
-            //snap ver
-            int? indexY = _snap(globalY, _listVerticalPosition);
-            if (indexY != null) {
-              newListOverride[1].add(_listVerticalPosition[indexY] -
-                  _gestureBoardOffset.dy -
-                  DOT_SIZE / 2);
-              y = renderBoxStack
-                  .globalToLocal(Offset(0, _listVerticalPosition[indexY]))
-                  .dy;
-              y1 += _listVerticalPosition[indexY] - globalY;
-            }
-            int? indexY1 = _snap(globalY1, _listVerticalPosition);
-            if (indexY1 != null) {
-              newListOverride[1].add(_listVerticalPosition[indexY1] -
-                  _gestureBoardOffset.dy -
-                  DOT_SIZE / 2);
-              y1 = renderBoxStack
-                  .globalToLocal(Offset(0, _listVerticalPosition[indexY1]))
-                  .dy;
-              y += _listVerticalPosition[indexY1] - globalY1;
-            }
-          }
-          _listOverride = newListOverride;
-          newRectangle1 = Rectangle1(
-              id: _selectedRectangle1!.id,
-              x: x,
-              y: y,
-              width: x1 - x,
-              height: y1 - y);
-          //gan
-          _listRectangle1[index] = newRectangle1;
-          _showDots();
-          setState(() {});
-          widget.rerenderFunction();
-          _updatePlacement();
-        }
-      },
-      onPanStart: (details) {
-        if (_selectedRectangle1 != null) {
-          int index = _getIndexSelectedRectangle(_selectedRectangle1!);
-          _selectedRectangle1 = _listRectangle1[index];
-          _isInside = _checkInsideCurrentRectangle(details.globalPosition,
-              checkEdge: true);
-          _listVerticalPosition.clear();
-          _listHorizontalPosition.clear();
-          if (_listRectangle1.isNotEmpty) {
-            List<GlobalKey> listGlobalKeyWithoutCurrent =
-                List<GlobalKey>.from(widget.listGlobalKey);
-
-            List<Offset> listDeleteEdges = _getGlobalDotPosition(index);
-            _listVerticalPosition =
-                convertNestedListToList(listGlobalKeyWithoutCurrent.map((e) {
-              int index = listGlobalKeyWithoutCurrent.indexOf(e);
-              List<Offset> listEdges = _getGlobalDotPosition(index);
-              return [listEdges[1].dy, listEdges[6].dy];
-            }).toList());
-            _listVerticalPosition.remove(listDeleteEdges[1].dy);
-            _listVerticalPosition.remove(listDeleteEdges[6].dy);
-
-            _listHorizontalPosition =
-                convertNestedListToList(listGlobalKeyWithoutCurrent.map((e) {
-              int index = listGlobalKeyWithoutCurrent.indexOf(e);
-              List<Offset> listEdges = _getGlobalDotPosition(index);
-              return [listEdges[0].dx, listEdges[2].dx];
-            }).toList());
-            _listHorizontalPosition.remove(listDeleteEdges[0].dx);
-            _listHorizontalPosition.remove(listDeleteEdges[2].dx);
-          }
-        }
-        _startOffset = details.globalPosition;
-        setState(() {});
-        widget.rerenderFunction();
-        _updatePlacement();
-      },
+      onPanUpdate: _onPanUpdate,
+      onPanStart: _onPanStart,
       child: Stack(
         key: _drawAreaKey,
         alignment: Alignment.center,
@@ -503,17 +519,21 @@ class _WDragZoomImageTest2State extends State<WDragZoomImageTest2> {
                       .toList()
                       .map<Widget>(
                     (e) {
-                      return _buildRectangle(e);
+                      return buildRectangle(
+                          e, _listRectangle1, widget.listGlobalKey);
                     },
                   ).toList(),
                   if (_selectedRectangle1 != null)
-                    _buildRectangle(_selectedRectangle1!),
+                    buildRectangle(_selectedRectangle1!, _listRectangle1,
+                        widget.listGlobalKey),
                 ],
               ),
             ),
           ),
           // view trang tri( duong do, duong xanh, hinh tron)
           Container(
+            width: _size.width,
+            height: _size.height,
             color: transparent,
             child: Stack(alignment: Alignment.center, children: [
               ..._listOverride[0]
@@ -549,99 +569,72 @@ class _WDragZoomImageTest2State extends State<WDragZoomImageTest2> {
     if (_dotTopLeft != null && _selectedRectangle1 != null) {
       int index = _getIndexSelectedRectangle(_selectedRectangle1!);
       final currentRect = _listRectangle1[index];
-      final currentWidth = max(0, currentRect.width);
-      final currentHeight = max(0, currentRect.height);
       return Stack(
         children: [
           //top edge
-          currentHeight != 0
-              ? _buildBlueLineItem(
-                  currentRect,
-                  _dotTopLeft!.dy,
-                  _dotTopLeft!.dx,
-                )
-              : const SizedBox(),
+          buildBlueLineItem(
+            currentRect.width,
+            _dotTopLeft!.dy,
+            _dotTopLeft!.dx,
+          ),
           //left edge
-          currentWidth != 0
-              ? _buildBlueLineItem(
-                  currentRect,
-                  _dotTopLeft!.dy,
-                  _dotTopLeft!.dx,
-                  isVertical: false,
-                )
-              : const SizedBox(),
+          buildBlueLineItem(
+            currentRect.height,
+            _dotTopLeft!.dy,
+            _dotTopLeft!.dx,
+            isVertical: false,
+          ),
           // right edge
-          currentWidth != 0
-              ? _buildBlueLineItem(
-                  currentRect,
-                  _dotTopLeft!.dy,
-                  _dotTopLeft!.dx + currentWidth,
-                  isVertical: false,
-                )
-              : const SizedBox(),
+          buildBlueLineItem(
+            currentRect.height,
+            _dotTopLeft!.dy,
+            _dotTopLeft!.dx + currentRect.width,
+            isVertical: false,
+          ),
           // bottom edge
-          currentHeight != 0
-              ? _buildBlueLineItem(
-                  currentRect,
-                  _dotTopLeft!.dy + currentHeight,
-                  _dotTopLeft!.dx,
-                )
-              : const SizedBox()
+          buildBlueLineItem(
+            currentRect.width,
+            _dotTopLeft!.dy + currentRect.height,
+            _dotTopLeft!.dx,
+          ),
         ],
       );
     }
     return const SizedBox();
   }
 
-  Widget _buildBlueLineItem(Rectangle1 currentRect, double top, double left,
-      {bool isVertical = true}) {
-    return Positioned(
-        top: top,
-        left: left,
-        child: Container(
-          margin: EdgeInsets.only(
-              top: isVertical ? DOT_SIZE / 2 : 0,
-              left: isVertical ? 0 : DOT_SIZE / 2),
-          height: isVertical ? 1 : currentRect.height,
-          width: isVertical ? currentRect.width : 1,
-          color: colorBlue,
-        ));
-  }
-
   Widget _buildDots() {
     if (_dotTopLeft != null && _selectedRectangle1 != null) {
-      // top (left-center-right), center (left, right), bottom (left-center-right)
       int index = _getIndexSelectedRectangle(_selectedRectangle1!);
       final currentRect = _listRectangle1[index];
-      double cRectWidth = max(0, currentRect.width);
-      double cRectHeight = max(0, currentRect.height);
       List<Offset> listDots = [
         _dotTopLeft!,
-        _dotTopLeft! + Offset(cRectWidth / 2, 0),
-        _dotTopLeft! + Offset(cRectWidth, 0),
+        _dotTopLeft! + Offset(currentRect.width / 2, 0),
+        _dotTopLeft! + Offset(currentRect.width, 0),
         // center
-        _dotTopLeft! + Offset(0, cRectHeight / 2),
-        _dotTopLeft! + Offset(cRectWidth, cRectHeight / 2),
+        _dotTopLeft! + Offset(0, currentRect.height / 2),
+        _dotTopLeft! + Offset(currentRect.width, currentRect.height / 2),
         // bottom
-        _dotTopLeft! + Offset(0, cRectHeight),
-        _dotTopLeft! + Offset(cRectWidth / 2, cRectHeight),
-        _dotTopLeft! + Offset(cRectWidth, cRectHeight),
+        _dotTopLeft! + Offset(0, currentRect.height),
+        _dotTopLeft! + Offset(currentRect.width / 2, currentRect.height),
+        _dotTopLeft! + Offset(currentRect.width, currentRect.height),
       ];
       return Stack(
-        children: listDots.map((e) => _buildDotDrag(DOT_SIZE, e)).toList(),
+        children: listDots.map((e) {
+          final index = listDots.indexOf(e);
+          if ([1, 6].contains(index)) {
+            return buildDotItem(DOT_SIZE * 0.8, e,
+                margin: const EdgeInsets.only(top: DOT_SIZE * 0.2));
+          }
+          if ([3, 4].contains(index)) {
+            return buildDotItem(DOT_SIZE * 0.8, e,
+                margin: const EdgeInsets.only(left: DOT_SIZE * 0.2));
+          }
+          return buildDotItem(DOT_SIZE, e);
+        }).toList(),
       );
     }
     return const SizedBox();
-  }
-
-  double _getHeightOfImage(int index) {
-    final result = _listRectangle1[index].height;
-    return result;
-  }
-
-  double _getWidthOfImage(int index) {
-    final result = _listRectangle1[index].width;
-    return result;
   }
 
   List<double> _getWidthAndHeight() {
@@ -668,86 +661,9 @@ class _WDragZoomImageTest2State extends State<WDragZoomImageTest2> {
         }
       }
     } else {
-      // width = _size.width * _ratioTarget[1];
-      // height = _size.width * _ratioTarget[0];
       width = _size.width * 0.769;
       height = _size.height * 0.469;
     }
     return [width, height];
-  }
-
-  int? _snap(double x, List<double> list) {
-    // List<double> results = [];
-    for (int i = 0; i < list.length; i++) {
-      if ((x - list[i]).abs() < 5) {
-        return i;
-      }
-    }
-    return null;
-  }
-
-  Widget _buildRectangle(Rectangle1? rectangle1) {
-    int _index = 0;
-    if (rectangle1 != null) {
-      _index = _listRectangle1
-          .map(
-            (e) => e.id,
-          )
-          .toList()
-          .indexOf(rectangle1.id);
-    }
-    if (_index == -1) {
-      return const SizedBox();
-    }
-    return Stack(
-      children: [
-        Positioned(
-          key: widget.listGlobalKey[_index],
-          top: _listRectangle1[_index].y,
-          left: _listRectangle1[_index].x,
-          child: Stack(children: [
-            Image.asset(
-              "${pathPrefixImage}image_demo.png",
-              fit: BoxFit.cover,
-              height: _getHeightOfImage(_index),
-              width: _getWidthOfImage(_index),
-            ),
-            Positioned.fill(
-                child: Center(
-              child: Container(
-                height: 25,
-                width: 25,
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12.5),
-                    color: colorBlue),
-                child: Center(
-                    child: WTextContent(
-                  value: "${_index + 1}",
-                  textColor: colorWhite,
-                  textSize: 10,
-                )),
-              ),
-            )),
-          ]),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDotDrag(double size, Offset offset, {EdgeInsets? margin}) {
-    return Positioned(
-      top: offset.dy,
-      left: offset.dx,
-      child: Container(
-        height: size,
-        width: size,
-        margin: margin,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(size / 2),
-          border: Border.all(color: Colors.blue, width: 2),
-        ),
-      ),
-    );
   }
 }
