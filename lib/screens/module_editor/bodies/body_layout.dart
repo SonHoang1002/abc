@@ -57,13 +57,13 @@ class _LayoutBodyState extends State<LayoutBody> {
   // layout custom variables
   final List<ValueNotifier<Matrix4>> _matrix4Notifiers = [];
   List<Placement> _listPlacement = [];
-  Placement? _selectedPlacement;
+  Placement? _selectedPlacement, _saveDataSelectedPlacement;
 
   // background variable
   late Color _currentLayoutColor;
   late List<double> _ratioTarget;
   late Offset _alignmentDialogOffset;
-  late bool _isShowAlignmentDialog; 
+  late bool _isShowAlignmentDialog;
   late List<GlobalKey> _listGlobalKey = [];
 
   @override
@@ -91,8 +91,8 @@ class _LayoutBodyState extends State<LayoutBody> {
 
     _paddingOptions = _project.paddingAttribute ?? PADDING_OPTIONS;
     _spacingOptions = _project.spacingAttribute ?? SPACING_OPTIONS;
-    _currentLayoutColor = _project.backgroundColor; 
-    _listPlacement = (_project.placements ?? []); 
+    _currentLayoutColor = _project.backgroundColor;
+    _listPlacement = (_project.placements ?? []);
     _listPlacement.forEach((_) {
       _matrix4Notifiers.add(ValueNotifier<Matrix4>(Matrix4.identity()));
     });
@@ -134,9 +134,11 @@ class _LayoutBodyState extends State<LayoutBody> {
 
   void _onDone(Placement newData, List<String> paddingAttributeList,
       double convertWidth, double convertHeight) {
+    Placement newPlacement;
     for (var placement in _listPlacement) {
       if (placement.id == newData.id) {
         final index = _listPlacement.indexOf(placement);
+        newPlacement = _listPlacement[index];
         // update ratioHeight, ratioWidth, ratioOffset of _listPlacement[index]
         // convert unit
         List<double> paddingAttributeList0 = [];
@@ -160,55 +162,48 @@ class _LayoutBodyState extends State<LayoutBody> {
             (newData.placementAttribute!.right - paddingAttributeList0[4]);
         final deltaBottom =
             (newData.placementAttribute!.bottom - paddingAttributeList0[5]);
-
         // padding top
         if (deltaTop > 0) {
-          _listPlacement[index].ratioHeight -=
-              (deltaTop / convertHeight0).abs();
-          _listPlacement[index].ratioOffset[1] +=
-              (deltaTop / convertHeight0).abs();
+          newPlacement.ratioHeight -= (deltaTop / convertHeight0).abs();
+          newPlacement.ratioOffset[1] += (deltaTop / convertHeight0).abs();
         } else if (deltaTop < 0) {
-          _listPlacement[index].ratioHeight +=
-              (deltaTop / convertHeight0).abs();
-          _listPlacement[index].ratioOffset[1] -=
-              (deltaTop / convertHeight0).abs();
+          newPlacement.ratioHeight += (deltaTop / convertHeight0).abs();
+          newPlacement.ratioOffset[1] -= (deltaTop / convertHeight0).abs();
         }
         // padding left
         if (deltaLeft > 0) {
-          _listPlacement[index].ratioWidth -= (deltaLeft / convertWidth0).abs();
-          _listPlacement[index].ratioOffset[0] +=
-              (deltaLeft / convertWidth0).abs();
+          newPlacement.ratioWidth -= (deltaLeft / convertWidth0).abs();
+          newPlacement.ratioOffset[0] += (deltaLeft / convertWidth0).abs();
         } else if (deltaLeft < 0) {
-          _listPlacement[index].ratioWidth += (deltaLeft / convertWidth0).abs();
-          _listPlacement[index].ratioOffset[0] -=
-              (deltaLeft / convertWidth0).abs();
+          newPlacement.ratioWidth += (deltaLeft / convertWidth0).abs();
+          newPlacement.ratioOffset[0] -= (deltaLeft / convertWidth0).abs();
         }
+
         // padding right
         if (deltaRight > 0) {
-          _listPlacement[index].ratioWidth -=
-              (deltaRight / convertWidth0).abs();
+          newPlacement.ratioWidth -= (deltaRight / convertWidth0).abs();
         } else if (deltaRight < 0) {
-          _listPlacement[index].ratioWidth +=
-              (deltaRight / convertWidth0).abs();
+          newPlacement.ratioWidth += (deltaRight / convertWidth0).abs();
         }
+
         // padding bottom
         if (deltaBottom > 0) {
-          _listPlacement[index].ratioHeight -=
-              (deltaBottom / convertHeight0).abs();
+          newPlacement.ratioHeight -= (deltaBottom / convertHeight0).abs();
         } else if (deltaBottom < 0) {
-          _listPlacement[index].ratioHeight +=
-              (deltaBottom / convertHeight0).abs();
+          newPlacement.ratioHeight += (deltaBottom / convertHeight0).abs();
         }
+
         // update list placements
-        _listPlacement[index] = _listPlacement[index].copyWith(
+        newPlacement = newPlacement.copyWith(
             placementAttribute: newData.placementAttribute!.copyWith(
-                horizontal: newData.placementAttribute!.horizontal,
-                vertical: newData.placementAttribute!.vertical,
                 left: newData.placementAttribute!.left,
                 right: newData.placementAttribute!.right,
                 top: newData.placementAttribute!.top,
                 bottom: newData.placementAttribute!.bottom,
                 unit: newData.placementAttribute!.unit));
+        // gan lai data
+        _listPlacement[index] = newPlacement;
+        _selectedPlacement = _saveDataSelectedPlacement = newPlacement;
       }
     }
     // _disablePlacement();
@@ -606,8 +601,7 @@ class _LayoutBodyState extends State<LayoutBody> {
                 // parse rectangle to placement
                 List<Placement> newListPlacement = [];
                 for (int i = 0; i < rectangles.length; i++) {
-                  newListPlacement.add(
-                    _listPlacement[i].copyWith(
+                  newListPlacement.add(_listPlacement[i].copyWith(
                     ratioOffset: [
                       rectangles[i].x / ratios[0],
                       rectangles[i].y / ratios[1]
@@ -617,13 +611,22 @@ class _LayoutBodyState extends State<LayoutBody> {
                   ));
                 }
                 _listPlacement = newListPlacement;
-
                 if (focusRectangle != null) {
                   final indexSelectedRect = rectangles.indexOf(focusRectangle);
                   if (indexSelectedRect != -1) {
                     _selectedPlacement = _listPlacement[indexSelectedRect];
+                    _saveDataSelectedPlacement = _selectedPlacement;
                     _listPlacement.removeAt(indexSelectedRect);
                     _listPlacement.add(_selectedPlacement!);
+                  } else {
+                    final indexSelectedRect1 = rectangles
+                        .map((e) => e.id)
+                        .toList()
+                        .indexOf(focusRectangle.id);
+                    if (indexSelectedRect1 != -1) {
+                      _saveDataSelectedPlacement =
+                          _listPlacement[indexSelectedRect1];
+                    }
                   }
                 }
                 setState(() {});
@@ -653,7 +656,7 @@ class _LayoutBodyState extends State<LayoutBody> {
                           _matrix4Notifiers
                               .add(ValueNotifier(Matrix4.identity()));
                           final newPlacement = _createNewPlacement();
-                          _listPlacement.add(newPlacement); 
+                          _listPlacement.add(newPlacement);
                           _listGlobalKey.add(GlobalKey());
                           _selectedPlacement = _listPlacement.last;
                         });
@@ -680,6 +683,7 @@ class _LayoutBodyState extends State<LayoutBody> {
                                 const Color.fromRGBO(22, 115, 255, 0.08),
                             padding: EdgeInsets.zero,
                             onPressed: () {
+                              _selectedPlacement = _saveDataSelectedPlacement;
                               final convertHeight = convertUnit(
                                   _project.paper!.unit!,
                                   _selectedPlacement!.placementAttribute!.unit!,
@@ -690,38 +694,45 @@ class _LayoutBodyState extends State<LayoutBody> {
                                   _project.paper!.width);
                               // horizontal, vertical, top, left, right, bottom
                               // width and height is 0 and 1 to comparable with EditorPaddingSpacing (2 controller)
-                              List<String> paddingAttributeList = [];
-                              paddingAttributeList.add(((_selectedPlacement!
-                                          .placementAttribute?.horizontal) ??
-                                      0.0)
-                                  .toString());
-                              paddingAttributeList.add(((_selectedPlacement!
-                                          .placementAttribute?.vertical) ??
-                                      0.0)
-                                  .toString());
-                              //top
-                              paddingAttributeList.add(
+                              List<String> oldEditingPlacementList = [];
+                              final valueWidth =
+                                  ((_selectedPlacement!.ratioWidth *
+                                      convertWidth));
+                              final valueHeight =
+                                  (_selectedPlacement!.ratioHeight *
+                                      convertHeight);
+                              final valueTop =
                                   (_selectedPlacement!.ratioOffset[1] *
-                                          convertHeight)
-                                      .toStringAsFixed(2));
-                              //left
-                              paddingAttributeList.add(
+                                      convertHeight);
+                              final valueLeft =
                                   (_selectedPlacement!.ratioOffset[0] *
-                                          convertWidth)
-                                      .toStringAsFixed(2));
+                                      convertWidth);
+                              final vallueRight = ((1 -
+                                      (_selectedPlacement!.ratioOffset[0] +
+                                          _selectedPlacement!.ratioWidth)) *
+                                  convertWidth);
+                              final valueBottom = ((1 -
+                                      (_selectedPlacement!.ratioOffset[1] +
+                                          _selectedPlacement!.ratioHeight)) *
+                                  convertHeight);
+                              // Width
+                              oldEditingPlacementList
+                                  .add(valueWidth.toStringAsFixed(2));
+                              // Height
+                              oldEditingPlacementList
+                                  .add(valueHeight.toStringAsFixed(2));
+                              //top
+                              oldEditingPlacementList
+                                  .add(valueTop.toStringAsFixed(2));
+                              //left
+                              oldEditingPlacementList
+                                  .add(valueLeft.toStringAsFixed(2));
                               //right
-                              paddingAttributeList.add(((1 -
-                                          (_selectedPlacement!.ratioOffset[0] +
-                                              _selectedPlacement!.ratioWidth)) *
-                                      convertWidth)
-                                  .toStringAsFixed(2));
+                              oldEditingPlacementList
+                                  .add(vallueRight.toStringAsFixed(2));
                               // bottom
-                              paddingAttributeList.add(((1 -
-                                          (_selectedPlacement!.ratioOffset[1] +
-                                              _selectedPlacement!
-                                                  .ratioHeight)) *
-                                      convertHeight)
-                                  .toStringAsFixed(2));
+                              oldEditingPlacementList
+                                  .add(valueBottom.toStringAsFixed(2));
                               pushCustomVerticalMaterialPageRoute(
                                   context,
                                   EditorPaddingSpacing(
@@ -729,12 +740,12 @@ class _LayoutBodyState extends State<LayoutBody> {
                                     unit: (_selectedPlacement!
                                         .placementAttribute!.unit!),
                                     title: TITLE_EDIT_PLACEMENT,
-                                    inputValues: paddingAttributeList,
+                                    inputValues: oldEditingPlacementList,
                                     onChanged: (index, value) {},
+                                    paperAttribute: _project.paper,
                                     onDone: (newData) {
-                                      _onDone(newData, paddingAttributeList,
+                                      _onDone(newData, oldEditingPlacementList,
                                           convertWidth, convertHeight);
-                                      _disablePlacement();
                                     },
                                   ));
                             },
@@ -759,8 +770,10 @@ class _LayoutBodyState extends State<LayoutBody> {
                                 const Color.fromRGBO(255, 63, 51, 0.1),
                             padding: EdgeInsets.zero,
                             onPressed: () {
-                              final index =
-                                  _listPlacement.map((e) => e.id).toList().indexOf(_selectedPlacement!.id);
+                              final index = _listPlacement
+                                  .map((e) => e.id)
+                                  .toList()
+                                  .indexOf(_selectedPlacement!.id);
                               if (index != -1) {
                                 _listPlacement.removeAt(index);
                                 _matrix4Notifiers.removeAt(index);

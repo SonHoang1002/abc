@@ -66,18 +66,13 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
   late Offset _deltaPositionBoard;
   late Offset _gestureBoardOffset;
 
+  final double vung_cham = 50;
+
   @override
   void initState() {
     super.initState();
     _deltaPositionBoard = Offset.zero;
     _gestureBoardOffset = Offset.zero;
-    // _listRectangle1 = [
-    //   1,
-    //   2,
-    // ].map((e) {
-    //   return Rectangle1(height: 150, width: 150, id: e, x: 50, y: 50);
-    // }).toList();
-    // _listGlobalKey = _listRectangle1.map((e) => GlobalKey()).toList();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       Offset offsetRectangleBoard =
           (_childContainerKey.currentContext?.findRenderObject() as RenderBox)
@@ -256,23 +251,25 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
     if (_selectedRectangle1 != null) {
       int index = _getIndexSelectedRectangle(_selectedRectangle1!);
       List<Offset> offsetDots = _getGlobalDotPosition(index);
-      if (containOffset(startOffset, offsetDots[0] + const Offset(-50, -50),
-          offsetDots[7] + const Offset(50, 50))) {
+      if (containOffset(
+          startOffset,
+          offsetDots[0] + Offset(-vung_cham, -vung_cham),
+          offsetDots[7] + Offset(vung_cham, vung_cham))) {
         isInside = true;
         if (checkEdge == true) {
           _kiem_tra_xem_dang_o_canh_nao = [];
           List<Offset> offsetEdges = _getGlobalEdgePosition(index);
           List _kiem_tra_xem_dang_o_canh_nao_1 = [];
-          if ((offsetEdges[0].dy - startOffset.dy).abs() < 50) {
+          if ((offsetEdges[0].dy - startOffset.dy).abs() < vung_cham) {
             _kiem_tra_xem_dang_o_canh_nao_1.add("top");
           }
-          if ((offsetEdges[1].dy - startOffset.dy).abs() < 50) {
+          if ((offsetEdges[1].dy - startOffset.dy).abs() < vung_cham) {
             _kiem_tra_xem_dang_o_canh_nao_1.add("bottom");
           }
-          if ((offsetEdges[2].dx - startOffset.dx).abs() < 50) {
+          if ((offsetEdges[2].dx - startOffset.dx).abs() < vung_cham) {
             _kiem_tra_xem_dang_o_canh_nao_1.add("left");
           }
-          if ((offsetEdges[3].dx - startOffset.dx).abs() < 50) {
+          if ((offsetEdges[3].dx - startOffset.dx).abs() < vung_cham) {
             _kiem_tra_xem_dang_o_canh_nao_1.add("right");
           }
           if (_kiem_tra_xem_dang_o_canh_nao_1.length <= 2) {
@@ -284,7 +281,9 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
     return isInside;
   }
 
-  void _updatePlacement() {
+  void _updatePlacement({
+    Rectangle1? selectedRectangle1,
+  }) {
     widget.onUpdatePlacement(
         _listRectangle1, _selectedRectangle1, [_maxWidth, _maxHeight]);
   }
@@ -313,7 +312,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
       if (_kiem_tra_xem_dang_o_canh_nao.isNotEmpty) {
         if (_kiem_tra_xem_dang_o_canh_nao.contains("top")) {
           y += deltaGlobalPosition.dy;
-          y = min(y1 - 50, max(0, y));
+          y = min(y1 - MIN_PLACEMENT_SIZE, max(0, y));
           double globalY = renderBoxStack.localToGlobal(Offset(0, y)).dy;
           int? index = snapPosition(globalY, _listVerticalPosition);
           if (index != null) {
@@ -327,7 +326,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
         }
         if (_kiem_tra_xem_dang_o_canh_nao.contains("left")) {
           x += deltaGlobalPosition.dx;
-          x = min(x1 - 50, max(0, x));
+          x = min(x1 - MIN_PLACEMENT_SIZE, max(0, x));
           double globalX = renderBoxStack.localToGlobal(Offset(x, 0)).dx;
           int? index = snapPosition(globalX, _listHorizontalPosition);
           if (index != null) {
@@ -341,7 +340,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
         }
         if (_kiem_tra_xem_dang_o_canh_nao.contains("right")) {
           x1 += deltaGlobalPosition.dx;
-          x1 = min(_maxWidth, max(x + 50, x1));
+          x1 = min(_maxWidth, max(x + MIN_PLACEMENT_SIZE, x1));
           double globalX = renderBoxStack.localToGlobal(Offset(x1, 0)).dx;
           int? index = snapPosition(
             globalX,
@@ -358,7 +357,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
         }
         if (_kiem_tra_xem_dang_o_canh_nao.contains("bottom")) {
           y1 += deltaGlobalPosition.dy;
-          y1 = min(_maxHeight, max(y + 50, y1));
+          y1 = min(_maxHeight, max(y + MIN_PLACEMENT_SIZE, y1));
           double globalY = renderBoxStack.localToGlobal(Offset(0, y1)).dy;
           int? index = snapPosition(
             globalY,
@@ -373,26 +372,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                 .dy;
           }
         }
-
-        // y = min(y1 - 50, max(0, y));
-        // x = min(x1 - 50, max(0, x));
-        // x1 = min(_maxWidth, max(x + 50, x1));
-        // y1 = min(_maxHeight, max(y + 50, y1));
       } else {
-        //  var deltaX = deltaGlobalPosition.dx;
-        //  var deltaY = deltaGlobalPosition.dy;
-        //  // khong vuot qua maxwidth, va tut qua muc 0
-        //  x += deltaX;
-        //  y += deltaY;
-        //  x1 +=deltaX;
-        //  y1 += deltaY;
-
-        //  x = max(0,min(x1,_maxWidth));
-        // //  x !<0 && a!>_maxWidth
-        //  y = max(0,min(y1, _maxHeight));
-        //  x1 = min(_maxWidth,x1);
-        //  y1 = min(_maxHeight,y1);
-
         var dx = deltaGlobalPosition.dx;
         dx = max(-x, min(dx, _maxWidth - x1));
         var dy = deltaGlobalPosition.dy;
@@ -401,7 +381,6 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
         y += dy;
         x1 += dx;
         y1 += dy;
-
         // snap
         double globalX = renderBoxStack.localToGlobal(Offset(x, 0)).dx;
         double globalY = renderBoxStack.localToGlobal(Offset(0, y)).dy;
@@ -459,9 +438,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
           height: y1 - y);
       //gan
       _listRectangle1[index] = newRectangle1;
-      setState(() {});
-      widget.rerenderFunction();
-      _updatePlacement();
+      _updatePlacement(selectedRectangle1: newRectangle1);
     }
   }
 
@@ -500,7 +477,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
     _startOffset = details.globalPosition;
     setState(() {});
     widget.rerenderFunction();
-    _updatePlacement();
+    _updatePlacement(selectedRectangle1: _selectedRectangle1);
   }
 
   Widget _buildCustomArea() {

@@ -84,11 +84,9 @@ class Placement {
 }
 
 class PlacementAttribute {
-  double horizontal, vertical, top, left, right, bottom;
+  double   top, left, right, bottom;
   Unit? unit;
-  PlacementAttribute({
-    this.horizontal = 0.0,
-    this.vertical = 0.0,
+  PlacementAttribute({ 
     this.top = 0.0,
     this.left = 0.0,
     this.right = 0.0,
@@ -97,17 +95,13 @@ class PlacementAttribute {
   });
 
   PlacementAttribute copyWith({
-    double? horizontal,
-    double? vertical,
     double? top,
     double? left,
     double? right,
     double? bottom,
     Unit? unit,
   }) {
-    return PlacementAttribute(
-      horizontal: horizontal ?? this.horizontal,
-      vertical: vertical ?? this.vertical,
+    return PlacementAttribute( 
       top: top ?? this.top,
       left: left ?? this.left,
       right: right ?? this.right,
@@ -117,9 +111,7 @@ class PlacementAttribute {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'horizontal': horizontal,
-      'vertical': vertical,
+    return { 
       'top': top,
       'left': left,
       'right': right,
@@ -129,9 +121,7 @@ class PlacementAttribute {
   }
 
   factory PlacementAttribute.fromJson(Map<String, dynamic> json) {
-    return PlacementAttribute(
-      horizontal: json['horizontal'],
-      vertical: json['vertical'],
+    return PlacementAttribute( 
       top: json['top'],
       left: json['left'],
       right: json['right'],
@@ -141,6 +131,6 @@ class PlacementAttribute {
   }
 
   String getInfor() {
-    return "PlacementAttribute horizontal: ${horizontal}, PlacementAttribute vertical: ${vertical}, PlacementAttribute top: ${top}, PlacementAttribute left: ${left}, PlacementAttribute right: ${right}, PlacementAttribute bottom: ${bottom}, PlacementAttribute unit: ${unit?.getInfor()}";
+    return " PlacementAttribute top: ${top}, PlacementAttribute left: ${left}, PlacementAttribute right: ${right}, PlacementAttribute bottom: ${bottom}, PlacementAttribute unit: ${unit?.getInfor()}";
   }
 }

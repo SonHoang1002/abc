@@ -186,7 +186,7 @@ Widget buildCupertinoInput(
       suffix: Container(
         alignment: Alignment.centerLeft,
         constraints: const BoxConstraints(minWidth: 50),
-        margin: const EdgeInsets.only(right: 30),
+        margin: const EdgeInsets.only(right: 20),
         child: Text(suffixValue,
             style: const TextStyle(
                 color: Color.fromRGBO(10, 132, 255, 1),

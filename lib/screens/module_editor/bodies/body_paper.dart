@@ -210,8 +210,6 @@ class _PaperBodyState extends State<PaperBody> {
                                 duration: const Duration(milliseconds: 400),
                                 constraints: const BoxConstraints(
                                     maxHeight: 150, maxWidth: 150),
-                                // height: _renderPreviewHeight(),
-                                // width: _renderPreviewWidth(),
                                 height: _getWidthAndHeight(150)[1],
                                 width: _getWidthAndHeight(150)[0],
                                 decoration: BoxDecoration(
@@ -375,7 +373,10 @@ class _PaperBodyState extends State<PaperBody> {
     return _paperConfig['content'].title != "Custom"
         ? Flexible(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 5
+              ),
               height: 70,
               width: 200 / 390 * MediaQuery.sizeOf(context).width,
               decoration: BoxDecoration(
@@ -387,12 +388,16 @@ class _PaperBodyState extends State<PaperBody> {
                   flex: 4,
                   child: Container(
                     padding: const EdgeInsets.only(left: 5),
-                    child: WTextContent(
-                      value: "Orientation",
-                      textSize: 14,
-                      textLineHeight: 16.71,
-                      textColor: Theme.of(context).textTheme.bodyMedium!.color,
-                      textFontWeight: FontWeight.w600,
+                    child: FittedBox(
+                      fit: BoxFit.fitWidth,
+                      child: WTextContent(
+                        value: "Orientation",
+                        textSize: 14,
+                        textLineHeight: 16.71,
+                        textColor:
+                            Theme.of(context).textTheme.bodyMedium!.color,
+                        textFontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),

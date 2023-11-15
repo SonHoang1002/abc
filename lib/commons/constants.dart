@@ -80,8 +80,6 @@ SpacingAttribute SPACING_OPTIONS = SpacingAttribute(
     horizontalSpacing: 1.0, verticalSpacing: 1.0, unit: CENTIMET);
 
 final PLACEMENT_ATTRIBUTE = PlacementAttribute(
-    horizontal: 0.0,
-    vertical: 0.0,
     top: 0.0,
     left: 0.0,
     right: 0.0,
@@ -215,3 +213,5 @@ const String SHARE_APP_LINK =
     "https://play.google.com/store/apps/details?id=com.tapuniverse.phototopdf&pli=1";
 
 const double DOT_SIZE = 11;
+
+const double MIN_PLACEMENT_SIZE = 50;

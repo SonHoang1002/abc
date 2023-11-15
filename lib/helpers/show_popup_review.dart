@@ -7,7 +7,7 @@ class ShowPopupReview {
 
   static Future<void> showPopupReview() async {
     try {
-       _channel.invokeMethod(_method);
+      _channel.invokeMethod(_method);
     } on PlatformException catch (e) {
       print("Error: ${e.message}");
     }

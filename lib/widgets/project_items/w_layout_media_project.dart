@@ -196,60 +196,26 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
   }
 
   double getRealHeight(int extractIndex, double itemHeight) {
-    final result = itemHeight *
-        (widget.project.placements![extractIndex].ratioHeight -
-            convertUnit(
-                    widget.project.placements![extractIndex].placementAttribute!
-                        .unit!,
-                    widget.project.paper!.unit!,
-                    ((widget.project.placements![extractIndex]
-                            .placementAttribute?.vertical) ??
-                        0)) /
-                widget.project.paper!.height);
+    final result =
+        itemHeight * widget.project.placements![extractIndex].ratioHeight;
     return result;
   }
 
   double getRealWidth(int extractIndex, double itemWidth) {
-    final result = itemWidth *
-        (widget.project.placements![extractIndex].ratioWidth -
-            convertUnit(
-                    widget.project.placements![extractIndex].placementAttribute!
-                        .unit!,
-                    widget.project.paper!.unit!,
-                    ((widget.project.placements![extractIndex]
-                            .placementAttribute?.horizontal) ??
-                        0)) /
-                widget.project.paper!.width);
+    final result =
+        itemWidth * widget.project.placements![extractIndex].ratioWidth;
     return result;
   }
 
   double getPositionWithTop(int extractIndex, double itemHeight) {
-    final result = (widget.project.placements![extractIndex].ratioOffset[1] +
-            convertUnit(
-                    widget.project.placements![extractIndex].placementAttribute!
-                        .unit!,
-                    widget.project.paper!.unit!,
-                    ((widget.project.placements![extractIndex]
-                                .placementAttribute?.vertical) ??
-                            0) /
-                        2) /
-                widget.project.paper!.height) *
-        itemHeight;
+    final result =
+        widget.project.placements![extractIndex].ratioOffset[1] * itemHeight;
     return result;
   }
 
   double getPositionWithLeft(int extractIndex, double itemWidth) {
-    var result = (widget.project.placements![extractIndex].ratioOffset[0] +
-            convertUnit(
-                    widget.project.placements![extractIndex].placementAttribute!
-                        .unit!,
-                    widget.project.paper!.unit!,
-                    ((widget.project.placements![extractIndex]
-                                .placementAttribute?.horizontal) ??
-                            0) /
-                        2) /
-                widget.project.paper!.width) *
-        itemWidth;
+    var result =
+        widget.project.placements![extractIndex].ratioOffset[0] * itemWidth;
     return result;
   }
 }

@@ -51,12 +51,7 @@ class BackgroundBody extends StatelessWidget {
               displayThumbColor: false,
               enableAlpha: false,
               paletteType: PaletteType.hsvWithHue,
-              labelTypes: const [
-                ColorLabelType.rgb,
-                ColorLabelType.hsv,
-                ColorLabelType.hsl,
-                ColorLabelType.hsl,
-              ],
+              labelTypes: ColorLabelType.values,
               portraitOnly: false,
               colorPickerWidth: size.width * 0.8,
               pickerAreaHeightPercent: 1.0,

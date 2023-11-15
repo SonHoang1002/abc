@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +26,7 @@ class EditorPaddingSpacing extends StatefulWidget {
   final Placement? placement;
   final SpacingAttribute? spacingAttribute;
   final PaddingAttribute? paddingAttribute;
+  final PaperAttribute? paperAttribute;
   final Unit unit;
   final String title;
   final List<String> inputValues;
@@ -41,7 +43,8 @@ class EditorPaddingSpacing extends StatefulWidget {
       this.reRenderFunction,
       this.spacingAttribute,
       this.paddingAttribute,
-      this.placement});
+      this.placement,
+      this.paperAttribute});
 
   @override
   State<EditorPaddingSpacing> createState() => _EditorPaddingSpacingState();
@@ -63,7 +66,9 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
       if (double.parse(element) < 0) {
         controllers.add(TextEditingController(text: "0.0"));
       } else {
-        controllers.add(TextEditingController(text: element));
+        // check case -0.00
+        controllers.add(TextEditingController(
+            text: double.parse(element).abs().toString()));
       }
     }
     if ([TITLE_EDIT_PLACEMENT].contains(widget.title)) {
@@ -99,27 +104,50 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
 
   void _onDone(Unit newUnit) {
     if (_placement != null) {
+      double newHeight, newWidth, newRight, newBottom, newTop, newLeft;
+      final minSize = convertUnit(POINT, newUnit, MIN_PLACEMENT_SIZE);
+      newWidth = double.parse(controllers[0].text.trim());
+      newHeight = double.parse(controllers[1].text.trim());
+
+      newTop = parseStringToDouble(controllers[2].text.trim());
+      newLeft = parseStringToDouble(controllers[3].text.trim());
+      newRight = parseStringToDouble(controllers[4].text.trim());
+      newBottom = parseStringToDouble(controllers[5].text.trim());
+
+      // truong hop height hoac width = 0
+      if (controllers[1].text.trim().isEmpty ||
+          parseStringToDouble(controllers[1].text.trim()) <= 0) {
+        newHeight = minSize;
+        newBottom = widget.paperAttribute!.height -
+            newHeight -
+            (double.parse(controllers[2].text.trim()));
+      }
+      if (controllers[0].text.trim().isEmpty ||
+          parseStringToDouble(controllers[0].text.trim()) <= 0) {
+        newWidth = minSize;
+        newRight = widget.paperAttribute!.width -
+            newWidth -
+            (double.parse(controllers[3].text.trim()));
+      }
+
+      newTop = max(
+          0, min(newTop, widget.paperAttribute!.height - (newBottom + minSize)));
+      newLeft = max(
+          0, min(newLeft, widget.paperAttribute!.width - (newRight+ minSize)));
+      newBottom = max(0,
+          min(newBottom, widget.paperAttribute!.height - (newTop + minSize)));
+      newRight = max(
+          0, min(newRight, widget.paperAttribute!.width - (newLeft + minSize)));
+
       _placement = _placement?.copyWith(
+          ratioHeight: newHeight / widget.paperAttribute!.height,
+          ratioWidth: newWidth / widget.paperAttribute!.width,
           placementAttribute: PlacementAttribute(
-              horizontal: parseStringToDouble(controllers[0].text.trim()),
-              vertical: parseStringToDouble(
-                controllers[1].text.trim(),
-              ),
-              top: parseStringToDouble(
-                controllers[2].text.trim(),
-              ),
-              left: parseStringToDouble(
-                controllers[3].text.trim(),
-              ),
-              right: parseStringToDouble(
-                controllers[4].text.trim(),
-              ),
-              bottom: parseStringToDouble(
-                controllers[5].text.trim(),
-              ),
+              top: parseStringToDouble(newTop.toStringAsFixed(2)),
+              left: parseStringToDouble(newLeft.toStringAsFixed(2)),
+              right: parseStringToDouble(newRight.toStringAsFixed(2)),
+              bottom: parseStringToDouble(newBottom.toStringAsFixed(2)),
               unit: newUnit));
-      print(
-          '_placement!.placementAttribute!.bottom ${_placement!.placementAttribute!.bottom}');
       widget.onDone(_placement);
     } else if (_paddingAttribute != null) {
       _paddingAttribute = _paddingAttribute?.copyWith(
@@ -169,7 +197,8 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
             )),
             [TITLE_EDIT_PLACEMENT].contains(widget.title)
                 ? _buildEditPlacementBody()
-                : _buildPaddingSpacingBody(title: widget.title, height: 140),
+                : _buildPaddingSpacingBody(LABELS_PADDING_SPACING,
+                    title: widget.title, height: 140),
             Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -237,6 +266,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                // top
                 SizedBox(
                   width: _size.width * 0.27,
                   child: _buildInput(
@@ -253,6 +283,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                       },
                       autoFocus: true),
                 ),
+                // left and right
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15),
                   child: Row(
@@ -304,6 +335,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                     ],
                   ),
                 ),
+                // bottom
                 SizedBox(
                   width: _size.width * 0.27,
                   child: _buildInput(
@@ -322,7 +354,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                 ),
               ],
             ),
-            _buildPaddingSpacingBody(
+            _buildPaddingSpacingBody(LABELS_EDIT_PLACEMENT.sublist(0, 2),
                 padding: EdgeInsets.zero, haveBackgroundColor: false)
           ],
         ),
@@ -330,7 +362,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
     );
   }
 
-  Widget _buildPaddingSpacingBody(
+  Widget _buildPaddingSpacingBody(List<String> subTitles,
       {double? height,
       EdgeInsets? padding = const EdgeInsets.all(10),
       String? title,
@@ -343,7 +375,6 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
         width: _size.width * 0.9,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
-            // color:colorRed
             color: haveBackgroundColor!
                 ? Theme.of(context).dialogBackgroundColor
                 : null),
@@ -368,6 +399,21 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                           controllers[0],
                           (value) {
                             widget.onChanged(0, value);
+                            if (value.isNotEmpty &&
+                                [TITLE_EDIT_PLACEMENT].contains(widget.title) &&
+                                widget.paperAttribute != null) {
+                              double bindingValue = widget
+                                      .paperAttribute!.width -
+                                  double.parse(value) -
+                                  (double.parse(controllers[3].text.trim()));
+                              if (bindingValue >= 0) {
+                                widget.onChanged(4, bindingValue.toString());
+                                controllers[4].text = bindingValue.toString();
+                              } else {
+                                widget.onChanged(4, "0.0");
+                                controllers[4].text = '0.0';
+                              }
+                            }
                           },
                           _selectedLabel == _labelInputs[0],
                           _unit.title,
@@ -386,7 +432,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                       height: 7,
                     ),
                     WTextContent(
-                      value: "Horizontal",
+                      value: subTitles[0],
                       textSize: 12,
                       textFontWeight: FontWeight.w600,
                       textLineHeight: 14.32,
@@ -407,6 +453,21 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                           controllers[1],
                           (value) {
                             widget.onChanged(1, value);
+                            if (value.isNotEmpty &&
+                                [TITLE_EDIT_PLACEMENT].contains(widget.title) &&
+                                widget.paperAttribute != null) {
+                              double bindingValue = widget
+                                      .paperAttribute!.height -
+                                  double.parse(value) -
+                                  (double.parse(controllers[2].text.trim()));
+                              if (bindingValue >= 0) {
+                                widget.onChanged(5, bindingValue.toString());
+                                controllers[5].text = bindingValue.toString();
+                              } else {
+                                widget.onChanged(5, "0.0");
+                                controllers[5].text = '0.0';
+                              }
+                            }
                           },
                           _selectedLabel == _labelInputs[1],
                           _unit.title,
@@ -422,7 +483,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                       height: 7,
                     ),
                     WTextContent(
-                      value: "Vertical",
+                      value: subTitles[1],
                       textSize: 12,
                       textFontWeight: FontWeight.w600,
                       textLineHeight: 14.32,

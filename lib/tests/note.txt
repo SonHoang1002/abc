@@ -1,3 +1,37 @@
+
+
+
+// done
+UI mượt không bị lag *
+test với input phức tạp *
+các thao tác không bị lỗi
+phóng to để kiểm tra chất lượng ảnh so với ảnh gốc
+sử dụng app preview trên mac để kiểm tra kích thước
+các nút hoạt động đúng chức năng
+check kết quả file đầu ra đúng định dạng
+check push id and update rating status
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 let view
 let gesture
 

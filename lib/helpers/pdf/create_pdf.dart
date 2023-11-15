@@ -290,56 +290,22 @@ pw.Widget _buildImageWidget(Project project, dynamic imageData,
 }
 
 double _getRealHeight(int extractIndex, Project project, double pdfHeight) {
-  final realHeight = pdfHeight *
-      (project.placements![extractIndex].ratioHeight -
-          convertUnit(
-                  project.placements![extractIndex].placementAttribute!.unit!,
-                  project.paper!.unit!,
-                  ((project.placements![extractIndex].placementAttribute
-                          ?.vertical) ??
-                      0)) /
-              project.paper!.height);
+  final realHeight = pdfHeight * project.placements![extractIndex].ratioHeight;
   return realHeight;
 }
 
 double _getRealWidth(int extractIndex, Project project, double pdfWidth) {
-  final realWidth = pdfWidth *
-      (project.placements![extractIndex].ratioWidth -
-          convertUnit(
-                  project.placements![extractIndex].placementAttribute!.unit!,
-                  project.paper!.unit!,
-                  ((project.placements![extractIndex].placementAttribute
-                          ?.horizontal) ??
-                      0)) /
-              project.paper!.width);
+  final realWidth = pdfWidth * project.placements![extractIndex].ratioWidth;
   return realWidth;
 }
 
 double _getPositionWithTop(
     int extractIndex, Project project, double pdfHeight) {
-  final result = ((project.placements![extractIndex].ratioOffset[1] +
-          convertUnit(
-                  project.placements![extractIndex].placementAttribute!.unit!,
-                  project.paper!.unit!,
-                  ((project.placements![extractIndex].placementAttribute
-                              ?.vertical) ??
-                          0) /
-                      2) /
-              project.paper!.height)) *
-      pdfHeight;
+  final result = (project.placements![extractIndex].ratioOffset[1]) * pdfHeight;
   return result;
 }
 
 double _getPositionWithLeft(
     int extractIndex, Project project, double pdfWidth) {
-  return ((project.placements![extractIndex].ratioOffset[0] +
-          convertUnit(
-                  project.placements![extractIndex].placementAttribute!.unit!,
-                  project.paper!.unit!,
-                  ((project.placements![extractIndex].placementAttribute
-                              ?.horizontal) ??
-                          0) /
-                      2) /
-              project.paper!.width)) *
-      pdfWidth;
+  return (project.placements![extractIndex].ratioOffset[0]) * pdfWidth;
 }
