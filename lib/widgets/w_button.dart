@@ -101,6 +101,7 @@ class WButtonFilled extends StatelessWidget {
   final double? textSize;
   final double? textLineHeight;
   final double? borderRadius;
+  final bool? isVerticalAlignment;
 
   /// [mediaValue] can be IconData, assets String ( include icon or image )
   final dynamic mediaValue;
@@ -128,7 +129,8 @@ class WButtonFilled extends StatelessWidget {
       this.padding = const EdgeInsets.only(bottom: 10),
       this.elevation,
       this.shadowColor,
-      this.boxShadow});
+      this.boxShadow,
+      this.isVerticalAlignment = true});
 
   @override
   Widget build(BuildContext context) {
@@ -151,36 +153,74 @@ class WButtonFilled extends StatelessWidget {
               height: height, //60
               child: Center(
                 child: mediaValue != null
-                    ? Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(top: 10),
-                            child: mediaValue is IconData
-                                ? Icon(
-                                    mediaValue,
-                                    color: mediaColor,
-                                    size: mediaSize,
-                                  )
-                                : Image.asset(
-                                    mediaValue,
-                                    color: mediaColor,
-                                    height: mediaSize,
-                                    width: mediaSize,
-                                  ),
-                          ),
-                          WSpacer(
-                            width: 10,
-                          ),
-                          WTextContent(
-                            value: message,
-                            textSize: textSize,
-                            textLineHeight: textLineHeight,
-                            textColor: textColor,
+                    ? isVerticalAlignment!
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Container(
+                                // padding: const EdgeInsets.only(top: 10),
+                                child: mediaValue is IconData
+                                    ? Icon(
+                                        mediaValue,
+                                        color: mediaColor,
+                                        size: mediaSize,
+                                      )
+                                    : Image.asset(
+                                        mediaValue,
+                                        color: mediaColor,
+                                        height: mediaSize,
+                                        width: mediaSize,
+                                      ),
+                              ),
+                              WSpacer(height: 5,),
+                              Text(
+                                message,
+                                style: TextStyle(
+                                  fontSize: textSize,
+                                  // height: textLineHeight,
+                                  fontWeight: FontWeight.w700,
+                                  color: textColor,
+                                ),
+                              )
+                              // WTextContent(
+                              //   value: message,
+                              //   textSize: textSize,
+                              //   textLineHeight: textLineHeight,
+                              //   textColor: textColor,
+                              // )
+                            ],
                           )
-                        ],
-                      )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(top: 10),
+                                child: mediaValue is IconData
+                                    ? Icon(
+                                        mediaValue,
+                                        color: mediaColor,
+                                        size: mediaSize,
+                                      )
+                                    : Image.asset(
+                                        mediaValue,
+                                        color: mediaColor,
+                                        height: mediaSize,
+                                        width: mediaSize,
+                                      ),
+                              ),
+                              WSpacer(
+                                width: 10,
+                              ),
+                              WTextContent(
+                                value: message,
+                                textSize: textSize,
+                                textLineHeight: textLineHeight,
+                                textColor: textColor,
+                              )
+                            ],
+                          )
                     : WTextContent(
                         value: message,
                         textSize: textSize,
@@ -190,20 +230,6 @@ class WButtonFilled extends StatelessWidget {
                       ),
               ),
             )),
-        // Positioned.fill(
-        //   child: Container(
-        //       decoration: BoxDecoration(
-        //         color: colorRed,
-        //         boxShadow: boxShadow,
-        //       ),
-        //       child: WTextContent(
-        //         value: message,
-        //         textSize: textSize,
-        //         textLineHeight: textLineHeight,
-        //         textColor: textColor,
-        //         textAlign: TextAlign.center,
-        //       )),
-        // )
       ],
     );
   }

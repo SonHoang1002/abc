@@ -1,6 +1,4 @@
-import 'dart:io';
-import 'package:android_id/android_id.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:io'; 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -34,7 +32,6 @@ void main() async {
   sendFirebaseAndroidId();
 }
 
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -58,7 +55,6 @@ Future<void> redoSystemStyle(bool darkMode) async {
 
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      // Not relevant to this issue
       statusBarBrightness: darkMode ? Brightness.dark : Brightness.light,
       statusBarIconBrightness: darkMode ? Brightness.light : Brightness.dark,
       systemNavigationBarColor: edgeToEdge

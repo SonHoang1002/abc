@@ -1,3 +1,10 @@
+import 'dart:ffi';
+import 'dart:io';
+import 'dart:ui';
+import 'package:cunning_document_scanner/cunning_document_scanner.dart';
+import 'package:flutter/services.dart';
+import 'package:photo_to_pdf/helpers/convert.dart';
+import 'package:photo_to_pdf/helpers/pdf/save_pdf.dart';
 import 'package:photo_to_pdf/services/isar_project_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
@@ -472,40 +479,101 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                     ),
                     // buttons
                     Container(
-                      height: 200,
-                      padding: const EdgeInsets.only(top: 10),
+                      height: 250,
+                      padding: const EdgeInsets.only(top: 15),
                       color: Theme.of(context).scaffoldBackgroundColor,
                       child: Column(
                         children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          Stack(
                             children: [
-                              WButtonFilled(
-                                message: "Import Photos",
-                                height: 40,
-                                width: MediaQuery.sizeOf(context).width * 0.45,
-                                mediaSize: 20,
-                                textColor: colorRed,
-                                mediaColor: colorRed,
-                                mediaValue: "${pathPrefixIcon}icon_photos.png",
-                                backgroundColor:
-                                    const Color.fromRGBO(255, 63, 51, 0.1),
-                                padding:
-                                    const EdgeInsets.fromLTRB(10, 10, 10, 20),
-                                onPressed: () async {
-                                  final result = await pickImage(
-                                      ImageSource.gallery, true);
-                                  if (result.isNotEmpty) {
-                                    _currentProject = _currentProject.copyWith(
-                                        listMedia: [
+                              //fake shadow
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  _buildFakeShadow(
+                                      const Color.fromRGBO(85, 238, 32, 0.05)),
+                                  _buildFakeShadow(
+                                    colorLightBlue.withOpacity(0.03),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  WButtonFilled(
+                                    message: "Photos",
+                                    height: 76,
+                                    padding: const EdgeInsets.only(top: 2),
+                                    width:
+                                        MediaQuery.sizeOf(context).width * 0.45,
+                                    mediaSize: 25,
+                                    textColor:
+                                        const Color.fromRGBO(68, 178, 30, 1),
+                                    mediaColor:
+                                        const Color.fromRGBO(68, 178, 30, 1),
+                                    mediaValue:
+                                        "${pathPrefixIcon}icon_photos.png",
+                                    backgroundColor:
+                                        const Color.fromRGBO(85, 238, 32, 0.15),
+                                    onPressed: () async {
+                                      final result = await pickImage(
+                                          ImageSource.gallery, true);
+                                      if (result.isNotEmpty) {
+                                        _currentProject = _currentProject
+                                            .copyWith(listMedia: [
                                           ..._currentProject.listMedia,
                                           ...result
                                         ]);
-                                  }
-                                  setState(() {});
-                                  setStatefull(() {});
-                                },
+                                      }
+                                      setState(() {});
+                                      setStatefull(() {});
+                                    },
+                                  ),
+                                  WButtonFilled(
+                                      message: "Scan",
+                                      height: 76,
+                                      width: MediaQuery.sizeOf(context).width *
+                                          0.45,
+                                      mediaSize: 25,
+                                      padding: const EdgeInsets.only(top: 2),
+                                      textColor: colorBlue,
+                                      mediaColor: colorBlue,
+                                      mediaValue:
+                                          "${pathPrefixIcon}icon_scan.png",
+                                      backgroundColor:
+                                          colorBlue.withOpacity(0.15),
+                                      onPressed: () async {
+                                        // error same to flutter_document_scanner
+                                        // https://pub.dev/packages/docscan
+                                        // https://pub.dev/packages/cuervo_document_scanner
+                                        // https://pub.dev/packages/scan_document
+
+                                        // uncompatible
+                                        // https://pub.dev/packages/documentscannerchromepay
+                                        // not to use
+                                        // https://pub.dev/packages/flutter_document_scanner
+                                        // use bad
+                                        // https://pub.dev/packages/document_scanner_plus
+
+                                        List<String>? imagesPath =
+                                            await CunningDocumentScanner
+                                                .getPictures(true);
+                                        //convert image -> uint8list -> pdf file
+                                        if (imagesPath != null) {
+                                          // List<Uint8List>? imageDatas =
+                                          //     await convertImageToUint8List(
+                                          //         imagesPath);
+                                          // Uint8List? pdfData =
+                                          //     await convertImageUint8ListToPdfUint8List(
+                                          //         "abc", imageDatas!);
+                                          // await savePdf(pdfData, title: "abc");
+                                        }
+                                      }),
+                                ],
                               ),
                             ],
                           ),
@@ -565,5 +633,27 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
         //     .updateProject(_currentProject);
       },
     );
+  }
+
+  Widget _buildFakeShadow(Color color) {
+    return Container(
+        margin: const EdgeInsets.only(top: 15),
+        height: 76,
+        width: MediaQuery.sizeOf(context).width * 0.45,
+        child: Container(
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(25),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(25),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 2.0, sigmaY: 2.0),
+              child: Container(
+                color: Colors.transparent,
+              ),
+            ),
+          ),
+        ));
   }
 }

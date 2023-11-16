@@ -257,6 +257,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.3"
+  cunning_document_scanner:
+    dependency: "direct main"
+    description:
+      name: cunning_document_scanner
+      sha256: "0c2101432ecce1080b73b0adfa614b00681056750b2f45e28fc225bdc9003268"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.4"
   cupertino_icons:
     dependency: "direct main"
     description:

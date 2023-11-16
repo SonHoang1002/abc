@@ -338,16 +338,17 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                           buildBottomButton(
                               context: context,
                               onApply: () async {
-                                // setState(() {
-                                //   _isLoading = true;
-                                // });
+                                setState(() {
+                                  _isLoading = true;
+                                });
                                 Uint8List data = await createPdfFile(_project,
                                     context, _getRatioProject(LIST_RATIO_PDF),
                                     compressValue: _sliderCompressionValue);
-                                final result = await savePdf(data, _project);
-                                // setState(() {
-                                //   _isLoading = false;
-                                // });
+                                final result =
+                                    await savePdf(data, title: _project.title);
+                                setState(() {
+                                  _isLoading = false;
+                                });
                                 ShareResult shareResult =
                                     await Share.shareXFiles([
                                   XFile(result[0].path),

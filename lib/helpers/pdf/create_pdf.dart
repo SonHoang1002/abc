@@ -36,7 +36,7 @@ Future<void> createAndPreviewPdf(
                 icon: const Icon(FontAwesomeIcons.save),
                 color: colorBlue,
                 onPressed: () async {
-                  await savePdf(result, project);
+                  await savePdf(result, title: project.title);
                 },
               ),
             ],

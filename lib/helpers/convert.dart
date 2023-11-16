@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
@@ -116,4 +117,34 @@ Rectangle1? convertPlacementToRectangle(Placement? pl, List<double> ratios) {
       y: pl.ratioOffset[1] * ratios[1],
       width: pl.ratioWidth * ratios[0],
       height: pl.ratioHeight * ratios[1]);
+}
+
+Future<List<Uint8List>?> convertImageToUint8List(List<String> paths) async {
+  List<Uint8List> results = [];
+  for (var path in paths) {
+    ByteData byte = await rootBundle.load(path);
+    final data = byte.buffer.asUint8List();
+    results.add(data);
+  }
+  return results;
+}
+
+Future<Uint8List> convertImageUint8ListToPdfUint8List(
+  String name,
+  List<Uint8List> listData,
+) async {
+  final pw.Document pdfFile = pw.Document();
+  for (var data in listData) {
+    final pdfImage = pw.MemoryImage(data);
+
+    pdfFile.addPage(pw.Page(
+      build: (pw.Context context) {
+        return pw.Center(
+          child: pw.Image(pdfImage),
+        );
+      },
+    ));
+  }
+  final result = await pdfFile.save();
+  return result;
 }
