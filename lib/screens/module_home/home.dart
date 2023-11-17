@@ -2,10 +2,6 @@ import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:cunning_document_scanner/cunning_document_scanner.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_document_scan_sdk/document_result.dart';
-import 'package:flutter_document_scan_sdk/flutter_document_scan_sdk.dart';
-import 'package:flutter_document_scan_sdk/flutter_document_scan_sdk_platform_interface.dart';
-import 'package:flutter_document_scan_sdk/template.dart';
 import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/helpers/pdf/save_pdf.dart';
 import 'package:photo_to_pdf/helpers/share_pdf.dart';
@@ -49,16 +45,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
   late List<Project> _listProject;
   late Project _currentProject;
 
-  FlutterDocumentScanSdk docScanner = FlutterDocumentScanSdk();
-  bool isLicenseValid = false;
-
-  Future<int> initDocumentSDK() async {
-    int? ret = await docScanner.init(
-        'DLS2eyJoYW5kc2hha2VDb2RlIjoiMjAwMDAxLTE2NDk4Mjk3OTI2MzUiLCJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSIsInNlc3Npb25QYXNzd29yZCI6IndTcGR6Vm05WDJrcEQ5YUoifQ==');
-    if (ret == 0) isLicenseValid = true;
-    await docScanner.setParameters(Template.color);
-    return ret ?? -1;
-  }
+ 
 
   @override
   void dispose() {

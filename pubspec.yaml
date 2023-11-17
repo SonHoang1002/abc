@@ -42,7 +42,7 @@ dependencies:
   carousel_slider: ^4.2.1
   font_awesome_flutter: ^10.5.0
   dropdown_button2: ^2.3.9
-  # image_picker: ^1.0.4
+  image_picker: ^1.0.4
   flutter_colorpicker: ^1.0.3
   colornames: ^0.1.0
   color_parser: ^0.0.3
@@ -58,7 +58,7 @@ dependencies:
   flutter_image_compress: ^2.0.4
   easy_debounce: ^2.0.3
   flutter_email_sender: ^6.0.2
-  # share_plus: ^7.2.1
+  share_plus: ^7.2.1
   device_info_plus: ^9.1.0 
   cloud_firestore: ^4.13.0
   firebase_core: ^2.22.0
