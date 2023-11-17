@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/caculate_padding.dart';
 import 'package:photo_to_pdf/helpers/caculate_spacing.dart';
-import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/helpers/render_boxfit.dart';
 import 'package:photo_to_pdf/models/project.dart';
 
@@ -40,13 +39,14 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
       return Image.file(
         project.coverPhoto?.frontPhoto,
         fit: BoxFit.cover,
-        width: widget.listWH![0],
-        height: widget.listWH![1],
+        width: widget.listWH![0] > 0 ? widget.listWH![0] : null,
+        height: widget.listWH![1] > 0 ? widget.listWH![1] : null,
         filterQuality: FilterQuality.high,
       );
     }
     if (project.listMedia.isEmpty ||
         (project.listMedia.length == 1 && project.listMedia[0] is String)) {
+      print("111");
       return Container(
         margin: caculateSpacing(project, widthAndHeight,
             project.spacingAttribute?.unit, project.paper?.unit),
@@ -60,9 +60,11 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
         ),
       );
     }
+    // khong the height < 0 do cam chon layout
     if (project.useAvailableLayout != true &&
         project.placements != null &&
         project.placements!.isNotEmpty) {
+      print("222");
       return Stack(
         children: layoutExtractList!.map((e) {
           final indexExtract = layoutExtractList.indexOf(e);
@@ -70,11 +72,6 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
             top: getPositionWithTop(indexExtract, widthAndHeight[1]),
             left: getPositionWithLeft(indexExtract, widthAndHeight[0]),
             child: Container(
-              // margin: caculateSpacing(
-              //     project,
-              //     widthAndHeight,
-              //     project.placements![indexExtract].placementAttribute?.unit,
-              //     project.paper?.unit),
               child: _buildImageWidget(
                 project,
                 layoutExtractList[indexExtract],
@@ -86,66 +83,46 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
         }).toList(),
       );
     } else {
-      if (project.listMedia.length == 1 && project.listMedia[0] is String) {
-        return Container(
-          padding: caculatePadding(
-              widget.project,
-              widget.widthAndHeight,
-              widget.project.paddingAttribute?.unit,
-              widget.project.paper?.unit),
-          margin: caculateSpacing(project, widthAndHeight,
-              project.spacingAttribute?.unit, project.paper?.unit),
-          child: _buildImageWidget(
-            project,
-            (layoutExtractList?[0]) ?? "${pathPrefixImage}blank_page.jpg",
-            width: double.infinity,
-            height: double.infinity,
-          ),
-        );
-      } else {
-        final List<int> layoutSuggestion =
-            LIST_LAYOUT_SUGGESTION[project.layoutIndex];
-        List<Widget> widgetColumn = [];
-        for (int indexColumn = 0;
-            indexColumn < layoutSuggestion.length;
-            indexColumn++) {
-          final rows =
-              List.generate(layoutSuggestion[indexColumn], (index) => index);
-          widgetColumn.add(Flexible(
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: rows.map((childRow) {
-                  final indexRow = rows.indexOf(childRow);
-                  return Flexible(
-                    fit: FlexFit.tight,
-                    child: Container(
-                      margin: caculateSpacing(project, widthAndHeight,
-                          project.spacingAttribute?.unit, project.paper?.unit),
-                      child: _buildImageWidget(
-                        project,
-                        layoutExtractList?[indexColumn]![indexRow],
-                        width: double.infinity,
-                        height: double.infinity,
-                      ),
+      print("333");
+      final List<int> layoutSuggestion =
+          LIST_LAYOUT_SUGGESTION[project.layoutIndex];
+      List<Widget> widgetColumn = [];
+      for (int indexColumn = 0;
+          indexColumn < layoutSuggestion.length;
+          indexColumn++) {
+        final rows =
+            List.generate(layoutSuggestion[indexColumn], (index) => index);
+        widgetColumn.add(Flexible(
+          child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: rows.map((childRow) {
+                final indexRow = rows.indexOf(childRow);
+                return Flexible(
+                  fit: FlexFit.tight,
+                  child: Container(
+                    margin: caculateSpacing(project, widthAndHeight,
+                        project.spacingAttribute?.unit, project.paper?.unit),
+                    child: _buildImageWidget(
+                      project,
+                      layoutExtractList?[indexColumn]![indexRow],
+                      width: double.infinity,
+                      height: double.infinity,
                     ),
-                  );
-                }).toList()),
-          ));
-        }
-        return Container(
-          padding: caculatePadding(
-              widget.project,
-              widget.widthAndHeight,
-              widget.project.paddingAttribute?.unit,
-              widget.project.paper?.unit),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: widgetColumn,
-          ),
-        );
+                  ),
+                );
+              }).toList()),
+        ));
       }
+      return Container(
+        padding: caculatePadding(widget.project, widget.widthAndHeight,
+            widget.project.paddingAttribute?.unit, widget.project.paper?.unit),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: widgetColumn,
+        ),
+      );
     }
   }
 

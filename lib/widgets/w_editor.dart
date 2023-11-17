@@ -82,9 +82,8 @@ Widget buildPageSizePreset(
                       index != LIST_PAGE_SIZE.length - 1
                           ? WDivider(
                               color: const Color.fromRGBO(0, 0, 0, 0.3),
-                              width: 200 /
-                                  390 *
-                                  MediaQuery.sizeOf(context).width,
+                              width:
+                                  200 / 390 * MediaQuery.sizeOf(context).width,
                               height: 1,
                               margin: EdgeInsets.zero,
                             )
@@ -280,59 +279,76 @@ Widget buildFileNameInput(BuildContext context, Project project,
 
 Widget buildSelection(BuildContext context, Map<String, dynamic> mediaSrc,
     String title, String content,
-    {Function()? onTap}) {
+    {Function()? onTap, bool? isDisable = false}) {
   final size = MediaQuery.sizeOf(context);
-  return InkWell(
-    onTap: onTap,
-    child: Container(
-      height: 60,
-      width: size.width * 0.45,
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(15),
-          color: Theme.of(context).cardColor),
-      padding: const EdgeInsets.only(left: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: size.width * 0.1,
-            child: Image.asset(
-              !(pv.Provider.of<ThemeManager>(context).isDarkMode)
-                  ? mediaSrc["light"]
-                  : mediaSrc['dark'],
-              height: 35,
-            ),
-          ),
-          WSpacer(
-            width: 5,
-          ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
+  return Stack(
+    children: [
+      InkWell(
+        onTap: onTap,
+        child: Container(
+          height: 60,
+          width: size.width * 0.45,
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15),
+              color: Theme.of(context).cardColor),
+          padding: const EdgeInsets.only(left: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              WTextContent(
-                value: title,
-                textLineHeight: 14.32,
-                textFontWeight: FontWeight.w600,
-                textSize: 12,
-                textOverflow: TextOverflow.ellipsis,
-                textColor: Theme.of(context).textTheme.bodySmall!.color,
+              SizedBox(
+                width: size.width * 0.1,
+                child: Image.asset(
+                  !(pv.Provider.of<ThemeManager>(context).isDarkMode)
+                      ? mediaSrc["light"]
+                      : mediaSrc['dark'],
+                  height: 35,
+                ),
               ),
               WSpacer(
-                height: 5,
+                width: 5,
               ),
-              WTextContent(
-                value: content,
-                textLineHeight: 19.09,
-                textSize: 16,
-                textOverflow: TextOverflow.ellipsis,
-                textColor: const Color.fromRGBO(10, 132, 255, 1),
-              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  WTextContent(
+                    value: title,
+                    textLineHeight: 14.32,
+                    textFontWeight: FontWeight.w600,
+                    textSize: 12,
+                    textOverflow: TextOverflow.ellipsis,
+                    textColor: Theme.of(context).textTheme.bodySmall!.color,
+                  ),
+                  WSpacer(
+                    height: 5,
+                  ),
+                  WTextContent(
+                    value: content,
+                    textLineHeight: 19.09,
+                    textSize: 16,
+                    textOverflow: TextOverflow.ellipsis,
+                    textColor: const Color.fromRGBO(10, 132, 255, 1),
+                  ),
+                ],
+              )
             ],
-          )
-        ],
+          ),
+        ),
       ),
-    ),
+      isDisable!
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(15),
+              child: ImageFiltered(
+                imageFilter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+                child: Container(
+                  height: 60,
+                  width: size.width * 0.45,
+                  color: colorGrey.withOpacity(0.35),
+                ),
+              ),
+            )
+          : const SizedBox()
+    ],
   );
 }
 

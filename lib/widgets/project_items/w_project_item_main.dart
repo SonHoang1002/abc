@@ -37,7 +37,6 @@ class WProjectItemEditor extends StatelessWidget {
   double? maxHeight;
   double? maxWidth;
   late Size _size;
-  GlobalKey _key = GlobalKey();
 
   double _getWidth(BuildContext context) {
     return (MediaQuery.sizeOf(context).width * 0.4) * (1 + ratioTarget![0]);
@@ -54,6 +53,9 @@ class WProjectItemEditor extends StatelessWidget {
         project.paper!.height != 0 &&
         project.paper!.width != 0) {
       final ratioHW = project.paper!.height / project.paper!.width;
+      if (project.paper!.title == "None") {
+        return [realWidth, -1];
+      }
       // height > width
       if (ratioHW > 1) {
         realHeight = maxHeight!;
@@ -68,6 +70,7 @@ class WProjectItemEditor extends StatelessWidget {
       }
       return [realWidth, realHeight];
     } else {
+      print("call 1111");
       return [_getWidth(context), _getHeight(context)];
     }
   }
@@ -90,9 +93,10 @@ class WProjectItemEditor extends StatelessWidget {
               children: [
                 const SizedBox(),
                 Container(
-                  key: _key,
                   width: _getRealWH(context)[0],
-                  height: _getRealWH(context)[1],
+                  height: _getRealWH(context)[1] < 0
+                      ? null
+                      : _getRealWH(context)[1],
                   decoration:
                       BoxDecoration(color: project.backgroundColor, boxShadow: [
                     BoxShadow(
@@ -110,7 +114,7 @@ class WProjectItemEditor extends StatelessWidget {
                           project: project,
                           layoutExtractList: layoutExtractList,
                           widthAndHeight: _getRealWH(context),
-                          useCoverPhoto:useCoverPhoto,
+                          useCoverPhoto: useCoverPhoto,
                           listWH: _getRealWH(context)),
                       isFocusByLongPress
                           ? Positioned.fill(

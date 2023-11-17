@@ -12,12 +12,13 @@ EdgeInsets? caculatePadding(Project project, List<double> widthAndHeight,
       inputUnit, targetUnit, project.paddingAttribute?.verticalPadding ?? 0);
   final convertHorizontalPadding = convertUnit(
       inputUnit, targetUnit, project.paddingAttribute?.horizontalPadding ?? 0);
+  final verticalValue = 1 /
+      2 *
+      convertVerticalPadding *
+      widthAndHeight[1] /
+      project.paper!.height;
   return EdgeInsets.symmetric(
-    vertical: 1 /
-        2 *
-        convertVerticalPadding *
-        widthAndHeight[1] /
-        project.paper!.height,
+    vertical: verticalValue > 0 ? verticalValue : 0.0,
     horizontal: 1 /
         2 *
         convertHorizontalPadding *
@@ -35,12 +36,14 @@ pw.EdgeInsets? caculatePdfPadding(Project project, List<double> widthAndHeight,
       inputUnit, targetUnit, project.paddingAttribute?.verticalPadding ?? 0);
   final convertHorizontalPadding = convertUnit(
       inputUnit, targetUnit, project.paddingAttribute?.horizontalPadding ?? 0);
+  final verticalValue = 1 /
+      2 *
+      convertVerticalPadding *
+      widthAndHeight[1] /
+      project.paper!.height;
+
   return pw.EdgeInsets.symmetric(
-    vertical: 1 /
-        2 *
-        convertVerticalPadding *
-        widthAndHeight[1] /
-        project.paper!.height,
+    vertical: verticalValue > 0 ? verticalValue : 0.0,
     horizontal: 1 /
         2 *
         convertHorizontalPadding *

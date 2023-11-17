@@ -4,8 +4,10 @@ import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/commons/themes.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 class Setting extends StatelessWidget {
@@ -48,7 +50,35 @@ class Setting extends StatelessWidget {
                 textColor: Theme.of(context).textTheme.displayLarge!.color,
                 textAlign: TextAlign.start,
               ),
-              const SizedBox()
+              // const SizedBox()
+               GestureDetector(
+                  onTap: () {
+                    bool isDarkMode =
+                        Provider.of<ThemeManager>(context, listen: false)
+                            .isDarkMode;
+                    if (isDarkMode) {
+                      Provider.of<ThemeManager>(context, listen: false)
+                          .toggleTheme("light");
+                    } else {
+                      Provider.of<ThemeManager>(context, listen: false)
+                          .toggleTheme("dark");
+                    }
+                  },
+                  child: Container(
+                      height: 30,
+                      width: 30,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          color: Theme.of(context).canvasColor),
+                      child: Icon(
+                          Provider.of<ThemeManager>(context).isDarkMode
+                              ? FontAwesomeIcons.sun
+                              : FontAwesomeIcons.moon,
+                          size: 15,
+                          color: Theme.of(context)
+                              .textTheme
+                              .displayLarge!
+                              .color))),
             ],
           ),
         ),

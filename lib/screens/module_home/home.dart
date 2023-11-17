@@ -1,10 +1,6 @@
-import 'dart:math';
+import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:cunning_document_scanner/cunning_document_scanner.dart';
-import 'package:flutter/services.dart';
-import 'package:photo_to_pdf/helpers/convert.dart';
-import 'package:photo_to_pdf/helpers/pdf/save_pdf.dart';
-import 'package:photo_to_pdf/helpers/share_pdf.dart';
 import 'package:photo_to_pdf/services/isar_project_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
@@ -44,8 +40,6 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
   late bool _isFocusProjectListBottom;
   late List<Project> _listProject;
   late Project _currentProject;
-
- 
 
   @override
   void dispose() {
@@ -528,7 +522,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                                         _currentProject = _currentProject
                                             .copyWith(listMedia: [
                                           ..._currentProject.listMedia,
-                                          ...result
+                                          ...result.reversed
                                         ]);
                                       }
                                       setState(() {});
@@ -565,19 +559,20 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                                         List<String>? imagesPath =
                                             await CunningDocumentScanner
                                                 .getPictures(true);
-                                        //convert image -> uint8list -> pdf file
-                                        if (imagesPath != null) {
-                                          final randomTitle =
-                                              "${Random().nextInt(10000)}";
-                                          Uint8List? pdfData =
-                                              await convertImageUint8ListToPdfUint8List(
-                                                  randomTitle, imagesPath);
-                                          dynamic result = await savePdf(
-                                              pdfData,
-                                              title: randomTitle);
-                                          await sharePdf(
-                                              [XFile(result['data'].path)]);
+                                        //convert path image to pdf -> note.txt
+                                        if (imagesPath != null &&
+                                            imagesPath.isNotEmpty) {
+                                          final List<File> files = imagesPath
+                                              .map((e) => File(e))
+                                              .toList();
+                                          _currentProject = _currentProject
+                                              .copyWith(listMedia: [
+                                            ..._currentProject.listMedia,
+                                            ...files.reversed
+                                          ]);
                                         }
+                                        setState(() {});
+                                        setStatefull(() {});
                                       }),
                                 ],
                               ),

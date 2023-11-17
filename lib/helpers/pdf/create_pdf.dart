@@ -96,7 +96,7 @@ Future<Uint8List> createPdfFile(
   }
 
   if (project.paper != null &&
-      project.paper?.height != null &&
+      ![null, 0].contains(project.paper?.height) &&
       project.paper?.width != null) {
     if (project.paper!.unit!.title == POINT.title) {
       pdfPageFormat = PdfPageFormat(project.paper!.width, project.paper!.height,
@@ -226,8 +226,6 @@ pw.Widget _buildCorePDFLayoutMedia(
             top: _getPositionWithTop(index, project, widthAndHeight[1]),
             left: _getPositionWithLeft(index, project, widthAndHeight[0]),
             child: pw.Container(
-              // margin: caculatePdfSpacing(project, widthAndHeight,
-              //     project.spacingAttribute?.unit, project.paper?.unit),
               child: _buildImageWidget(
                 project,
                 layoutExtractList[index],

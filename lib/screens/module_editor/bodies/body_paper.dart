@@ -41,9 +41,6 @@ class _PaperBodyState extends State<PaperBody> {
 
   @override
   void dispose() {
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _project = widget.project;
-    });
     super.dispose();
     _project = Project(id: 0, listMedia: []);
     _indexPageSizeSelectionWidget = null;
@@ -59,7 +56,7 @@ class _PaperBodyState extends State<PaperBody> {
       _project = _project.copyWith(paper: LIST_PAGE_SIZE[5]);
     }
     _indexPageSizeSelectionWidget = widget.indexPageSizeSelectionWidget;
-    _paperConfig = widget.paperConfig;
+    _paperConfig = (widget.paperConfig);
     _paperSizeWidthController.text =
         _paperWidthValue = (_project.paper?.width).toString();
     _paperSizeHeightController.text =
@@ -71,6 +68,7 @@ class _PaperBodyState extends State<PaperBody> {
   @override
   Widget build(BuildContext context) {
     final _size = MediaQuery.sizeOf(context);
+    const Color colorBorder = Color.fromRGBO(0, 0, 0, 0.1);
     return Container(
       height: _size.height * 0.55,
       decoration: BoxDecoration(
@@ -161,34 +159,40 @@ class _PaperBodyState extends State<PaperBody> {
                         WSpacer(
                           height: 10,
                         ),
-                        buildCupertinoInput(
-                            context: context,
-                            controller: _paperSizeHeightController,
-                            title: "Height",
-                            placeholder: "",
-                            onTap: () {
-                              setState(() {
-                                _indexPageSizeSelectionWidget = 2;
-                              });
-                              widget.reRenderFunction();
-                            },
-                            onChanged: (value) {
-                              _paperSizeHeightController.text = value;
-                              if (_paperSizeHeightController.text.trim() !=
-                                  _paperConfig['content'].height) {
-                                _paperConfig['content'] = LIST_PAGE_SIZE[7];
-                              }
-                              setState(() {});
-                              widget.reRenderFunction();
-                            },
-                            suffixValue: _paperConfig['content'].unit.value,
-                            isFocus: _indexPageSizeSelectionWidget == 2),
+                        // height
+                        _paperConfig['content'].title == "None"
+                            ? const SizedBox()
+                            : buildCupertinoInput(
+                                context: context,
+                                controller: _paperSizeHeightController,
+                                title: "Height",
+                                placeholder: "",
+                                onTap: () {
+                                  setState(() {
+                                    _indexPageSizeSelectionWidget = 2;
+                                  });
+                                  widget.reRenderFunction();
+                                },
+                                onChanged: (value) {
+                                  _paperSizeHeightController.text = value;
+                                  if (_paperSizeHeightController.text.trim() !=
+                                      _paperConfig['content'].height) {
+                                    _paperConfig['content'] = LIST_PAGE_SIZE[7];
+                                  }
+                                  setState(() {});
+                                  widget.reRenderFunction();
+                                },
+                                suffixValue: _paperConfig['content'].unit.value,
+                                isFocus: _indexPageSizeSelectionWidget == 2),
                         WSpacer(
                           height: 10,
                         ),
-                        _buildOrientation(() {
-                          widget.reRenderFunction();
-                        })
+                        // orientation
+                        _paperConfig['content'].title == "None"
+                            ? const SizedBox()
+                            : _buildOrientation(() {
+                                widget.reRenderFunction();
+                              })
                       ],
                     ),
                   ),
@@ -210,14 +214,30 @@ class _PaperBodyState extends State<PaperBody> {
                                 duration: const Duration(milliseconds: 400),
                                 constraints: const BoxConstraints(
                                     maxHeight: 150, maxWidth: 150),
-                                height: _getWidthAndHeight(150)[1],
+                                height: _getWidthAndHeight(150)[1] > 0
+                                    ? _getWidthAndHeight(150)[1]
+                                    : null,
                                 width: _getWidthAndHeight(150)[0],
                                 decoration: BoxDecoration(
                                     color: colorWhite,
-                                    border: Border.all(
-                                        color:
-                                            const Color.fromRGBO(0, 0, 0, 0.1),
-                                        width: 2)),
+                                    border:
+                                        _paperConfig['content'].title != "None"
+                                            ? Border.all(
+                                                color: colorBorder, width: 2)
+                                            : const Border(
+                                                top: BorderSide(
+                                                  color: colorBorder,
+                                                  width: 2,
+                                                ),
+                                                left: BorderSide(
+                                                  color: colorBorder,
+                                                  width: 2,
+                                                ),
+                                                right: BorderSide(
+                                                  color: colorBorder,
+                                                  width: 2,
+                                                ),
+                                              )),
                                 padding: const EdgeInsets.all(10),
                               ),
                             ),
@@ -327,7 +347,10 @@ class _PaperBodyState extends State<PaperBody> {
         _paperSizeHeightController.text.trim().isEmpty) {
       return "--";
     }
-    return "${_paperSizeWidthController.text.trim()}x${_paperSizeHeightController.text.trim()} ${_paperConfig['content'].unit.value}";
+    if (_paperConfig['content'].title == "None")
+      return "${_paperSizeWidthController.text.trim()} x -- ${_paperConfig['content'].unit.value}";
+
+    return "${_paperSizeWidthController.text.trim()} x ${_paperSizeHeightController.text.trim()} ${_paperConfig['content'].unit.value}";
   }
 
   List<double> _getWidthAndHeight(double maxSize) {
@@ -335,6 +358,9 @@ class _PaperBodyState extends State<PaperBody> {
     double height = 150;
     double widthPaper = double.parse(_paperWidthValue);
     double heightPaper = double.parse(_paperHeightValue);
+    if (heightPaper < 0) {
+      return [width, -1];
+    }
     if (heightPaper > widthPaper) {
       height = width * heightPaper / widthPaper;
       if (height > 150) {
@@ -373,10 +399,7 @@ class _PaperBodyState extends State<PaperBody> {
     return _paperConfig['content'].title != "Custom"
         ? Flexible(
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 5
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               height: 70,
               width: 200 / 390 * MediaQuery.sizeOf(context).width,
               decoration: BoxDecoration(

@@ -53,7 +53,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   // selected photos
   late double _sliderCompressionValue;
   late bool _autofocusFileName;
-  late String _sizeOfFileValue;
+  late String _sizeOfFile;
   late int _segmentCurrentIndex;
   late int? _lengthOfProjectList;
   late bool _isShowPreview;
@@ -137,7 +137,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     }
     _sliderCompressionValue = _project.compression;
     _autofocusFileName = _project.title == "Untitled" || _project.title == "";
-    _sizeOfFileValue = "0.0 MB";
+    _sizeOfFile = "0.0 MB";
     _segmentCurrentIndex = _project.useAvailableLayout == true ? 0 : 1;
     _isShowPreview = false;
     _isLoading = false;
@@ -147,12 +147,12 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   }
 
   Future<void> _getFileSize() async {
-    Future.delayed(Duration.zero, () async {
-      _sizeOfFileValue = convertByteUnit(await getPdfFileSize(
-          _project, context, _getRatioProject(LIST_RATIO_PDF),
-          compressValue: _sliderCompressionValue));
-      setState(() {});
-    });
+    // Future.delayed(Duration.zero, () async {
+    //   _sizeOfFile = convertByteUnit(await getPdfFileSize(
+    //       _project, context, _getRatioProject(LIST_RATIO_PDF),
+    //       compressValue: _sliderCompressionValue));
+    //   setState(() {});
+    // });
   }
 
   void _onTapFileNameInput() {
@@ -166,7 +166,6 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         _project.paper?.height != null &&
         _project.paper?.height != 0) {
       final heightForWidth = (_project.paper!.height / _project.paper!.width);
-
       final result = [oldRatioTarget[0], oldRatioTarget[0] * heightForWidth];
       return result;
     }
@@ -175,7 +174,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
 
   @override
   Widget build(BuildContext context) {
-    _size = MediaQuery.sizeOf(context);
+    _size = MediaQuery.sizeOf(context); 
     return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         resizeToAvoidBottomInset: false,
@@ -250,7 +249,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                     margin: const EdgeInsets.symmetric(
                                         horizontal: 10)),
                                 WTextContent(
-                                  value: "File Size: ${_sizeOfFileValue}",
+                                  value: "File Size: ${_sizeOfFile}",
                                   textColor: Theme.of(context)
                                       .textTheme
                                       .bodyMedium!
@@ -289,6 +288,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                   onTap: () {
                                     _showBottomSheetLayout();
                                   },
+                                  isDisable: _paperConfig['content'].title == "None"
                                 ),
                               ],
                             ),
@@ -470,7 +470,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                     final oldPaper = _project.paper;
                     if (oldPaper != null && oldPaper != newPaper) {
                       List<Placement> newPlacements = [];
-                      // tinh lai offset neu co placement
+                      // tinh lai offset neu co placement va khong dung layout co san
                       if (!_project.useAvailableLayout &&
                           _project.placements != null) {
                         var oldPlacements = _project.placements!;
@@ -517,7 +517,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
               reRenderFunction: () {
                 setStatefull(() {});
               },
-              sizeOfFileValue: _sizeOfFileValue,
+              sizeOfFileValue: _sizeOfFile,
               project: _project,
               sliderCompressionLevelValue: sliderCompressionLevelValue,
               onChangedSlider: (value) {
@@ -535,7 +535,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                     ..._photosConfig,
                     "content": "${_project.listMedia.length} Photos"
                   };
-                  _sizeOfFileValue = size;
+                  _sizeOfFile = size;
                   _sliderCompressionValue = sliderValue;
                 });
                 setStatefull(() {});

@@ -8,7 +8,9 @@ const String pathPrefixIcon = "assets/icons/";
 const String pathPrefixImage = "assets/images/";
 const String myCustomFont = "FontsFree-Net-SFProDisplay-Regular";
 
+// ignore: non_constant_identifier_names
 List<PaperAttribute> LIST_PAGE_SIZE = [
+  PaperAttribute(title: "None", width: 8.5, height: 11.0, unit: INCH),
   PaperAttribute(title: "A3", width: 29.7, height: 42, unit: CENTIMET),
   PaperAttribute(title: "A4", width: 21.0, height: 29.7, unit: CENTIMET),
   PaperAttribute(title: "B5", width: 17.6, height: 25.0, unit: CENTIMET),
@@ -20,6 +22,7 @@ List<PaperAttribute> LIST_PAGE_SIZE = [
 ];
 
 // NUMBER OF ICON IN ROW
+// ignore: non_constant_identifier_names
 List<List<int>> LIST_LAYOUT_SUGGESTION = [
   [1],
   [1, 1],
@@ -28,7 +31,7 @@ List<List<int>> LIST_LAYOUT_SUGGESTION = [
   [2, 2],
   [1, 2, 3]
 ];
-
+// ignore: non_constant_identifier_names
 List<AlignmentAttribute> LIST_ALIGNMENT = [
   AlignmentAttribute(
     title: "Top",
@@ -72,20 +75,17 @@ List<ResizeAttribute> LIST_RESIZE_MODE = [
     mediaSrc: "${pathPrefixIcon}icon_stretch.png",
   ),
 ];
-
+// ignore: non_constant_identifier_names
 PaddingAttribute PADDING_OPTIONS = PaddingAttribute(
     horizontalPadding: 1.0, verticalPadding: 1.0, unit: CENTIMET);
-
+// ignore: non_constant_identifier_names
 SpacingAttribute SPACING_OPTIONS = SpacingAttribute(
     horizontalSpacing: 1.0, verticalSpacing: 1.0, unit: CENTIMET);
 
+// ignore: non_constant_identifier_names
 final PLACEMENT_ATTRIBUTE = PlacementAttribute(
-    top: 0.0,
-    left: 0.0,
-    right: 0.0,
-    bottom: 0.0,
-    unit: POINT);
-
+    top: 0.0, left: 0.0, right: 0.0, bottom: 0.0, unit: POINT);
+// ignore: non_constant_identifier_names
 List<dynamic> LIST_ADD_COVER = [
   {
     "key": "change_photo",
@@ -104,38 +104,51 @@ List<dynamic> LIST_ADD_COVER = [
   },
 ];
 
+// ignore: constant_identifier_names
 const String TITLE_PADDING = "Padding";
+// ignore: constant_identifier_names
 const String TITLE_SPACING = "Spacing";
+// ignore: constant_identifier_names
 const String TITLE_EDIT_PLACEMENT = "Editing Placement";
 
+// ignore: non_constant_identifier_names
 final Unit INCH = Unit(title: "inch", value: "”");
+// ignore: non_constant_identifier_names
 final Unit CENTIMET = Unit(title: "cm", value: "cm");
+// ignore: non_constant_identifier_names
 final Unit POINT = Unit(title: "pt", value: "pt");
+// ignore: non_constant_identifier_names
 final List<Unit> LIST_UNIT = [INCH, CENTIMET, POINT];
 
 // TẤT CẢ CÁC TỈ LỆ NÀY ĐỀU ĐƯỢC SO SÁNH VỚI WIDTH CỦA MÀN HÌNH
 
 /// Ratio of changeable placement board: width, height
+// ignore: constant_identifier_names
 const List<double> LIST_RATIO_PLACEMENT_BOARD = [0.7, 0.9];
 
 /// Ratio of changeable project item: width, height
+// ignore: constant_identifier_names
 const List<double> LIST_RATIO_PROJECT_ITEM = [0.35, 0.45];
 
 /// Ratio of changeable preview item: width, height
+// ignore: constant_identifier_names
 const List<double> LIST_RATIO_PREVIEW = [0.875, 1.125];
 
 /// Ratio of changeable preview item: width, height
+// ignore: constant_identifier_names
 const List<double> LIST_RATIO_PDF = [1.4, 1.8];
 
 const thumbColorSegments = CupertinoDynamicColor.withBrightness(
   color: Color(0xFFFFFFFF),
   darkColor: Color.fromRGBO(255, 255, 255, 1),
 );
-
+// ignore: constant_identifier_names
 const String LANDSCAPE = "landscape";
+// ignore: constant_identifier_names
 const String PORTRAIT = "portrait";
+// ignore: constant_identifier_names
 const String NATURAL = "natural";
-
+// ignore: non_constant_identifier_names
 final PDF_PAGE_FORMAT = <String, Map<String, PdfPageFormat>>{
   "A3": {
     LANDSCAPE: PdfPageFormat.a3.landscape,
@@ -164,6 +177,7 @@ final PDF_PAGE_FORMAT = <String, Map<String, PdfPageFormat>>{
   },
 };
 
+// ignore: constant_identifier_names
 const List<Color> ALL_COLORS = [
   Colors.amber,
   Colors.amberAccent,
@@ -208,10 +222,10 @@ const double point = 1.0;
 const double inch = 72.0;
 const double cm = inch / 2.54;
 const double mm = inch / 25.4;
-
+// ignore: constant_identifier_names
 const String SHARE_APP_LINK =
     "https://play.google.com/store/apps/details?id=com.tapuniverse.phototopdf&pli=1";
-
+// ignore: constant_identifier_names
 const double DOT_SIZE = 11;
-
+// ignore: constant_identifier_names
 const double MIN_PLACEMENT_SIZE = 50;

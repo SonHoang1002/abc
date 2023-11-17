@@ -53,6 +53,8 @@ class MyThemes {
         titleLarge: TextStyle(color: Color.fromRGBO(255, 255, 255, 0.7)),
         titleMedium: TextStyle(color: Color.fromRGBO(255, 255, 255, 0.5)),
       ),
+      buttonTheme: const ButtonThemeData(
+          disabledColor: Color.fromRGBO(255, 255, 255, 0.5)),
       colorScheme:
           const ColorScheme.dark().copyWith(background: Colors.grey.shade800),
       highlightColor: Colors.transparent,
@@ -85,6 +87,7 @@ class MyThemes {
         titleLarge: TextStyle(color: Color.fromRGBO(0, 0, 0, 0.7)),
         titleMedium: TextStyle(color: Color.fromRGBO(0, 0, 0, 0.5)),
       ),
+      buttonTheme: ButtonThemeData(disabledColor: colorGrey.withOpacity(0.35)),
       colorScheme: const ColorScheme.light()
           .copyWith(background: const Color(0xfff1f2f5)),
       highlightColor: Colors.transparent,
