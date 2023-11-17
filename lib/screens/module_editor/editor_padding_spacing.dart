@@ -130,10 +130,10 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
             (double.parse(controllers[3].text.trim()));
       }
 
-      newTop = max(
-          0, min(newTop, widget.paperAttribute!.height - (newBottom + minSize)));
+      newTop = max(0,
+          min(newTop, widget.paperAttribute!.height - (newBottom + minSize)));
       newLeft = max(
-          0, min(newLeft, widget.paperAttribute!.width - (newRight+ minSize)));
+          0, min(newLeft, widget.paperAttribute!.width - (newRight + minSize)));
       newBottom = max(0,
           min(newBottom, widget.paperAttribute!.height - (newTop + minSize)));
       newRight = max(
@@ -240,6 +240,9 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
   }
 
   double parseStringToDouble(String value) {
+    if(value =="" || value.isEmpty){
+      return 0.0;
+    }
     return double.parse(value);
   }
 

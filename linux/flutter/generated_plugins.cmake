@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   file_selector_linux
+  flutter_document_scan_sdk
   isar_flutter_libs
   printing
   url_launcher_linux

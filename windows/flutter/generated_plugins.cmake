@@ -3,9 +3,11 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  camera_windows
   cloud_firestore
   file_selector_windows
   firebase_core
+  flutter_document_scan_sdk
   isar_flutter_libs
   permission_handler_windows
   printing

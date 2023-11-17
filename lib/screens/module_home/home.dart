@@ -1,10 +1,14 @@
-import 'dart:ffi';
-import 'dart:io';
-import 'dart:ui';
+import 'dart:math';
+import 'dart:ui' as ui;
 import 'package:cunning_document_scanner/cunning_document_scanner.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_document_scan_sdk/document_result.dart';
+import 'package:flutter_document_scan_sdk/flutter_document_scan_sdk.dart';
+import 'package:flutter_document_scan_sdk/flutter_document_scan_sdk_platform_interface.dart';
+import 'package:flutter_document_scan_sdk/template.dart';
 import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/helpers/pdf/save_pdf.dart';
+import 'package:photo_to_pdf/helpers/share_pdf.dart';
 import 'package:photo_to_pdf/services/isar_project_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
@@ -44,6 +48,17 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
   late bool _isFocusProjectListBottom;
   late List<Project> _listProject;
   late Project _currentProject;
+
+  FlutterDocumentScanSdk docScanner = FlutterDocumentScanSdk();
+  bool isLicenseValid = false;
+
+  Future<int> initDocumentSDK() async {
+    int? ret = await docScanner.init(
+        'DLS2eyJoYW5kc2hha2VDb2RlIjoiMjAwMDAxLTE2NDk4Mjk3OTI2MzUiLCJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSIsInNlc3Npb25QYXNzd29yZCI6IndTcGR6Vm05WDJrcEQ5YUoifQ==');
+    if (ret == 0) isLicenseValid = true;
+    await docScanner.setParameters(Template.color);
+    return ret ?? -1;
+  }
 
   @override
   void dispose() {
@@ -549,6 +564,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                                       onPressed: () async {
                                         // error same to flutter_document_scanner
                                         // https://pub.dev/packages/docscan
+                                        // https://pub.dev/packages/flutter_document_scanner
                                         // https://pub.dev/packages/cuervo_document_scanner
                                         // https://pub.dev/packages/scan_document
 
@@ -564,13 +580,16 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                                                 .getPictures(true);
                                         //convert image -> uint8list -> pdf file
                                         if (imagesPath != null) {
-                                          // List<Uint8List>? imageDatas =
-                                          //     await convertImageToUint8List(
-                                          //         imagesPath);
-                                          // Uint8List? pdfData =
-                                          //     await convertImageUint8ListToPdfUint8List(
-                                          //         "abc", imageDatas!);
-                                          // await savePdf(pdfData, title: "abc");
+                                          final randomTitle =
+                                              "${Random().nextInt(10000)}";
+                                          Uint8List? pdfData =
+                                              await convertImageUint8ListToPdfUint8List(
+                                                  randomTitle, imagesPath);
+                                          dynamic result = await savePdf(
+                                              pdfData,
+                                              title: randomTitle);
+                                          await sharePdf(
+                                              [XFile(result['data'].path)]);
                                         }
                                       }),
                                 ],
@@ -637,7 +656,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
 
   Widget _buildFakeShadow(Color color) {
     return Container(
-        margin: const EdgeInsets.only(top: 15),
+        margin: const EdgeInsets.only(top: 10),
         height: 76,
         width: MediaQuery.sizeOf(context).width * 0.45,
         child: Container(
@@ -648,7 +667,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(25),
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 2.0, sigmaY: 2.0),
+              filter: ui.ImageFilter.blur(sigmaX: 2.0, sigmaY: 2.0),
               child: Container(
                 color: Colors.transparent,
               ),

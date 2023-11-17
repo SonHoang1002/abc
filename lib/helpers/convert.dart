@@ -119,24 +119,21 @@ Rectangle1? convertPlacementToRectangle(Placement? pl, List<double> ratios) {
       height: pl.ratioHeight * ratios[1]);
 }
 
-Future<List<Uint8List>?> convertImageToUint8List(List<String> paths) async {
-  List<Uint8List> results = [];
-  for (var path in paths) {
-    ByteData byte = await rootBundle.load(path);
-    final data = byte.buffer.asUint8List();
-    results.add(data);
-  }
-  return results;
-}
 
 Future<Uint8List> convertImageUint8ListToPdfUint8List(
   String name,
-  List<Uint8List> listData,
+  List<String> paths,
 ) async {
-  final pw.Document pdfFile = pw.Document();
-  for (var data in listData) {
-    final pdfImage = pw.MemoryImage(data);
+  List<Uint8List> results = [];
+  for (var path in paths) {
+    final imageFile = File(path);
+    final data = await imageFile.readAsBytes();
+    results.add(data);
+  }
 
+  final pw.Document pdfFile = pw.Document();
+  for (var path in results) {
+    final pdfImage = pw.MemoryImage(path);
     pdfFile.addPage(pw.Page(
       build: (pw.Context context) {
         return pw.Center(

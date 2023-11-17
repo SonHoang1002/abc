@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:photo_to_pdf/helpers/firebase_helper.dart';
+import 'package:photo_to_pdf/helpers/share_pdf.dart';
 import 'package:photo_to_pdf/helpers/show_popup_review.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:photo_to_pdf/helpers/convert.dart';
@@ -349,9 +350,8 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                 setState(() {
                                   _isLoading = false;
                                 });
-                                ShareResult shareResult =
-                                    await Share.shareXFiles([
-                                  XFile(result[0].path),
+                                sharePdf([
+                                  XFile(result["data"].path),
                                 ]);
                                 var isRating = await checkRating();
                                 // check xem da danh gia hay chua

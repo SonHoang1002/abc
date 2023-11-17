@@ -35,15 +35,4 @@ List<double> changeValueOfList(
   }
 }
 
-abstract class T {}
 
-List<T> reverseObjectToEndList(T obj, List<T> list) {
-  List<T> newList = List<T>.from(list);
-  int index = list.indexOf(obj);
-  if (index == -1) {
-    return newList;
-  }
-  newList.removeAt(index);
-  newList.add(obj);
-  return newList;
-}
