@@ -4,10 +4,10 @@ import 'package:pdf/pdf.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 
-const String pathPrefixIcon = "assets/icons/";
-const String pathPrefixImage = "assets/images/";
-const String myCustomFont = "FontsFree-Net-SFProDisplay-Regular";
-
+const String PATH_PREFIX_ICON = "assets/icons/";
+const String PATH_PREFIX_IMAGE = "assets/images/";
+const String MY_CUSTOM_FONT = "FontsFree-Net-SFProDisplay-Regular";
+const String BLANK_PAGE = "${PATH_PREFIX_IMAGE}test_blank.png";
 // ignore: non_constant_identifier_names
 List<PaperAttribute> LIST_PAGE_SIZE = [
   PaperAttribute(title: "None", width: 8.5, height: 11.0, unit: INCH),
@@ -21,7 +21,7 @@ List<PaperAttribute> LIST_PAGE_SIZE = [
   PaperAttribute(title: "Custom", width: 1.0, height: 1.0, unit: INCH),
 ];
 
-// NUMBER OF ICON IN ROW
+// NUMBER OF TEMPLATE IMAGE IN ROW
 // ignore: non_constant_identifier_names
 List<List<int>> LIST_LAYOUT_SUGGESTION = [
   [1],
@@ -36,27 +36,27 @@ List<AlignmentAttribute> LIST_ALIGNMENT = [
   AlignmentAttribute(
     title: "Top",
     alignmentMode: Alignment.topCenter,
-    mediaSrc: "${pathPrefixIcon}icon_arrow_up.png",
+    mediaSrc: "${PATH_PREFIX_ICON}icon_arrow_up.png",
   ),
   AlignmentAttribute(
     title: "Left",
     alignmentMode: Alignment.centerLeft,
-    mediaSrc: "${pathPrefixIcon}icon_arrow_left.png",
+    mediaSrc: "${PATH_PREFIX_ICON}icon_arrow_left.png",
   ),
   AlignmentAttribute(
     title: "Center",
     alignmentMode: Alignment.center,
-    mediaSrc: "${pathPrefixIcon}icon_arrow_center.png",
+    mediaSrc: "${PATH_PREFIX_ICON}icon_arrow_center.png",
   ),
   AlignmentAttribute(
     title: "Right",
     alignmentMode: Alignment.centerRight,
-    mediaSrc: "${pathPrefixIcon}icon_arrow_right.png",
+    mediaSrc: "${PATH_PREFIX_ICON}icon_arrow_right.png",
   ),
   AlignmentAttribute(
     title: "Down",
     alignmentMode: Alignment.bottomCenter,
-    mediaSrc: "${pathPrefixIcon}icon_arrow_down.png",
+    mediaSrc: "${PATH_PREFIX_ICON}icon_arrow_down.png",
   ),
 ];
 
@@ -64,15 +64,15 @@ List<AlignmentAttribute> LIST_ALIGNMENT = [
 List<ResizeAttribute> LIST_RESIZE_MODE = [
   ResizeAttribute(
     title: "Aspect Fit",
-    mediaSrc: "${pathPrefixIcon}icon_aspect_fit.png",
+    mediaSrc: "${PATH_PREFIX_ICON}icon_aspect_fit.png",
   ),
   ResizeAttribute(
     title: "Aspect Fill",
-    mediaSrc: "${pathPrefixIcon}icon_aspect_fill.png",
+    mediaSrc: "${PATH_PREFIX_ICON}icon_aspect_fill.png",
   ),
   ResizeAttribute(
     title: "Stretch",
-    mediaSrc: "${pathPrefixIcon}icon_stretch.png",
+    mediaSrc: "${PATH_PREFIX_ICON}icon_stretch.png",
   ),
 ];
 // ignore: non_constant_identifier_names
@@ -89,17 +89,17 @@ final PLACEMENT_ATTRIBUTE = PlacementAttribute(
 List<dynamic> LIST_ADD_COVER = [
   {
     "key": "change_photo",
-    "mediaSrc": '${pathPrefixIcon}icon_change_photo.png',
+    "mediaSrc": '${PATH_PREFIX_ICON}icon_change_photo.png',
     "title": "Change Photo"
   },
   {
     "key": "clear_photo",
-    "mediaSrc": '${pathPrefixIcon}icon_clear_photo.png',
+    "mediaSrc": '${PATH_PREFIX_ICON}icon_clear_photo.png',
     "title": "Clear Photo"
   },
   {
     "key": "cancel",
-    "mediaSrc": '${pathPrefixIcon}icon_cancel.png',
+    "mediaSrc": '${PATH_PREFIX_ICON}icon_cancel.png',
     "title": "Cancel"
   },
 ];

@@ -58,7 +58,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   late int? _lengthOfProjectList;
   late bool _isShowPreview;
   late List<double> _previewRatio;
-  late int? _currentCarouselIndex;
+  late int? _indexCurrentCarousel;
   late bool _isLoading;
   @override
   void dispose() {
@@ -81,18 +81,18 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
 
     _paperConfig = {
       "mediaSrc": {
-        "light": "${pathPrefixIcon}icon_letter_lm.png",
-        "dark": "${pathPrefixIcon}icon_letter_dm.png"
+        "light": "${PATH_PREFIX_ICON}icon_letter_lm.png",
+        "dark": "${PATH_PREFIX_ICON}icon_letter_dm.png"
       },
       "title": "Paper Size",
-      "content": _project.paper ?? LIST_PAGE_SIZE[5]
+      "content": _project.paper ?? LIST_PAGE_SIZE[0]
     };
 
     if (_project.useAvailableLayout) {
       _layoutConfig = {
         "mediaSrc": {
-          "light": "${pathPrefixIcon}icon_layout_lm.png",
-          "dark": "${pathPrefixIcon}icon_layout_dm.png",
+          "light": "${PATH_PREFIX_ICON}icon_layout_lm.png",
+          "dark": "${PATH_PREFIX_ICON}icon_layout_dm.png",
         },
         "title": "Layout",
         "content": "Layout ${_project.layoutIndex + 1}"
@@ -100,8 +100,8 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     } else {
       _layoutConfig = {
         "mediaSrc": {
-          "light": "${pathPrefixIcon}icon_layout_lm.png",
-          "dark": "${pathPrefixIcon}icon_layout_dm.png",
+          "light": "${PATH_PREFIX_ICON}icon_layout_lm.png",
+          "dark": "${PATH_PREFIX_ICON}icon_layout_dm.png",
         },
         "title": "Layout",
         "content": "Edit"
@@ -109,8 +109,8 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     }
     _photosConfig = {
       "mediaSrc": {
-        "light": "${pathPrefixIcon}icon_frame_border_lm.png",
-        "dark": "${pathPrefixIcon}icon_frame_border_dm.png",
+        "light": "${PATH_PREFIX_ICON}icon_frame_border_lm.png",
+        "dark": "${PATH_PREFIX_ICON}icon_frame_border_dm.png",
       },
       "title": "Selected Photos",
       "content": "${_project.listMedia.length} Photos"
@@ -119,8 +119,8 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         _project.coverPhoto?.backPhoto != null) {
       _coverConfig = {
         "mediaSrc": {
-          "light": "${pathPrefixIcon}icon_cover_lm.png",
-          "dark": "${pathPrefixIcon}icon_cover_dm.png",
+          "light": "${PATH_PREFIX_ICON}icon_cover_lm.png",
+          "dark": "${PATH_PREFIX_ICON}icon_cover_dm.png",
         },
         "title": "Cover Photos",
         "content": "Edit"
@@ -128,8 +128,8 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     } else {
       _coverConfig = {
         "mediaSrc": {
-          "light": "${pathPrefixIcon}icon_cover_lm.png",
-          "dark": "${pathPrefixIcon}icon_cover_dm.png",
+          "light": "${PATH_PREFIX_ICON}icon_cover_lm.png",
+          "dark": "${PATH_PREFIX_ICON}icon_cover_dm.png",
         },
         "title": "Cover Photos",
         "content": "None"
@@ -147,12 +147,12 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   }
 
   Future<void> _getFileSize() async {
-    // Future.delayed(Duration.zero, () async {
-    //   _sizeOfFile = convertByteUnit(await getPdfFileSize(
-    //       _project, context, _getRatioProject(LIST_RATIO_PDF),
-    //       compressValue: _sliderCompressionValue));
-    //   setState(() {});
-    // });
+    Future.delayed(Duration.zero, () async {
+      _sizeOfFile = convertByteUnit(await getPdfFileSize(
+          _project, context, _getRatioProject(LIST_RATIO_PDF),
+          compressValue: _sliderCompressionValue));
+      setState(() {});
+    });
   }
 
   void _onTapFileNameInput() {
@@ -174,7 +174,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
 
   @override
   Widget build(BuildContext context) {
-    _size = MediaQuery.sizeOf(context); 
+    _size = MediaQuery.sizeOf(context);
     return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         resizeToAvoidBottomInset: false,
@@ -281,15 +281,14 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                   width: 10,
                                 ),
                                 buildSelection(
-                                  context,
-                                  _layoutConfig['mediaSrc'],
-                                  _layoutConfig['title'],
-                                  _layoutConfig['content'],
-                                  onTap: () {
-                                    _showBottomSheetLayout();
-                                  },
-                                  isDisable: _paperConfig['content'].title == "None"
-                                ),
+                                    context,
+                                    _layoutConfig['mediaSrc'],
+                                    _layoutConfig['title'],
+                                    _layoutConfig['content'], onTap: () {
+                                  _showBottomSheetLayout();
+                                },
+                                    isDisable: _paperConfig['content'].title ==
+                                        "None"),
                               ],
                             ),
                             WSpacer(
@@ -378,12 +377,12 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
               _isShowPreview
                   ? PreviewProject(
                       project: _project,
-                      indexPage: _currentCarouselIndex!,
+                      indexPage: _indexCurrentCarousel!,
                       ratioTarget: _previewRatio,
                       onClose: () {
                         setState(() {
                           _isShowPreview = false;
-                          _currentCarouselIndex = null;
+                          _indexCurrentCarousel = null;
                         });
                       })
                   : const SizedBox(),
@@ -485,6 +484,11 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                               ratioHeight: item.ratioHeight,
                               ratioWidth: item.ratioWidth);
                         }
+                      }
+                      // check preset is none -> return template 1 to render pdf list
+                      if (newPaper.title == LIST_PAGE_SIZE[0].title) {
+                        _project = _project.copyWith(
+                            useAvailableLayout: true, layoutIndex: 0);
                       }
                       _project = _project.copyWith(
                           paper: newPaper, placements: newPlacements);
@@ -600,7 +604,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
             child: WProjectItemEditor(
               key: ValueKey(_project.id),
               project: _project
-                  .copyWith(listMedia: ["${pathPrefixImage}blank_page.jpg"]),
+                  .copyWith(listMedia: [BLANK_PAGE]),
               indexImage: 0,
               title: "Page ${1}",
               onTap: () {
@@ -616,7 +620,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                   ];
                 }
                 setState(() {
-                  _currentCarouselIndex = 0;
+                  _indexCurrentCarousel = 0;
                   _isShowPreview = true;
                 });
               },
@@ -660,7 +664,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                       ];
                     }
                     setState(() {
-                      _currentCarouselIndex = index;
+                      _indexCurrentCarousel = index;
                       _isShowPreview = true;
                     });
                   },
@@ -699,7 +703,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                     ];
                   }
                   setState(() {
-                    _currentCarouselIndex = 0;
+                    _indexCurrentCarousel = index;
                     _isShowPreview = true;
                   });
                 },

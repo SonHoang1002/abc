@@ -24,7 +24,22 @@ List extractList(int number, List list) {
   }
   return result;
 }
+/// list: [q,w,e,r,t,y,u,i,o,p,a,s,d,f]
 
+/// layout: [1] => [[[q]],[[w]],[[e]],[[r]],[[t]],[[y]],[[u]],[[i]],[[o]],[[p]],[[[a]]],[[s]],[[d]],[[f]]];
+///
+/// layout: [1,2] => [
+///   [[q],[w,e]],
+///   [[r],[t,y]],
+///   [[u],[i,o]],
+///   [[p],[a,s]],
+///   [[d],[f,null]],
+///   ];
+///
+/// layout: [1,2,3] => [
+///   [[q],[w,e],[r,t,y]],
+///   [[u],[i,o],[p,a,s]],
+///   [[d],[f,null],[null,null,null]]]
 List extractList1(List<int> layout, List list) {
   List result = [];
   List list_du_lieu_cho_moi_page = _du_lieu_cho_moi_page(layout, list);
@@ -56,22 +71,7 @@ List _phan_tac_du_lieu_tung_page(List<int> layout, List list) {
   return result;
 }
 
-// list: [q,w,e,r,t,y,u,i,o,p,a,s,d,f]
 
-// layout: [1] => [[[q]],[[w]],[[e]],[[r]],[[t]],[[y]],[[u]],[[i]],[[o]],[[p]],[[[a]]],[[s]],[[d]],[[f]]];
-
-// layout: [1,2] => [
-//   [[q],[w,e]],
-//   [[r],[t,y]],
-//   [[u],[i,o]],
-//   [[p],[a,s]],
-//   [[d],[f,null]],
-//   ];
-
-// layout: [1,2,3] => [
-//   [[q],[w,e],[r,t,y]],
-//   [[u],[i,o],[p,a,s]],
-//   [[d],[f,null],[null,null,null]]]
 
 /// List<List<double>>  to List<double>
 List<double> convertNestedListToList(List<List<double>> list) {

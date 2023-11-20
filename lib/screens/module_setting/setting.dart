@@ -114,7 +114,7 @@ class Setting extends StatelessWidget {
                   ),
                   child: _buildSettingItem(
                     context: context,
-                    prefixMediaSrc: "${pathPrefixIcon}icon_feedback.png",
+                    prefixMediaSrc: "${PATH_PREFIX_ICON}icon_feedback.png",
                     title: "Write a feedback",
                   ),
                 ),
@@ -133,7 +133,7 @@ class Setting extends StatelessWidget {
                   child: Container(
                     child: _buildSettingItem(
                       context: context,
-                      prefixMediaSrc: "${pathPrefixIcon}icon_share.png",
+                      prefixMediaSrc: "${PATH_PREFIX_ICON}icon_share.png",
                       title: "Share this app",
                     ),
                   ),
@@ -168,7 +168,7 @@ class Setting extends StatelessWidget {
               ),
               child: _buildSettingItem(
                 context: context,
-                prefixMediaSrc: "${pathPrefixIcon}icon_access_setting.png",
+                prefixMediaSrc: "${PATH_PREFIX_ICON}icon_access_setting.png",
                 title: "Photo Access Settings",
               )),
         ),

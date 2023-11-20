@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:cunning_document_scanner/cunning_document_scanner.dart';
+import 'package:photo_to_pdf/helpers/scan_document.dart';
 import 'package:photo_to_pdf/services/isar_project_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
@@ -213,15 +214,17 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
 
   List? _getEtractList(int index) {
     var result;
+    if (_listProject[index].listMedia.isEmpty) return result;
+    if (_listProject[index].paper?.title == LIST_PAGE_SIZE[0].title) {
+      result = extractList1(
+          LIST_LAYOUT_SUGGESTION[0], _listProject[index].listMedia);
+    }
     if (_listProject[index].useAvailableLayout) {
-      if (_listProject[index].listMedia.isNotEmpty) {
-        result = extractList1(
-            LIST_LAYOUT_SUGGESTION[_listProject[index].layoutIndex],
-            _listProject[index].listMedia)[0];
-      }
+      result = extractList1(
+          LIST_LAYOUT_SUGGESTION[_listProject[index].layoutIndex],
+          _listProject[index].listMedia)[0];
     } else {
-      if (_listProject[index].placements != null &&
-          _listProject[index].listMedia.isNotEmpty) {
+      if (_listProject[index].placements != null) {
         result = extractList(_listProject[index].placements!.length,
             _listProject[index].listMedia)[0];
       }
@@ -229,27 +232,27 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
     return result;
   }
 
-  Widget _buildProjectItemHome(int index) {
+  Widget _buildProjectItemHome(int indexOfProject) {
     return WProjectItemEditor(
-      key: ValueKey(_listProject[index]),
-      project: _listProject[index],
+      key: ValueKey(_listProject[indexOfProject]),
+      project: _listProject[indexOfProject],
       isFocusByLongPress: _isFocusProjectList,
-      indexImage: index,
-      layoutExtractList: _getEtractList(index),
-      title: _listProject[index].title,
+      indexImage: indexOfProject,
+      layoutExtractList: _getEtractList(indexOfProject),
+      title: _listProject[indexOfProject].title,
       useCoverPhoto: true,
       onTap: () {
-        pushNavigator(context, Editor(project: _listProject[index]));
+        pushNavigator(context, Editor(project: _listProject[indexOfProject]));
       },
       onRemove: () async {
         final listProject = ref.watch(projectControllerProvider).listProject;
-        final deleteItem = listProject[index];
-        listProject.removeAt(index);
+        final deleteItem = listProject[indexOfProject];
+        listProject.removeAt(indexOfProject);
         ref.read(projectControllerProvider.notifier).setProject(listProject);
         await IsarProjectService().deletePostIsar(deleteItem);
       },
-      ratioTarget:
-          _getRatioProject(_listProject[index], LIST_RATIO_PROJECT_ITEM),
+      ratioTarget: _getRatioProject(
+          _listProject[indexOfProject], LIST_RATIO_PROJECT_ITEM),
     );
   }
 
@@ -262,9 +265,9 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _buildButtonNavi(
-              iconValue: "${pathPrefixIcon}icon_union_files.png",
+              iconValue: "${PATH_PREFIX_ICON}icon_union_files.png",
               iconValueSelected:
-                  "${pathPrefixIcon}icon_union_files_selected.png",
+                  "${PATH_PREFIX_ICON}icon_union_files_selected.png",
               name: "All Files",
               isSelected: _naviSelected == 0,
               onTap: () {
@@ -274,8 +277,8 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
               }),
           _buildButtonNaviPlus(),
           _buildButtonNavi(
-              iconValue: "${pathPrefixIcon}icon_setting.png",
-              iconValueSelected: "${pathPrefixIcon}icon_setting_selected.png",
+              iconValue: "${PATH_PREFIX_ICON}icon_setting.png",
+              iconValueSelected: "${PATH_PREFIX_ICON}icon_setting_selected.png",
               name: "Settings",
               isSelected: _naviSelected == 2,
               onTap: () {
@@ -360,7 +363,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
         child: Container(
           padding: const EdgeInsets.only(top: 7),
           child: Image.asset(
-            "${pathPrefixIcon}icon_plus.png",
+            "${PATH_PREFIX_ICON}icon_plus.png",
             scale: 4,
           ),
         ),
@@ -418,7 +421,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                                       margin: const EdgeInsets.only(
                                           right: 10, top: 10),
                                       child: Image.asset(
-                                        "${pathPrefixIcon}icon_close.png",
+                                        "${PATH_PREFIX_ICON}icon_close.png",
                                         color: Theme.of(context)
                                             .textTheme
                                             .bodyLarge!
@@ -512,7 +515,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                                     mediaColor:
                                         const Color.fromRGBO(68, 178, 30, 1),
                                     mediaValue:
-                                        "${pathPrefixIcon}icon_photos.png",
+                                        "${PATH_PREFIX_ICON}icon_photos.png",
                                     backgroundColor:
                                         const Color.fromRGBO(85, 238, 32, 0.15),
                                     onPressed: () async {
@@ -539,30 +542,16 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                                       textColor: colorBlue,
                                       mediaColor: colorBlue,
                                       mediaValue:
-                                          "${pathPrefixIcon}icon_scan.png",
+                                          "${PATH_PREFIX_ICON}icon_scan.png",
                                       backgroundColor:
                                           colorBlue.withOpacity(0.15),
                                       onPressed: () async {
-                                        // error same to flutter_document_scanner
-                                        // https://pub.dev/packages/docscan
-                                        // https://pub.dev/packages/flutter_document_scanner
-                                        // https://pub.dev/packages/cuervo_document_scanner
-                                        // https://pub.dev/packages/scan_document
-
-                                        // uncompatible
-                                        // https://pub.dev/packages/documentscannerchromepay
-                                        // not to use
-                                        // https://pub.dev/packages/flutter_document_scanner
-                                        // use bad
-                                        // https://pub.dev/packages/document_scanner_plus
-
-                                        List<String>? imagesPath =
-                                            await CunningDocumentScanner
-                                                .getPictures(true);
+                                        List<String>? imagePaths =
+                                            await scanDocument();
                                         //convert path image to pdf -> note.txt
-                                        if (imagesPath != null &&
-                                            imagesPath.isNotEmpty) {
-                                          final List<File> files = imagesPath
+                                        if (imagePaths != null &&
+                                            imagePaths.isNotEmpty) {
+                                          final List<File> files = imagePaths
                                               .map((e) => File(e))
                                               .toList();
                                           _currentProject = _currentProject
@@ -573,6 +562,8 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                                         }
                                         setState(() {});
                                         setStatefull(() {});
+                                        // use document_scanner_flutter to capture image and parse origin image to binary image
+                                        // File? scannedDoc = await DocumentScannerFlutter.launch(context);
                                       }),
                                 ],
                               ),
@@ -589,7 +580,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                             textColor: colorWhite,
                             onPressed: () async {
                               _currentProject = _currentProject.copyWith(
-                                paper: LIST_PAGE_SIZE[5],
+                                paper: LIST_PAGE_SIZE[0],
                                 paddingAttribute: PADDING_OPTIONS,
                                 spacingAttribute: SPACING_OPTIONS,
                               );

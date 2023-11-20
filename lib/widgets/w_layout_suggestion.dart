@@ -50,7 +50,7 @@ Widget buildLayoutWidget({
                                   child: Container(
                                     margin: const EdgeInsets.all(2),
                                     child: Image.asset(
-                                      "${pathPrefixIcon}icon_layout_1.png",
+                                      "${PATH_PREFIX_ICON}icon_layout_1.png",
                                       fit: BoxFit.cover,
                                     ),
                                   ),

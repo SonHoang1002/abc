@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
@@ -6,6 +8,7 @@ import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/helpers/pdf/create_pdf.dart';
 import 'package:photo_to_pdf/helpers/pick_media.dart';
+import 'package:photo_to_pdf/helpers/scan_document.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
@@ -49,15 +52,19 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
     _sliderValue = widget.sliderCompressionLevelValue;
   }
 
-  _pickFiles() async {
-    final result = await pickImage(ImageSource.gallery, true);
-    _project = _project.copyWith(listMedia: [..._project.listMedia, ...result]);
-    _getFileSize(_sliderValue);
+  _pickImages() async {
+    List<File> result = await pickImage(ImageSource.gallery, true);
+    _updateListMedia(result);
   }
 
-  _pickImages() async {
-    final result = await pickImage(ImageSource.gallery, true);
-    _project = _project.copyWith(listMedia: [..._project.listMedia, ...result]);
+  _scanDocument() async {
+    List<String>? imagePaths = await scanDocument();
+    if (imagePaths == null) return;
+    _updateListMedia(imagePaths.map((e) => File(e)).toList());
+  }
+
+  _updateListMedia(List files) {
+    _project = _project.copyWith(listMedia: [..._project.listMedia, ...files]);
     setState(() {});
     widget.reRenderFunction();
   }
@@ -210,18 +217,40 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
           WSpacer(
             height: 5,
           ),
-          WButtonFilled(
-            message: "Add Photo",
-            textColor: colorBlue,
-            textLineHeight: 14.32,
-            textSize: 12,
-            height: 30,
-            width: size.width * 0.5,
-            backgroundColor: const Color.fromRGBO(22, 115, 255, 0.08),
-            onPressed: () async {
-              _pickImages();
-            },
-            padding: EdgeInsets.zero,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              WButtonFilled(
+                message: "Add Photo",
+                textColor: colorBlue,
+                textLineHeight: 14.32,
+                textSize: 12,
+                height: 30,
+                width: size.width * 0.3,
+                backgroundColor: const Color.fromRGBO(22, 115, 255, 0.08),
+                onPressed: () async {
+                  _pickImages();
+                },
+                padding: EdgeInsets.zero,
+              ),
+              WSpacer(
+                width: size.width * 0.05,
+              ),
+              WButtonFilled(
+                message: "Scan",
+                textColor: colorBlue,
+                textLineHeight: 14.32,
+                textSize: 12,
+                height: 30,
+                width: size.width * 0.3,
+                backgroundColor: const Color.fromRGBO(22, 115, 255, 0.08),
+                onPressed: () async {
+                  await _scanDocument();
+                },
+                padding: EdgeInsets.zero,
+              ),
+            ],
           ),
           WSpacer(
             height: 15,

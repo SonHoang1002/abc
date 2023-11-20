@@ -8,6 +8,7 @@ import 'package:photo_to_pdf/helpers/render_boxfit.dart';
 import 'package:photo_to_pdf/models/project.dart';
 
 class LayoutMedia extends ConsumerStatefulWidget {
+  // final String type;
   final int indexImage;
   final Project project;
   final List<dynamic>? layoutExtractList;
@@ -16,6 +17,7 @@ class LayoutMedia extends ConsumerStatefulWidget {
   final bool? useCoverPhoto;
   const LayoutMedia(
       {super.key,
+      // required this.type,
       required this.project,
       required this.indexImage,
       required this.layoutExtractList,
@@ -34,19 +36,26 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
     List<dynamic>? layoutExtractList,
     List<double> widthAndHeight,
   ) {
+    // truong hop co frontPhoto
+    // truong hop kich thuoc pdf tu do
+    // truong hop lay anh co chieu rong co dinh, chieu dai tu do
+    // truong hop project rong hoac co 1 anh nhung ma la blank_image
+    // truong hop layout co placement
+    // truong hop su dung layout template
     if (widget.useCoverPhoto == true &&
         project.coverPhoto?.frontPhoto != null) {
       return Image.file(
         project.coverPhoto?.frontPhoto,
-        fit: BoxFit.cover,
-        width: widget.listWH![0] > 0 ? widget.listWH![0] : null,
-        height: widget.listWH![1] > 0 ? widget.listWH![1] : null,
+        fit: project.paper?.title == LIST_PAGE_SIZE[0].title
+            ? BoxFit.fitWidth
+            : BoxFit.cover,
+        width: widget.listWH![0],
+        height: widget.listWH![1],
         filterQuality: FilterQuality.high,
       );
     }
     if (project.listMedia.isEmpty ||
         (project.listMedia.length == 1 && project.listMedia[0] is String)) {
-      print("111");
       return Container(
         margin: caculateSpacing(project, widthAndHeight,
             project.spacingAttribute?.unit, project.paper?.unit),
@@ -54,17 +63,24 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
             widget.project.paddingAttribute?.unit, widget.project.paper?.unit),
         child: _buildImageWidget(
           project,
-          (layoutExtractList?[0]) ?? "${pathPrefixImage}blank_page.jpg",
+          (layoutExtractList?[0]) ?? BLANK_PAGE,
           width: double.infinity,
           height: double.infinity,
+          color: widget.project.backgroundColor,
         ),
       );
     }
-    // khong the height < 0 do cam chon layout
+    if (project.paper?.title == LIST_PAGE_SIZE[0].title) {
+      return Image.file(
+        layoutExtractList![0][0],
+        fit: BoxFit.fitWidth,
+        width: widget.listWH![0], // delete height
+        filterQuality: FilterQuality.high,
+      );
+    }
     if (project.useAvailableLayout != true &&
         project.placements != null &&
         project.placements!.isNotEmpty) {
-      print("222");
       return Stack(
         children: layoutExtractList!.map((e) {
           final indexExtract = layoutExtractList.indexOf(e);
@@ -83,7 +99,6 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
         }).toList(),
       );
     } else {
-      print("333");
       final List<int> layoutSuggestion =
           LIST_LAYOUT_SUGGESTION[project.layoutIndex];
       List<Widget> widgetColumn = [];
@@ -127,7 +142,7 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
   }
 
   Widget _buildImageWidget(Project project, dynamic imageData,
-      {double? width, double? height}) {
+      {double? width, double? height, Color? color}) {
     final fit = renderImageBoxfit(project.resizeAttribute);
     if (imageData == null) {
       return Container();
@@ -140,6 +155,7 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
             fit: fit,
             height: height,
             width: width,
+            color: color,
             filterQuality: FilterQuality.high,
           ),
         );
@@ -151,6 +167,7 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
               imageData,
               fit: fit,
               height: height,
+              color: color,
               width: width,
               filterQuality: FilterQuality.high,
             ),

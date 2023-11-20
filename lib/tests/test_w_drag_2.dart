@@ -581,7 +581,7 @@
 //                                   Container(
 //                                     margin: const EdgeInsets.all(7),
 //                                     child: Image.asset(
-//                                       "${pathPrefixImage}image_demo.png",
+//                                       "${PATH_PREFIX_IMAGE}image_demo.png",
 //                                       fit: BoxFit.cover,
 //                                       height: _getHeightOfImage(index),
 //                                       width: _getWidthOfImage(index),

@@ -120,15 +120,6 @@ Future<Uint8List> createPdfFile(
     _project = project.copyWith(listMedia: compressImages);
   }
 
-  List listExtract = [];
-  if (project.useAvailableLayout) {
-    listExtract = extractList1(
-        LIST_LAYOUT_SUGGESTION[_project.layoutIndex], _project.listMedia);
-  } else {
-    listExtract =
-        extractList((_project.placements?.length) ?? 0, _project.listMedia);
-  }
-
   // add front cover photo
   if (_project.coverPhoto?.frontPhoto != null) {
     File compressFrontPhoto;
@@ -144,7 +135,47 @@ Future<Uint8List> createPdfFile(
             color: convertColorToPdfColor(_project.backgroundColor),
             child: pw.Image(
                 pw.MemoryImage(File(compressFrontPhoto.path).readAsBytesSync()),
-                fit: pw.BoxFit.cover));
+                fit: project.paper?.title == LIST_PAGE_SIZE[0].title
+                    ? pw.BoxFit.fitWidth
+                    : pw.BoxFit.cover));
+      },
+      pageTheme: pw.PageTheme(
+        pageFormat: pdfPageFormat,
+        margin: pw.EdgeInsets.zero,
+      ),
+    ));
+  }
+
+  List listExtract = [];
+  if (project.listMedia.isNotEmpty) {
+    if (project.useAvailableLayout) {
+      listExtract = extractList1(
+          LIST_LAYOUT_SUGGESTION[_project.layoutIndex], _project.listMedia);
+    } else {
+      listExtract =
+          extractList((_project.placements?.length) ?? 0, _project.listMedia);
+    }
+    for (var element in listExtract) {
+      int index = listExtract.indexOf(element);
+      pdf.addPage(pw.Page(
+        build: (ctx) {
+          return pw.Center(
+              child: _buildPdfPreview(context, _project, listExtract, index,
+                  [pdfPageFormat!.width, pdfPageFormat.height]));
+        },
+        pageTheme: pw.PageTheme(
+          pageFormat: pdfPageFormat,
+          margin: pw.EdgeInsets.zero,
+        ),
+      ));
+    }
+  } else {
+    pdf.addPage(pw.Page(
+      build: (ctx) {
+        return pw.Container(
+            color: convertColorToPdfColor(
+          project.backgroundColor,
+        ));
       },
       pageTheme: pw.PageTheme(
         pageFormat: pdfPageFormat,
@@ -154,20 +185,6 @@ Future<Uint8List> createPdfFile(
   }
 
   // add body page
-  for (var element in listExtract) {
-    int index = listExtract.indexOf(element);
-    pdf.addPage(pw.Page(
-      build: (ctx) {
-        return pw.Center(
-            child: _buildPdfPreview(context, _project, listExtract, index,
-                [pdfPageFormat!.width, pdfPageFormat.height]));
-      },
-      pageTheme: pw.PageTheme(
-        pageFormat: pdfPageFormat,
-        margin: pw.EdgeInsets.zero,
-      ),
-    ));
-  }
 
   // add back cover photo
   if (_project.coverPhoto?.backPhoto != null) {
@@ -185,7 +202,9 @@ Future<Uint8List> createPdfFile(
                 child: pw.Image(
                     pw.MemoryImage(
                         File(compressBackPhoto.path).readAsBytesSync()),
-                    fit: pw.BoxFit.cover)));
+                    fit: project.paper?.title == LIST_PAGE_SIZE[0].title
+                        ? pw.BoxFit.fitWidth
+                        : pw.BoxFit.cover)));
       },
       pageTheme: pw.PageTheme(
         pageFormat: pdfPageFormat,
@@ -215,6 +234,14 @@ pw.Widget _buildCorePDFLayoutMedia(
   List<dynamic>? layoutExtractList,
   List<double> widthAndHeight,
 ) {
+  if (project.paper?.title == LIST_PAGE_SIZE[0].title) {
+    return pw.Container(
+        child: pw.Image(
+            pw.MemoryImage(
+                File(project.listMedia[indexPage].path).readAsBytesSync()),
+            fit: pw.BoxFit.fitWidth,
+            width: widthAndHeight[0]));
+  }
   if (project.useAvailableLayout != true &&
       project.placements != null &&
       project.placements!.isNotEmpty) {

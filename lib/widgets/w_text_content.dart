@@ -38,7 +38,7 @@ class WTextContent extends StatelessWidget {
                       textColor ?? Theme.of(context).textTheme.bodySmall!.color,
                   decoration: TextDecoration.none,
                   fontWeight: textFontWeight,
-                  // fontFamily: myCustomFont,
+                  // fontFamily: MY_CUSTOM_FONT,
                   overflow: textOverflow,
                   height: textLineHeight != null && textSize != null
                       ? (textLineHeight! / textSize!)
@@ -55,7 +55,7 @@ class WTextContent extends StatelessWidget {
                 color:
                     textColor ?? Theme.of(context).textTheme.bodySmall!.color,
                 fontWeight: textFontWeight,
-                // fontFamily: myCustomFont,
+                // fontFamily: MY_CUSTOM_FONT,
                 overflow: textOverflow,
                 
                 height: textLineHeight != null && textSize != null

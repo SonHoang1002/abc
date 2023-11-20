@@ -7,6 +7,7 @@ import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/extract_list.dart';
 import 'package:photo_to_pdf/helpers/random_number.dart';
+import 'package:photo_to_pdf/helpers/render_boxfit.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/widgets/project_items/w_layout_media_project.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
@@ -36,18 +37,22 @@ class _PreviewState extends State<PreviewProject>
   late AnimationController controller;
   late Animation<double> scaleAnimation;
 
-  late int _currentCarouselIndex;
+  late int _indexCurrentCarousel;
 
   @override
   void initState() {
     _project = widget.project;
     _previewExtractList = [];
-    if (_project.useAvailableLayout == true) {
-      _previewExtractList = extractList1(
-          LIST_LAYOUT_SUGGESTION[_project.layoutIndex], _project.listMedia);
+    if (_project.listMedia.isNotEmpty) {
+      if (_project.useAvailableLayout == true) {
+        _previewExtractList = extractList1(
+            LIST_LAYOUT_SUGGESTION[_project.layoutIndex], _project.listMedia);
+      } else {
+        _previewExtractList =
+            extractList(_project.placements!.length, _project.listMedia);
+      }
     } else {
-      _previewExtractList =
-          extractList(_project.placements!.length, _project.listMedia);
+      _previewExtractList = [BLANK_PAGE];
     }
 
     if (_project.coverPhoto?.frontPhoto != null) {
@@ -65,9 +70,9 @@ class _PreviewState extends State<PreviewProject>
       setState(() {});
     });
     controller.forward();
-    _currentCarouselIndex = widget.indexPage;
+    _indexCurrentCarousel = widget.indexPage;
     if (_project.coverPhoto?.frontPhoto != null) {
-      _currentCarouselIndex = widget.indexPage + 1;
+      _indexCurrentCarousel = widget.indexPage + 1;
     }
     super.initState();
   }
@@ -77,10 +82,17 @@ class _PreviewState extends State<PreviewProject>
     super.dispose();
     _previewExtractList = [];
     _project = Project(id: 0, listMedia: []);
+    _previewExtractList.clear();
+    controller.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // if (widget.project.coverPhoto?.frontPhoto != null) {
+    //   _indexCurrentCarousel = widget.indexPage + 1;
+    // } else {
+    //   _indexCurrentCarousel = widget.indexPage;
+    // }
     final size = MediaQuery.sizeOf(context);
     return Stack(
       children: [
@@ -146,7 +158,7 @@ class _PreviewState extends State<PreviewProject>
                         options: CarouselOptions(
                           height: size.height * 0.9,
                           aspectRatio: size.height / size.width + 1,
-                          initialPage: _currentCarouselIndex,
+                          initialPage: _indexCurrentCarousel,
                           scrollPhysics: const BouncingScrollPhysics(),
                           enableInfiniteScroll: false,
                           autoPlayCurve: Curves.fastOutSlowIn,
@@ -251,11 +263,10 @@ class _PreviewState extends State<PreviewProject>
       );
     } else {
       if (_project.listMedia.isEmpty) {
-        final blankProject = Project(id: getRandomNumber(), listMedia: []);
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 10),
           child: WProjectItemPreview(
-            project: blankProject,
+            project: _project,
             indexImage: 0,
             title: "",
             ratioTarget: ratioTarget,
@@ -361,14 +372,17 @@ class WProjectItemPreview extends StatelessWidget {
                               project: project,
                               layoutExtractList: layoutExtractList,
                               widthAndHeight: _getRealWH(context),
+                              listWH: _getRealWH(context),
                             )),
                   coverFile != null
                       ? Positioned.fill(
                           child: Image.file(
-                            coverFile!,
-                            fit: BoxFit.cover,
-                            filterQuality: FilterQuality.medium,
-                          ))
+                          coverFile!,
+                          fit: project.paper?.title == LIST_PAGE_SIZE[0].title
+                              ? BoxFit.fitWidth
+                              : BoxFit.cover,
+                          filterQuality: FilterQuality.high,
+                        ))
                       : const SizedBox()
                 ],
               ),

@@ -168,7 +168,7 @@ Widget buildCupertinoInput(
           height: 16.71 / 14,
           fontSize: 14,
           fontWeight: FontWeight.w700,
-          fontFamily: myCustomFont),
+          fontFamily: MY_CUSTOM_FONT),
       controller: controller,
       keyboardType: TextInputType.number,
       prefix: Container(
@@ -177,7 +177,7 @@ Widget buildCupertinoInput(
         child: Text(title,
             style: TextStyle(
                 color: Theme.of(context).textTheme.bodyMedium!.color,
-                fontFamily: myCustomFont,
+                fontFamily: MY_CUSTOM_FONT,
                 fontWeight: FontWeight.w700,
                 height: 16.71 / 14,
                 fontSize: 14)),
@@ -189,7 +189,7 @@ Widget buildCupertinoInput(
         child: Text(suffixValue,
             style: const TextStyle(
                 color: Color.fromRGBO(10, 132, 255, 1),
-                fontFamily: myCustomFont,
+                fontFamily: MY_CUSTOM_FONT,
                 fontWeight: FontWeight.w700,
                 height: 16.71 / 14,
                 fontSize: 14)),
@@ -197,7 +197,7 @@ Widget buildCupertinoInput(
       placeholder: placeholder ?? "Untitled",
       placeholderStyle: const TextStyle(
           color: colorBlue,
-          fontFamily: myCustomFont,
+          fontFamily: MY_CUSTOM_FONT,
           fontWeight: FontWeight.w700,
           height: 19.09 / 16,
           fontSize: 16),
@@ -238,7 +238,7 @@ Widget buildFileNameInput(BuildContext context, Project project,
   TextStyle buildTextStyleInputFileName(Color textColor) {
     return TextStyle(
         color: textColor,
-        fontFamily: myCustomFont,
+        fontFamily: MY_CUSTOM_FONT,
         fontWeight: FontWeight.w700,
         height: 19.09 / 16,
         fontSize: 16);
@@ -737,7 +737,7 @@ Widget _buildPaddingInput(
           height: 16.71 / 14,
           fontSize: 14,
           fontWeight: FontWeight.w700,
-          fontFamily: myCustomFont,
+          fontFamily: MY_CUSTOM_FONT,
         ),
         controller: controller,
       ));

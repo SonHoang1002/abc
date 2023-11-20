@@ -53,9 +53,6 @@ class WProjectItemEditor extends StatelessWidget {
         project.paper!.height != 0 &&
         project.paper!.width != 0) {
       final ratioHW = project.paper!.height / project.paper!.width;
-      if (project.paper!.title == "None") {
-        return [realWidth, -1];
-      }
       // height > width
       if (ratioHW > 1) {
         realHeight = maxHeight!;
@@ -70,7 +67,6 @@ class WProjectItemEditor extends StatelessWidget {
       }
       return [realWidth, realHeight];
     } else {
-      print("call 1111");
       return [_getWidth(context), _getHeight(context)];
     }
   }
@@ -109,7 +105,7 @@ class WProjectItemEditor extends StatelessWidget {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      LayoutMedia(
+                      LayoutMedia( 
                           indexImage: indexImage,
                           project: project,
                           layoutExtractList: layoutExtractList,
@@ -127,8 +123,8 @@ class WProjectItemEditor extends StatelessWidget {
                                   child: Image.asset(
                                     pv.Provider.of<ThemeManager>(context)
                                             .isDarkMode
-                                        ? "${pathPrefixIcon}icon_remove_dark.png"
-                                        : "${pathPrefixIcon}icon_remove_light.png",
+                                        ? "${PATH_PREFIX_ICON}icon_remove_dark.png"
+                                        : "${PATH_PREFIX_ICON}icon_remove_light.png",
                                     width: 50,
                                     height: 50,
                                   ),

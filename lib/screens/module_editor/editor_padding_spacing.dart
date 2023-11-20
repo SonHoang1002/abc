@@ -150,24 +150,28 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
               unit: newUnit));
       widget.onDone(_placement);
     } else if (_paddingAttribute != null) {
+      final horValue = parseStringToDouble(
+        controllers[0].text.trim(),
+      );
+      final verValue = parseStringToDouble(
+        controllers[0].text.trim(),
+      );
       _paddingAttribute = _paddingAttribute?.copyWith(
-        horizontalPadding: parseStringToDouble(
-          controllers[0].text.trim(),
-        ),
-        verticalPadding: parseStringToDouble(
-          controllers[1].text.trim(),
-        ),
+        horizontalPadding: horValue > 0 ? horValue : 0,
+        verticalPadding: verValue > 0 ? verValue : 0,
         unit: newUnit,
       );
       widget.onDone(_paddingAttribute);
     } else if (_spacingAttribute != null) {
+      final horValue = parseStringToDouble(
+        controllers[0].text.trim(),
+      );
+      final verValue = parseStringToDouble(
+        controllers[0].text.trim(),
+      );
       _spacingAttribute = _spacingAttribute?.copyWith(
-        horizontalSpacing: parseStringToDouble(
-          controllers[0].text.trim(),
-        ),
-        verticalSpacing: parseStringToDouble(
-          controllers[1].text.trim(),
-        ),
+        horizontalSpacing: horValue > 0 ? horValue : 0,
+        verticalSpacing: verValue > 0 ? verValue : 0,
         unit: newUnit,
       );
       widget.onDone(_spacingAttribute);
@@ -240,7 +244,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
   }
 
   double parseStringToDouble(String value) {
-    if(value =="" || value.isEmpty){
+    if (value == "" || value.isEmpty) {
       return 0.0;
     }
     return double.parse(value);
@@ -313,7 +317,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                         margin: const EdgeInsets.symmetric(
                             horizontal: 5, vertical: 15),
                         child: Image.asset(
-                          "${pathPrefixIcon}icon_placement_center.png",
+                          "${PATH_PREFIX_ICON}icon_placement_center.png",
                           height: 80,
                           width: 80,
                           scale: 3,
@@ -538,7 +542,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                   child: Text(suffixValue,
                       style: TextStyle(
                           color: Theme.of(context).textTheme.bodyMedium!.color,
-                          fontFamily: myCustomFont,
+                          fontFamily: MY_CUSTOM_FONT,
                           fontWeight: FontWeight.w700,
                           height: 16.71 / 14,
                           fontSize: 14)),
@@ -549,7 +553,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
             height: 16.71 / 14,
             fontSize: 14,
             fontWeight: FontWeight.w700,
-            fontFamily: myCustomFont,
+            fontFamily: MY_CUSTOM_FONT,
           ),
           controller: controller,
         ));

@@ -26,7 +26,7 @@ Widget buildRectangle(Rectangle1? rectangle1, List<Rectangle1> listRectangle1,
         left: listRectangle1[_index].x,
         child: Stack(children: [
           Image.asset(
-            "${pathPrefixImage}image_demo.png",
+            "${PATH_PREFIX_IMAGE}image_demo.png",
             fit: BoxFit.cover,
             height: listRectangle1[_index].height,
             width: listRectangle1[_index].width,

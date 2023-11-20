@@ -213,6 +213,10 @@ class _CoverBodyState extends State<CoverBody> {
     return result;
   }
 
+  bool _checkPaperTitleIsNone(Project project) {
+    return project.paper?.title == "None";
+  }
+
   Widget _buildCoverItem(
       {required BuildContext context,
       required Project project,
@@ -239,14 +243,22 @@ class _CoverBodyState extends State<CoverBody> {
                 child: src is File
                     ? Image.file(
                         src,
-                        fit: BoxFit.cover,
-                        height: _getWidthAndHeight(project)[1],
+                        fit: _checkPaperTitleIsNone(project)
+                            ? BoxFit.fitWidth
+                            : BoxFit.cover,
+                        height: _checkPaperTitleIsNone(project)
+                            ? null
+                            : _getWidthAndHeight(project)[1],
                         width: _getWidthAndHeight(project)[0],
                       )
                     : Image.asset(
                         src,
-                        fit: BoxFit.cover,
-                        height: _getWidthAndHeight(project)[1],
+                        fit: _checkPaperTitleIsNone(project)
+                            ? BoxFit.fitWidth
+                            : BoxFit.cover,
+                        height: _checkPaperTitleIsNone(project)
+                            ? null
+                            : _getWidthAndHeight(project)[1],
                         width: _getWidthAndHeight(project)[0],
                       ),
               )
@@ -258,7 +270,7 @@ class _CoverBodyState extends State<CoverBody> {
                       color: Color.fromRGBO(22, 115, 255, 0.08)),
                   child: Center(
                     child: Image.asset(
-                      src ?? "${pathPrefixIcon}icon_add.png",
+                      src ?? "${PATH_PREFIX_ICON}icon_add.png",
                       color: const Color.fromRGBO(22, 115, 255, 1),
                       height: 14,
                       width: 14,

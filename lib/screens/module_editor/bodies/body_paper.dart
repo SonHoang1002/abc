@@ -53,7 +53,7 @@ class _PaperBodyState extends State<PaperBody> {
   void initState() {
     _project = widget.project;
     if (_project.paper == null) {
-      _project = _project.copyWith(paper: LIST_PAGE_SIZE[5]);
+      _project = _project.copyWith(paper: LIST_PAGE_SIZE[0]);
     }
     _indexPageSizeSelectionWidget = widget.indexPageSizeSelectionWidget;
     _paperConfig = (widget.paperConfig);
@@ -148,7 +148,7 @@ class _PaperBodyState extends State<PaperBody> {
                               if (_paperSizeWidthController.text.trim() !=
                                   _paperConfig['content'].width) {
                                 setState(() {
-                                  _paperConfig['content'] = LIST_PAGE_SIZE[7];
+                                  _paperConfig['content'] = LIST_PAGE_SIZE[8];
                                 });
                               }
                               setState(() {});
@@ -177,7 +177,7 @@ class _PaperBodyState extends State<PaperBody> {
                                   _paperSizeHeightController.text = value;
                                   if (_paperSizeHeightController.text.trim() !=
                                       _paperConfig['content'].height) {
-                                    _paperConfig['content'] = LIST_PAGE_SIZE[7];
+                                    _paperConfig['content'] = LIST_PAGE_SIZE[8];
                                   }
                                   setState(() {});
                                   widget.reRenderFunction();
@@ -297,7 +297,7 @@ class _PaperBodyState extends State<PaperBody> {
                       unitValue: _paperConfig['content'].unit,
                       onSelected: (value) {
                         setState(() {
-                          _paperConfig['content'] = LIST_PAGE_SIZE[7].copyWith(
+                          _paperConfig['content'] = LIST_PAGE_SIZE[8].copyWith(
                             unit: value,
                           );
                         });
@@ -326,7 +326,7 @@ class _PaperBodyState extends State<PaperBody> {
                         if (_paperHeightValue !=
                                 _paperConfig['content'].height ||
                             _paperWidthValue != _paperConfig['content'].width) {
-                          _paperConfig['content'] = LIST_PAGE_SIZE[7].copyWith(
+                          _paperConfig['content'] = LIST_PAGE_SIZE[8].copyWith(
                             unit: value,
                           );
                         }
@@ -433,7 +433,7 @@ class _PaperBodyState extends State<PaperBody> {
                     children: [
                       buildPageSizeOrientationItem(
                           context: context,
-                          mediaSrc: "${pathPrefixIcon}icon_portrait.png",
+                          mediaSrc: "${PATH_PREFIX_ICON}icon_portrait.png",
                           isSelected: _pageSizeIsPortrait,
                           onTap: () {
                             // thay doi offset neu co
@@ -450,7 +450,7 @@ class _PaperBodyState extends State<PaperBody> {
                       const SizedBox(width: 10),
                       buildPageSizeOrientationItem(
                           context: context,
-                          mediaSrc: "${pathPrefixIcon}icon_landscape.png",
+                          mediaSrc: "${PATH_PREFIX_ICON}icon_landscape.png",
                           isSelected: !_pageSizeIsPortrait,
                           onTap: () {
                             setState(() {

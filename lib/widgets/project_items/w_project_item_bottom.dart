@@ -62,8 +62,8 @@ class WProjectItemHomeBottom extends StatelessWidget {
                               alignment: Alignment.topLeft,
                               child: Image.asset(
                                 Provider.of<ThemeManager>(context).isDarkMode
-                                    ? "${pathPrefixIcon}icon_remove_dark.png"
-                                    : "${pathPrefixIcon}icon_remove_light.png",
+                                    ? "${PATH_PREFIX_ICON}icon_remove_dark.png"
+                                    : "${PATH_PREFIX_ICON}icon_remove_light.png",
                                 width: 40,
                                 height: 40,
                               ),

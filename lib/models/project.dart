@@ -105,7 +105,7 @@ class Project {
     List<dynamic> listMedia = [];
 
     listMedia = json['listMedia'].map((e) {
-      if (e.contains(pathPrefixImage) || e.contains(pathPrefixIcon)) {
+      if (e.contains(PATH_PREFIX_IMAGE) || e.contains(PATH_PREFIX_ICON)) {
         return e;
       } else {
         return File(e);
@@ -148,7 +148,7 @@ class Project {
       return [];
     }
     return listMediaData.map((e) {
-      if (e.contains(pathPrefixImage) || e.contains(pathPrefixIcon)) {
+      if (e.contains(PATH_PREFIX_IMAGE) || e.contains(PATH_PREFIX_ICON)) {
         return e;
       } else {
         return File(e);
