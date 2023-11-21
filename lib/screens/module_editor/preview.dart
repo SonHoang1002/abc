@@ -352,28 +352,35 @@ class WProjectItemPreview extends StatelessWidget {
             children: [
               Stack(
                 children: [
-                  Container(
-                      width: _getRealWH(context)[0],
-                      height: _getRealWH(context)[1],
-                      decoration: BoxDecoration(
-                          color: project.backgroundColor,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              spreadRadius: 0.5,
-                              blurRadius: 5,
-                              offset: const Offset(0, 1),
-                            ),
-                          ]),
-                      child: coverFile != null
-                          ? const SizedBox()
-                          : LayoutMedia(
-                              indexImage: indexImage,
-                              project: project,
-                              layoutExtractList: layoutExtractList,
-                              widthAndHeight: _getRealWH(context),
-                              listWH: _getRealWH(context),
-                            )),
+                  (project.paper?.title == LIST_PAGE_SIZE[0].title && layoutExtractList!=null)
+                      ? Image.file(
+                          layoutExtractList![0][0],
+                          fit: BoxFit.fitWidth,
+                          width: _getRealWH(context)[0], // delete height
+                          filterQuality: FilterQuality.high,
+                        )
+                      : Container(
+                          width: _getRealWH(context)[0],
+                          height: _getRealWH(context)[1],
+                          decoration: BoxDecoration(
+                              color: project.backgroundColor,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  spreadRadius: 0.5,
+                                  blurRadius: 5,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ]),
+                          child: coverFile != null
+                              ? const SizedBox()
+                              : LayoutMedia(
+                                  indexImage: indexImage,
+                                  project: project,
+                                  layoutExtractList: layoutExtractList,
+                                  widthAndHeight: _getRealWH(context),
+                                  listWH: _getRealWH(context),
+                                )),
                   coverFile != null
                       ? Positioned.fill(
                           child: Image.file(

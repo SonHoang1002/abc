@@ -4,6 +4,8 @@ import 'dart:ui';
 import 'package:photo_to_pdf/helpers/firebase_helper.dart';
 import 'package:photo_to_pdf/helpers/share_pdf.dart';
 import 'package:photo_to_pdf/helpers/show_popup_review.dart';
+import 'package:photo_to_pdf/providers/ratio_images_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/helpers/pdf/create_pdf.dart';
@@ -60,6 +62,8 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   late List<double> _previewRatio;
   late int? _indexCurrentCarousel;
   late bool _isLoading;
+  // dung de luu tru ratio cua moi anh trong truong hop preset none, chi duoc update moi khi call _getFileSize() function
+  List<GlobalKey> _listGlobalKeyForImages = [];
   @override
   void dispose() {
     super.dispose();
@@ -76,8 +80,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   void initState() {
     super.initState();
     _project = widget.project;
-    _fileNameController.text =
-        _project.title == "Untitled" ? "" : _project.title;
+    _fileNameController.text = _project.title;
 
     _paperConfig = {
       "mediaSrc": {
@@ -141,16 +144,36 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     _segmentCurrentIndex = _project.useAvailableLayout == true ? 0 : 1;
     _isShowPreview = false;
     _isLoading = false;
+    _listGlobalKeyForImages =
+        _project.listMedia.map((e) => GlobalKey()).toList();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       await _getFileSize();
     });
   }
 
+  void _updateRatioWHImages() {
+    List<double> listRatioWH = [];
+    for (var key in _listGlobalKeyForImages) {
+      final renderBox = key.currentContext?.findRenderObject() as RenderBox;
+      final imageSize = renderBox.size;
+      listRatioWH.add(imageSize.width / imageSize.height);
+      ref
+          .read(ratioWHImagesControllerProvider.notifier)
+          .setRatioWHImages(listRatioWH);
+    }
+  }
+
   Future<void> _getFileSize() async {
     Future.delayed(Duration.zero, () async {
+      // goi update lai ratioWH cua moi anh neu nhu preset dang la none
+      if (_project.paper?.title == "None") {
+        _updateRatioWHImages();
+      }
       _sizeOfFile = convertByteUnit(await getPdfFileSize(
           _project, context, _getRatioProject(LIST_RATIO_PDF),
-          compressValue: _sliderCompressionValue));
+          compressValue: _sliderCompressionValue,
+          ratioWHImages:
+              ref.watch(ratioWHImagesControllerProvider).listRatioWH));
       setState(() {});
     });
   }
@@ -249,7 +272,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                     margin: const EdgeInsets.symmetric(
                                         horizontal: 10)),
                                 WTextContent(
-                                  value: "File Size: ${_sizeOfFile}",
+                                  value: "File Size: $_sizeOfFile",
                                   textColor: Theme.of(context)
                                       .textTheme
                                       .bodyMedium!
@@ -281,14 +304,19 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                   width: 10,
                                 ),
                                 buildSelection(
-                                    context,
-                                    _layoutConfig['mediaSrc'],
-                                    _layoutConfig['title'],
-                                    _layoutConfig['content'], onTap: () {
-                                  _showBottomSheetLayout();
-                                },
-                                    isDisable: _paperConfig['content'].title ==
-                                        "None"),
+                                  context,
+                                  _layoutConfig['mediaSrc'],
+                                  _layoutConfig['title'],
+                                  _layoutConfig['content'],
+                                  onTap: () {
+                                    if (_paperConfig['content'].title ==
+                                        "None") {
+                                      _showDialogWarningSelectPaperSize();
+                                      return;
+                                    }
+                                    _showBottomSheetLayout();
+                                  },
+                                ),
                               ],
                             ),
                             WSpacer(
@@ -343,7 +371,10 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                 });
                                 Uint8List data = await createPdfFile(_project,
                                     context, _getRatioProject(LIST_RATIO_PDF),
-                                    compressValue: _sliderCompressionValue);
+                                    compressValue: _sliderCompressionValue,
+                                    ratioWHImages: ref
+                                        .watch(ratioWHImagesControllerProvider)
+                                        .listRatioWH);
                                 final result =
                                     await savePdf(data, title: _project.title);
                                 setState(() {
@@ -399,6 +430,30 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
             ],
           ),
         ));
+  }
+
+  void _showDialogWarningSelectPaperSize() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text(TITLE_LAYOUT_WARNING),
+            content: const Text(CONTENT_LAYOUT_WARNING),
+            backgroundColor: Theme.of(context).dialogBackgroundColor,
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(15))),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    popNavigator(context);
+                  },
+                  child: const Text(
+                    "OK",
+                    style: TextStyle(color: colorBlue),
+                  )),
+            ],
+          );
+        });
   }
 
   void _showBottomSheetLayout() {
@@ -539,6 +594,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                     ..._photosConfig,
                     "content": "${_project.listMedia.length} Photos"
                   };
+                  _listGlobalKeyForImages = newProject.listMedia.map((e) => GlobalKey()).toList();
                   _sizeOfFile = size;
                   _sliderCompressionValue = sliderValue;
                 });
@@ -603,8 +659,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
             margin: const EdgeInsets.symmetric(horizontal: 10),
             child: WProjectItemEditor(
               key: ValueKey(_project.id),
-              project: _project
-                  .copyWith(listMedia: [BLANK_PAGE]),
+              project: _project.copyWith(listMedia: [BLANK_PAGE]),
               indexImage: 0,
               title: "Page ${1}",
               onTap: () {
@@ -644,12 +699,57 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
             final index = list.indexOf(e);
             return Container(
               margin: const EdgeInsets.symmetric(horizontal: 10),
-              child: WProjectItemEditor(
+              child: SizedBox(
+                width: _size.width * 0.4,
+                child: WProjectItemEditor(
+                    key: ValueKey(_project.listMedia[index]),
+                    project: _project,
+                    isFocusByLongPress: false,
+                    indexImage: index,
+                    layoutExtractList: list[index],
+                    title: "Page ${index + 1}",
+                    onTap: () {
+                      _previewRatio = LIST_RATIO_PREVIEW;
+                      if (_project.paper != null &&
+                          _project.paper!.height != 0 &&
+                          _project.paper!.width != 0) {
+                        _previewRatio = [
+                          LIST_RATIO_PREVIEW[0],
+                          LIST_RATIO_PREVIEW[0] *
+                              _project.paper!.height /
+                              _project.paper!.width
+                        ];
+                      }
+                      setState(() {
+                        _indexCurrentCarousel = index;
+                        _isShowPreview = true;
+                      });
+                    },
+                    ratioTarget: _getRatioProject(LIST_RATIO_PROJECT_ITEM)),
+              ),
+            );
+          }).toList(),
+        );
+      } else {
+        final abc = extractList1(
+            LIST_LAYOUT_SUGGESTION[_project.layoutIndex], _project.listMedia);
+        setState(() {
+          _lengthOfProjectList = abc.length;
+        });
+        return Wrap(
+          alignment: WrapAlignment.center,
+          children: abc.map((e) {
+            final index = abc.indexOf(e);
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 5),
+              child: SizedBox(
+                width: _size.width * 0.4,
+                child: WProjectItemEditor(
                   key: ValueKey(_project.listMedia[index]),
                   project: _project,
-                  isFocusByLongPress: false,
                   indexImage: index,
-                  layoutExtractList: list[index],
+                  layoutExtractList: abc[index],
+                  imageKey: _listGlobalKeyForImages[index],
                   title: "Page ${index + 1}",
                   onTap: () {
                     _previewRatio = LIST_RATIO_PREVIEW;
@@ -668,46 +768,8 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                       _isShowPreview = true;
                     });
                   },
-                  ratioTarget: _getRatioProject(LIST_RATIO_PROJECT_ITEM)),
-            );
-          }).toList(),
-        );
-      } else {
-        final abc = extractList1(
-            LIST_LAYOUT_SUGGESTION[_project.layoutIndex], _project.listMedia);
-        setState(() {
-          _lengthOfProjectList = abc.length;
-        });
-        return Wrap(
-          alignment: WrapAlignment.center,
-          children: abc.map((e) {
-            final index = abc.indexOf(e);
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 10),
-              child: WProjectItemEditor(
-                key: ValueKey(_project.listMedia[index]),
-                project: _project,
-                indexImage: index,
-                layoutExtractList: abc[index],
-                title: "Page ${index + 1}",
-                onTap: () {
-                  _previewRatio = LIST_RATIO_PREVIEW;
-                  if (_project.paper != null &&
-                      _project.paper!.height != 0 &&
-                      _project.paper!.width != 0) {
-                    _previewRatio = [
-                      LIST_RATIO_PREVIEW[0],
-                      LIST_RATIO_PREVIEW[0] *
-                          _project.paper!.height /
-                          _project.paper!.width
-                    ];
-                  }
-                  setState(() {
-                    _indexCurrentCarousel = index;
-                    _isShowPreview = true;
-                  });
-                },
-                ratioTarget: _getRatioProject(LIST_RATIO_PROJECT_ITEM),
+                  ratioTarget: _getRatioProject(LIST_RATIO_PROJECT_ITEM),
+                ),
               ),
             );
           }).toList(),

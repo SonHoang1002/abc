@@ -21,6 +21,9 @@ class WProjectItemEditor extends StatelessWidget {
   final List<double>? ratioTarget;
   // kiem tra xem co uu tien dung anh bia de hien thi khong
   final bool? useCoverPhoto;
+  // chi su dung key nay trong truong hop paper size la none,
+  // nham muc dich lay ra ratio width - height cua anh, phuc vu cho viec tao pdf
+  final GlobalKey? imageKey;
 
   WProjectItemEditor(
       {super.key,
@@ -32,6 +35,7 @@ class WProjectItemEditor extends StatelessWidget {
       this.layoutExtractList,
       this.onTap,
       this.useCoverPhoto,
+      this.imageKey,
       this.ratioTarget = LIST_RATIO_PROJECT_ITEM});
 
   double? maxHeight;
@@ -74,80 +78,108 @@ class WProjectItemEditor extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     _size = MediaQuery.sizeOf(context);
-    maxHeight ??= _size.width * 0.45;
-    maxWidth ??= _size.width * 0.45;
+    maxHeight ??= _size.width * 0.35;
+    maxWidth ??= _size.width * 0.35;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.all(4),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(),
-                Container(
-                  width: _getRealWH(context)[0],
-                  height: _getRealWH(context)[1] < 0
-                      ? null
-                      : _getRealWH(context)[1],
-                  decoration:
-                      BoxDecoration(color: project.backgroundColor, boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      spreadRadius: 0.5,
-                      blurRadius: 5,
-                      offset: const Offset(0, 1),
-                    ),
-                  ]),
-                  child: Stack(
-                    alignment: Alignment.center,
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Stack(
+                alignment: Alignment.bottomCenter,
+                children: [
+                  Stack(
+                    alignment: Alignment.centerLeft,
                     children: [
-                      LayoutMedia( 
-                          indexImage: indexImage,
-                          project: project,
-                          layoutExtractList: layoutExtractList,
-                          widthAndHeight: _getRealWH(context),
-                          useCoverPhoto: useCoverPhoto,
-                          listWH: _getRealWH(context)),
-                      isFocusByLongPress
-                          ? Positioned.fill(
-                              top: -17,
-                              left: -17,
-                              child: GestureDetector(
-                                onTap: onRemove,
-                                child: Container(
-                                  alignment: Alignment.topLeft,
-                                  child: Image.asset(
-                                    pv.Provider.of<ThemeManager>(context)
-                                            .isDarkMode
-                                        ? "${PATH_PREFIX_ICON}icon_remove_dark.png"
-                                        : "${PATH_PREFIX_ICON}icon_remove_light.png",
-                                    width: 50,
-                                    height: 50,
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const SizedBox(),
+                          (project.paper?.title == LIST_PAGE_SIZE[0].title &&
+                                  layoutExtractList != null)
+                              ? Image.file(
+                                  layoutExtractList?[0][0],
+                                  key: imageKey,
+                                  fit: BoxFit.fitWidth,
+                                  width:
+                                      _getRealWH(context)[0], // delete height
+                                  filterQuality: FilterQuality.high,
+                                )
+                              : Padding(
+                                  padding: const EdgeInsets.all(10),
+                                  child: Container(
+                                    width: _getRealWH(context)[0],
+                                    height: _getRealWH(context)[1],
+                                    decoration: BoxDecoration(
+                                        color: project.backgroundColor,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.2),
+                                            spreadRadius: 0,
+                                            blurRadius: 7,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ]),
+                                    child: LayoutMedia(
+                                        indexImage: indexImage,
+                                        project: project,
+                                        layoutExtractList: layoutExtractList,
+                                        widthAndHeight: _getRealWH(context),
+                                        useCoverPhoto: useCoverPhoto,
+                                        listWH: _getRealWH(context)),
                                   ),
                                 ),
-                              ))
-                          : const SizedBox(),
+                        ],
+                      ),
                     ],
                   ),
-                ),
-                const SizedBox(),
-              ],
-            ),
-            WSpacer(
-              height: 10,
-            ),
-            WTextContent(
-              value: title ?? "",
-              textFontWeight: FontWeight.w600,
-              textLineHeight: 14.32,
-              textSize: 12,
-              textColor: Theme.of(context).textTheme.bodyMedium!.color,
-            ),
-          ],
+                  Container(
+                      height: _getRealWH(context)[1] + 20,
+                      width: _getRealWH(context)[0] + 20,
+                      alignment: Alignment.topLeft,
+                      child: Stack(
+                        children: [
+                          Container(
+                            width: 30,
+                            height: 30,
+                          ),
+                          isFocusByLongPress
+                              ? Positioned.fill(
+                                  top: -10,
+                                  left: -10,
+                                  child: GestureDetector(
+                                    onTap: onRemove,
+                                    child: Image.asset(
+                                      pv.Provider.of<ThemeManager>(context)
+                                              .isDarkMode
+                                          ? "${PATH_PREFIX_ICON}icon_remove_dark.png"
+                                          : "${PATH_PREFIX_ICON}icon_remove_light.png",
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                )
+                              : const SizedBox(),
+                        ],
+                      ))
+                ],
+              ),
+              WSpacer(
+                height: 10,
+              ),
+              WTextContent(
+                value: title ?? "",
+                textFontWeight: FontWeight.w600,
+                textLineHeight: 14.32,
+                textSize: 12,
+                textColor: Theme.of(context).textTheme.bodyMedium!.color,
+              ),
+            ],
+          ),
         ),
       ),
     );

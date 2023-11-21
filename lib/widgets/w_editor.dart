@@ -279,7 +279,7 @@ Widget buildFileNameInput(BuildContext context, Project project,
 
 Widget buildSelection(BuildContext context, Map<String, dynamic> mediaSrc,
     String title, String content,
-    {Function()? onTap, bool? isDisable = false}) {
+    {Function()? onTap}) {
   final size = MediaQuery.sizeOf(context);
   return Stack(
     children: [
@@ -335,19 +335,6 @@ Widget buildSelection(BuildContext context, Map<String, dynamic> mediaSrc,
           ),
         ),
       ),
-      isDisable!
-          ? ClipRRect(
-              borderRadius: BorderRadius.circular(15),
-              child: ImageFiltered(
-                imageFilter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-                child: Container(
-                  height: 60,
-                  width: size.width * 0.45,
-                  color: colorGrey.withOpacity(0.35),
-                ),
-              ),
-            )
-          : const SizedBox()
     ],
   );
 }
@@ -518,7 +505,7 @@ Widget buildDialogResizeMode(
       ),
       boxDecoration: BoxDecoration(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        color: Theme.of(context).dialogBackgroundColor,
+        color: Theme.of(context).dialogTheme.backgroundColor,
       ),
     ),
     const WDivider(
@@ -533,7 +520,7 @@ Widget buildDialogResizeMode(
               LIST_RESIZE_MODE[1],
             ),
         boxDecoration:
-            BoxDecoration(color: Theme.of(context).dialogBackgroundColor)),
+            BoxDecoration(color: Theme.of(context).dialogTheme.backgroundColor)),
     const WDivider(height: 1, color: Colors.black),
     _buildDialogInformationItem(
       context,
@@ -544,7 +531,7 @@ Widget buildDialogResizeMode(
       ),
       boxDecoration: BoxDecoration(
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
-        color: Theme.of(context).dialogBackgroundColor,
+        color: Theme.of(context).dialogTheme.backgroundColor,
       ),
     ),
   ]);
@@ -559,7 +546,7 @@ Widget buildDialogAlignment(BuildContext context, List<dynamic> datas,
     padding: const EdgeInsets.all(10),
     decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
-        color: Theme.of(context).dialogBackgroundColor),
+        color: Theme.of(context).dialogTheme.backgroundColor),
     child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -608,7 +595,7 @@ Widget buildDialogPadding(
     width: size.width * 0.9,
     decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
-        color: Theme.of(context).dialogBackgroundColor),
+        color: Theme.of(context).dialogTheme.backgroundColor),
     child: Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -685,7 +672,7 @@ Widget buildDialogAddCover(
       ),
       boxDecoration: BoxDecoration(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        color: Theme.of(context).dialogBackgroundColor,
+        color: Theme.of(context).dialogTheme.backgroundColor,
       ),
     ),
     WDivider(height: 1, color: Theme.of(context).dividerColor),
@@ -697,7 +684,7 @@ Widget buildDialogAddCover(
               LIST_ADD_COVER[1],
             ),
         boxDecoration:
-            BoxDecoration(color: Theme.of(context).dialogBackgroundColor)),
+            BoxDecoration(color: Theme.of(context).dialogTheme.backgroundColor)),
     WDivider(height: 1, color: Theme.of(context).dividerColor),
     _buildDialogInformationItem(
       context,
@@ -710,7 +697,7 @@ Widget buildDialogAddCover(
       boxDecoration: BoxDecoration(
           borderRadius:
               const BorderRadius.vertical(bottom: Radius.circular(20)),
-          color: Theme.of(context).dialogBackgroundColor),
+          color: Theme.of(context).dialogTheme.backgroundColor),
     ),
   ]);
 }

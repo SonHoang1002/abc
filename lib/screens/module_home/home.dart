@@ -176,12 +176,12 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
             _disableReOrderFocus();
           },
           child: ReorderableGridView.count(
-            padding: const EdgeInsets.only(top: 10, left: 7, right: 7),
+            padding: const EdgeInsets.only(left: 7, right: 7),
             shrinkWrap: true,
             crossAxisSpacing: 5,
-            mainAxisSpacing: 10,
+            mainAxisSpacing: 5,
             crossAxisCount: 2,
-            childAspectRatio: 9 / 12,
+            childAspectRatio: 9/ 10,
             onReorder: (oldIndex, newIndex) {
               setState(() {
                 final tempListProject = _listProject;

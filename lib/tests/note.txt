@@ -26,8 +26,8 @@ check push id and update rating status
                                         //   await sharePdf(
                                         //       [XFile(result['data'].path)]);
                                         // }
-
-// error same to flutter_document_scanner
+                                        
+                                        // error same to flutter_document_scanner
                                         // https://pub.dev/packages/docscan
                                         // https://pub.dev/packages/flutter_document_scanner
                                         // https://pub.dev/packages/cuervo_document_scanner

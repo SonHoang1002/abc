@@ -43,6 +43,7 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
   late Project _project;
   late String _sizeOfFileValue;
   late double _sliderValue;
+  List<GlobalKey> _listGlobalKeyForImages = [];
   @override
   void initState() {
     super.initState();
@@ -50,6 +51,8 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
     _project = widget.project;
     _sizeOfFileValue = widget.sizeOfFileValue;
     _sliderValue = widget.sliderCompressionLevelValue;
+    _listGlobalKeyForImages =
+        _project.listMedia.map((e) => GlobalKey()).toList();
   }
 
   _pickImages() async {
@@ -65,16 +68,31 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
 
   _updateListMedia(List files) {
     _project = _project.copyWith(listMedia: [..._project.listMedia, ...files]);
+    _listGlobalKeyForImages = [
+      ..._listGlobalKeyForImages,
+      ...files.map((e) => GlobalKey()).toList()
+    ];
     setState(() {});
     widget.reRenderFunction();
+    _getFileSize(_sliderValue);
   }
 
-  Future<void> _getFileSize(double value) async {
-    Future.delayed(Duration.zero, () async {
+  Future<void> _getFileSize(
+    double value,
+  ) async {
+    print("");
+    Future.delayed(const Duration(milliseconds: 1000), () async {
+      List<double> ratioWHImages = [];
+      for (var key in _listGlobalKeyForImages) {
+        final renderBox = key.currentContext?.findRenderObject() as RenderBox;
+        final imageSize = renderBox.size;
+        ratioWHImages.add(imageSize.width / imageSize.height);
+      }
       // ignore: use_build_context_synchronously
       final pdfUint8List = await createPdfFile(
           _project, context, _getRatioProject(LIST_RATIO_PDF),
-          compressValue: widget.sliderCompressionLevelValue);
+          compressValue: widget.sliderCompressionLevelValue,
+          ratioWHImages: ratioWHImages);
       // render to file
       final pdfFile = await convertUint8ListToFilePDF(pdfUint8List);
       _sizeOfFileValue = convertByteUnit((await pdfFile.length()) / 1024);
@@ -184,13 +202,22 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
                             project: _project,
                             isFocusByLongPress: _isFocusProject,
                             index: index,
-                            onRemove: (value) {
-                              setState(() {
-                                _project = _project.copyWith(
-                                    listMedia: _project.listMedia
-                                        .where((element) => element != value)
-                                        .toList());
-                              });
+                            imageKeys: _listGlobalKeyForImages,
+                            onRemove: (value) async {
+                              int indexRemove =
+                                  _project.listMedia.indexOf(value);
+                              if (indexRemove != -1) {
+                                List abc = _project.listMedia;
+                                List<GlobalKey> listKeys =
+                                    _listGlobalKeyForImages;
+                                abc.removeAt(indexRemove);
+                                listKeys.removeAt(indexRemove);
+                                _project = _project.copyWith(listMedia: abc);
+                                _listGlobalKeyForImages = listKeys;
+                                setState(() {});
+                                widget.reRenderFunction();
+                                await _getFileSize(_sliderValue);
+                              }
                             },
                           )),
                   children: _project.listMedia.map((e) {
@@ -200,6 +227,7 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
                       project: _project,
                       isFocusByLongPress: _isFocusProject,
                       index: index,
+                      imageKeys: _listGlobalKeyForImages,
                       onRemove: (value) {
                         setState(() {
                           _project = _project.copyWith(
@@ -313,7 +341,9 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
                         max: 1,
                         onChangeEnd: (value) async {
                           _project = _project.copyWith(compression: value);
-                          await _getFileSize(value);
+                          setState(() {});
+                          widget.reRenderFunction();
+                          _getFileSize(value);
                         },
                         thumbColor: colorWhite,
                         activeColor: colorBlue,

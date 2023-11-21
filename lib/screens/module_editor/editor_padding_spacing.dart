@@ -259,7 +259,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
         width: _size.width * 0.9,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
-            color: Theme.of(context).dialogBackgroundColor),
+            color: Theme.of(context).dialogTheme.backgroundColor),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [

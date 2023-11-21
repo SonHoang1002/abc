@@ -6,8 +6,6 @@ Future<DocumentReference<Map<String, dynamic>>> _getAndroidDocument(
   FirebaseFirestore db = FirebaseFirestore.instance;
   DocumentReference<Map<String, dynamic>> docRef =
       await db.collection("users").doc(androidId);
-  final result = await docRef.get();
-  print("result ${result.data()}");
   return docRef;
 }
 

@@ -8,13 +8,9 @@ import 'package:photo_to_pdf/models/project.dart';
 
 Future<double> getPdfFileSize(
     Project project, BuildContext context, List<double> ratioTarget,
-    {double? compressValue}) async {
-  Uint8List result = await createPdfFile(project, context, ratioTarget,
+    {double? compressValue,List<double>? ratioWHImages}) async {
+  Uint8List result = await createPdfFile(project, context, ratioTarget,ratioWHImages: ratioWHImages,
       compressValue: compressValue);
-  // final directory = await getTemporaryDirectory();
-  // final filePath = '${directory.path}/temp.pdf';
-  // final file = File(filePath);
-  // await file.writeAsBytes(result);
   File file = await createPdfFromUint8List(result);
   int fileSizeInBytes = await file.length();
   double fileSizeInKB = (fileSizeInBytes / 1024);

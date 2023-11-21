@@ -229,3 +229,15 @@ const String SHARE_APP_LINK =
 const double DOT_SIZE = 11;
 // ignore: constant_identifier_names
 const double MIN_PLACEMENT_SIZE = 50;
+
+const String TITLE_LAYOUT_WARNING = "No Paper Size";
+const String CONTENT_LAYOUT_WARNING =
+    "Please select a paper size to use layout options";
+
+const String F_JPEG = ".jpeg";
+const String F_JPG = ".jpg";
+const String F_PNG = ".png";
+const String F_HEIC = ".heic";
+const String F_WEBP = ".webp";
+
+const List<String> IMAGE_FORMAT = [F_JPEG, F_JPG, F_PNG, F_HEIC, F_WEBP];

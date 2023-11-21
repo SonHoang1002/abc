@@ -75,7 +75,7 @@ Future<void> createAndPreviewPdf(
 
 Future<Uint8List> createPdfFile(
     Project project, BuildContext context, List<double> ratioTarget,
-    {double? compressValue}) async {
+    {double? compressValue, List<double>? ratioWHImages}) async {
   final pdf = pw.Document();
   Project _project = project;
   String pageOrientationValue;
@@ -90,34 +90,34 @@ Future<Uint8List> createPdfFile(
   }
 
   PdfPageFormat? pdfPageFormat;
-  if (project.paper?.title != null) {
+  if (_project.paper != null &&
+      ![null, 0].contains(_project.paper?.height) &&
+      _project.paper?.width != null) {
     pdfPageFormat =
-        PDF_PAGE_FORMAT[project.paper?.title]?[pageOrientationValue];
-  }
+        PDF_PAGE_FORMAT[_project.paper?.title]?[pageOrientationValue];
 
-  if (project.paper != null &&
-      ![null, 0].contains(project.paper?.height) &&
-      project.paper?.width != null) {
-    if (project.paper!.unit!.title == POINT.title) {
-      pdfPageFormat = PdfPageFormat(project.paper!.width, project.paper!.height,
+    if (_project.paper!.unit!.title == POINT.title) {
+      pdfPageFormat = PdfPageFormat(
+          _project.paper!.width, _project.paper!.height,
           marginAll: 2.0 * point);
-    } else if (project.paper!.unit!.title == INCH.title) {
+    } else if (_project.paper!.unit!.title == INCH.title) {
       pdfPageFormat = PdfPageFormat(
-          project.paper!.width * inch, project.paper!.height * inch,
+          _project.paper!.width * inch, _project.paper!.height * inch,
           marginAll: 2.0 * inch);
-    } else if (project.paper!.unit!.title == CENTIMET.title) {
+    } else if (_project.paper!.unit!.title == CENTIMET.title) {
       pdfPageFormat = PdfPageFormat(
-          project.paper!.width * cm, project.paper!.height * cm,
+          _project.paper!.width * cm, _project.paper!.height * cm,
           marginAll: 2.0 * cm);
     } else {
       print("NONE");
     }
   }
+  print("pdfPageFormat ${pdfPageFormat}");
 
   if (compressValue != null) {
     final compressImages =
-        await compressImageFile(project.listMedia, compressValue);
-    _project = project.copyWith(listMedia: compressImages);
+        await compressImageFile(_project.listMedia, compressValue);
+    _project = _project.copyWith(listMedia: compressImages);
   }
 
   // add front cover photo
@@ -146,35 +146,77 @@ Future<Uint8List> createPdfFile(
     ));
   }
 
+  // add body page
   List listExtract = [];
-  if (project.listMedia.isNotEmpty) {
-    if (project.useAvailableLayout) {
+  if (_project.listMedia.isNotEmpty) {
+    if (_project.useAvailableLayout) {
       listExtract = extractList1(
           LIST_LAYOUT_SUGGESTION[_project.layoutIndex], _project.listMedia);
     } else {
       listExtract =
           extractList((_project.placements?.length) ?? 0, _project.listMedia);
     }
-    for (var element in listExtract) {
-      int index = listExtract.indexOf(element);
-      pdf.addPage(pw.Page(
-        build: (ctx) {
-          return pw.Center(
-              child: _buildPdfPreview(context, _project, listExtract, index,
-                  [pdfPageFormat!.width, pdfPageFormat.height]));
-        },
-        pageTheme: pw.PageTheme(
-          pageFormat: pdfPageFormat,
-          margin: pw.EdgeInsets.zero,
-        ),
-      ));
+    if (_project.paper?.title == "None") {
+      print("000");
+      for (var element in listExtract) {
+        int index = listExtract.indexOf(element);
+        double width;
+        double height;
+        double infinityNumber = 10210293209;
+        if (_project.paper!.unit!.title == POINT.title) {
+          width = _project.paper!.width * point;
+          height = ratioWHImages![index] > infinityNumber
+              ? double.infinity * point
+              : (width / ratioWHImages[index]);
+        } else if (_project.paper!.unit!.title == INCH.title) {
+          width = _project.paper!.width * inch;
+          height = ratioWHImages![index] > infinityNumber
+              ? double.infinity * inch
+              : (width / ratioWHImages[index]);
+        } else if (_project.paper!.unit!.title == CENTIMET.title) {
+          width = _project.paper!.width * cm;
+          height = ratioWHImages![index] > infinityNumber
+              ? double.infinity * cm
+              : (width / ratioWHImages[index]);
+        } else {
+          width = PdfPageFormat.a4.width;
+          height = PdfPageFormat.a4.height;
+        }
+        pdf.addPage(pw.Page(
+          build: (ctx) {
+            return _buildPdfPreviewPaperNone(
+                project, index, pdfPageFormat!.width);
+          },
+          pageTheme: pw.PageTheme(
+            pageFormat: PdfPageFormat(width, height, marginAll: 0),
+            margin: pw.EdgeInsets.zero,
+          ),
+        ));
+      }
+    } else {
+      print("111");
+      for (var element in listExtract) {
+        int index = listExtract.indexOf(element);
+        pdf.addPage(pw.Page(
+          build: (ctx) {
+            return pw.Center(
+                child: _buildPdfPreview(context, _project, listExtract, index,
+                    [pdfPageFormat!.width, pdfPageFormat.height]));
+          },
+          pageTheme: pw.PageTheme(
+            pageFormat: pdfPageFormat,
+            margin: pw.EdgeInsets.zero,
+          ),
+        ));
+      }
     }
   } else {
+    // page empty
     pdf.addPage(pw.Page(
       build: (ctx) {
         return pw.Container(
             color: convertColorToPdfColor(
-          project.backgroundColor,
+          _project.backgroundColor,
         ));
       },
       pageTheme: pw.PageTheme(
@@ -183,8 +225,6 @@ Future<Uint8List> createPdfFile(
       ),
     ));
   }
-
-  // add body page
 
   // add back cover photo
   if (_project.coverPhoto?.backPhoto != null) {
@@ -202,7 +242,7 @@ Future<Uint8List> createPdfFile(
                 child: pw.Image(
                     pw.MemoryImage(
                         File(compressBackPhoto.path).readAsBytesSync()),
-                    fit: project.paper?.title == LIST_PAGE_SIZE[0].title
+                    fit: _project.paper?.title == LIST_PAGE_SIZE[0].title
                         ? pw.BoxFit.fitWidth
                         : pw.BoxFit.cover)));
       },
@@ -217,6 +257,16 @@ Future<Uint8List> createPdfFile(
   return result;
 }
 
+pw.Widget _buildPdfPreviewPaperNone(
+    Project project, int indexPage, double width) {
+  return pw.Image(
+    pw.MemoryImage(File(project.listMedia[indexPage].path).readAsBytesSync()),
+    fit: pw.BoxFit.fill,
+    width: width,
+  );
+}
+
+/// ap dung doi voi page co chung template hoac dung layout placements
 pw.Widget _buildPdfPreview(BuildContext context, Project project,
     List layoutExtractList, int indexPage, List<double> widthAndHeight) {
   return pw.Container(
@@ -234,14 +284,6 @@ pw.Widget _buildCorePDFLayoutMedia(
   List<dynamic>? layoutExtractList,
   List<double> widthAndHeight,
 ) {
-  if (project.paper?.title == LIST_PAGE_SIZE[0].title) {
-    return pw.Container(
-        child: pw.Image(
-            pw.MemoryImage(
-                File(project.listMedia[indexPage].path).readAsBytesSync()),
-            fit: pw.BoxFit.fitWidth,
-            width: widthAndHeight[0]));
-  }
   if (project.useAvailableLayout != true &&
       project.placements != null &&
       project.placements!.isNotEmpty) {

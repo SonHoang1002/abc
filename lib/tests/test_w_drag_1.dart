@@ -467,7 +467,6 @@ class _WDragZoomImageTest1State extends State<WDragZoomImageTest1> {
                 py += deltaSnap;
                 final result =
                     newPlacement.ratioOffset[1] + newPlacement.ratioHeight;
-                print('result ${result}');
                 if (checkInsideDistance(
                     _listVerticalPosition[i],
                     newDetailsLocalPosition.dy + _listPositionOfPointer[3],

@@ -13,6 +13,7 @@ class WProjectItemHomeBottom extends StatelessWidget {
   final bool isFocusByLongPress;
   final int index;
   final Function(dynamic srcMedia) onRemove;
+  final List<GlobalKey>? imageKeys;
   final bool? isHaveTitle;
   const WProjectItemHomeBottom({
     super.key,
@@ -20,11 +21,13 @@ class WProjectItemHomeBottom extends StatelessWidget {
     required this.isFocusByLongPress,
     required this.index,
     required this.onRemove,
+    this.imageKeys,
     this.isHaveTitle = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    print("imageKeys ${imageKeys?.length}");
     return Container(
       key: key,
       padding: const EdgeInsets.all(3),
@@ -42,10 +45,12 @@ class WProjectItemHomeBottom extends StatelessWidget {
                       child: project.listMedia[index] is File
                           ? Image.file(
                               project.listMedia[index],
+                              key: imageKeys?[index],
                               fit: BoxFit.cover,
                             )
                           : Image.asset(
                               project.listMedia[index],
+                              key: imageKeys?[index],
                               fit: BoxFit.cover,
                             ),
                     ),
