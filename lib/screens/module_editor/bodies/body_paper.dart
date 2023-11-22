@@ -26,6 +26,14 @@ class PaperBody extends StatefulWidget {
   @override
   State<PaperBody> createState() => _PaperBodyState();
 }
+// _paperConfig = {
+//       "mediaSrc": {
+//         "light": "${PATH_PREFIX_ICON}icon_letter_lm.png",
+//         "dark": "${PATH_PREFIX_ICON}icon_letter_dm.png"
+//       },
+//       "title": "Paper Size",
+//       "content": _project.paper ?? LIST_PAGE_SIZE[0]
+//     };
 
 class _PaperBodyState extends State<PaperBody> {
   late Project _project;
@@ -69,6 +77,7 @@ class _PaperBodyState extends State<PaperBody> {
   Widget build(BuildContext context) {
     final _size = MediaQuery.sizeOf(context);
     const Color colorBorder = Color.fromRGBO(0, 0, 0, 0.1);
+    print("_paperConfig['content'] ${_paperConfig['content'].getInfor()}");
     return Container(
       height: _size.height * 0.55,
       decoration: BoxDecoration(
@@ -145,14 +154,16 @@ class _PaperBodyState extends State<PaperBody> {
                             },
                             onChanged: (value) {
                               _paperSizeWidthController.text = value;
+                              if (_paperConfig['content'].title ==
+                                  LIST_PAGE_SIZE[0].title) {
+                                return;
+                              }
                               if (_paperSizeWidthController.text.trim() !=
                                   _paperConfig['content'].width) {
                                 setState(() {
                                   _paperConfig['content'] = LIST_PAGE_SIZE[8];
                                 });
                               }
-                              setState(() {});
-                              widget.reRenderFunction();
                             },
                             suffixValue: _paperConfig['content'].unit.value,
                             isFocus: _indexPageSizeSelectionWidget == 1),
@@ -175,6 +186,10 @@ class _PaperBodyState extends State<PaperBody> {
                                 },
                                 onChanged: (value) {
                                   _paperSizeHeightController.text = value;
+                                  if (_paperConfig['content'].title ==
+                                      LIST_PAGE_SIZE[0].title) {
+                                    return;
+                                  }
                                   if (_paperSizeHeightController.text.trim() !=
                                       _paperConfig['content'].height) {
                                     _paperConfig['content'] = LIST_PAGE_SIZE[8];
@@ -214,9 +229,9 @@ class _PaperBodyState extends State<PaperBody> {
                                 duration: const Duration(milliseconds: 400),
                                 constraints: const BoxConstraints(
                                     maxHeight: 150, maxWidth: 150),
-                                height: _getWidthAndHeight(150)[1] > 0
-                                    ? _getWidthAndHeight(150)[1]
-                                    : null,
+                                height: _paperConfig['content'].title == "None"
+                                    ? null
+                                    : _getWidthAndHeight(150)[1],
                                 width: _getWidthAndHeight(150)[0],
                                 decoration: BoxDecoration(
                                     color: colorWhite,
@@ -297,9 +312,18 @@ class _PaperBodyState extends State<PaperBody> {
                       unitValue: _paperConfig['content'].unit,
                       onSelected: (value) {
                         setState(() {
-                          _paperConfig['content'] = LIST_PAGE_SIZE[8].copyWith(
-                            unit: value,
-                          );
+                          if (_paperConfig['content'].title ==
+                              LIST_PAGE_SIZE[0].title) {
+                            _paperConfig['content'] =
+                                _paperConfig['content'].copyWith(
+                              unit: value,
+                            );
+                          } else {
+                            _paperConfig['content'] =
+                                LIST_PAGE_SIZE[8].copyWith(
+                              unit: value,
+                            );
+                          }
                         });
                         widget.reRenderFunction();
                       },
@@ -323,9 +347,13 @@ class _PaperBodyState extends State<PaperBody> {
                           _paperHeightValue =
                               _paperSizeHeightController.text.trim();
                         }
-                        if (_paperHeightValue !=
-                                _paperConfig['content'].height ||
-                            _paperWidthValue != _paperConfig['content'].width) {
+                        // check value is not equal and title not equal to None
+                        if ((_paperHeightValue !=
+                                    _paperConfig['content'].height ||
+                                _paperWidthValue !=
+                                    _paperConfig['content'].width) &&
+                            _paperConfig['content'].title !=
+                                LIST_PAGE_SIZE[0].title) {
                           _paperConfig['content'] = LIST_PAGE_SIZE[8].copyWith(
                             unit: value,
                           );
@@ -347,8 +375,9 @@ class _PaperBodyState extends State<PaperBody> {
         _paperSizeHeightController.text.trim().isEmpty) {
       return "--";
     }
-    if (_paperConfig['content'].title == "None")
+    if (_paperConfig['content'].title == "None") {
       return "${_paperSizeWidthController.text.trim()} x -- ${_paperConfig['content'].unit.value}";
+    }
 
     return "${_paperSizeWidthController.text.trim()} x ${_paperSizeHeightController.text.trim()} ${_paperConfig['content'].unit.value}";
   }

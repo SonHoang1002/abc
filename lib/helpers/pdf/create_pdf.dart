@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/caculate_padding.dart';
@@ -112,10 +113,9 @@ Future<Uint8List> createPdfFile(
       print("NONE");
     }
   }
-  print("pdfPageFormat ${pdfPageFormat}");
 
   if (compressValue != null) {
-    final compressImages =
+    List<File> compressImages =
         await compressImageFile(_project.listMedia, compressValue);
     _project = _project.copyWith(listMedia: compressImages);
   }
@@ -157,25 +157,24 @@ Future<Uint8List> createPdfFile(
           extractList((_project.placements?.length) ?? 0, _project.listMedia);
     }
     if (_project.paper?.title == "None") {
-      print("000");
       for (var element in listExtract) {
         int index = listExtract.indexOf(element);
         double width;
         double height;
-        double infinityNumber = 10210293209;
+
         if (_project.paper!.unit!.title == POINT.title) {
           width = _project.paper!.width * point;
-          height = ratioWHImages![index] > infinityNumber
+          height = ratioWHImages![index] > INFINITY_NUMBER
               ? double.infinity * point
               : (width / ratioWHImages[index]);
         } else if (_project.paper!.unit!.title == INCH.title) {
           width = _project.paper!.width * inch;
-          height = ratioWHImages![index] > infinityNumber
+          height = ratioWHImages![index] > INFINITY_NUMBER
               ? double.infinity * inch
               : (width / ratioWHImages[index]);
         } else if (_project.paper!.unit!.title == CENTIMET.title) {
           width = _project.paper!.width * cm;
-          height = ratioWHImages![index] > infinityNumber
+          height = ratioWHImages![index] > INFINITY_NUMBER
               ? double.infinity * cm
               : (width / ratioWHImages[index]);
         } else {

@@ -19,6 +19,7 @@ class RatioWHProvider extends StateNotifier<RatioWHState> {
   RatioWHProvider() : super(const RatioWHState());
 
   setRatioWHImages(List<double> listRatioWH) {
+    print("listRatioWH ${listRatioWH}");
     state = state.copyWith(listRatioWH: listRatioWH);
   }
 }

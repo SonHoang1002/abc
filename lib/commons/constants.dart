@@ -241,3 +241,5 @@ const String F_HEIC = ".heic";
 const String F_WEBP = ".webp";
 
 const List<String> IMAGE_FORMAT = [F_JPEG, F_JPG, F_PNG, F_HEIC, F_WEBP];
+
+const double INFINITY_NUMBER = 1021029320900;

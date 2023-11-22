@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:ui' as ui;
-import 'package:cunning_document_scanner/cunning_document_scanner.dart';
 import 'package:photo_to_pdf/helpers/scan_document.dart';
 import 'package:photo_to_pdf/services/isar_project_service.dart';
 import 'package:flutter/material.dart';
@@ -181,7 +180,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
             crossAxisSpacing: 5,
             mainAxisSpacing: 5,
             crossAxisCount: 2,
-            childAspectRatio: 9/ 10,
+            childAspectRatio: 9 / 10.5,
             onReorder: (oldIndex, newIndex) {
               setState(() {
                 final tempListProject = _listProject;

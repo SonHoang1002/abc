@@ -8,6 +8,7 @@ Future<List<File>> compressImageFile(
   double compressValue,
 ) async {
   List<File> results = [];
+  print("imageFiles from compressImage ${imageFiles}");
   for (var element in imageFiles) {
     String filePath = element.absolute.path;
     final lastIndex = _getLastIndexOfFormat(filePath);
@@ -27,6 +28,7 @@ Future<List<File>> compressImageFile(
       print('Không tìm thấy phần mở rộng trong đường dẫn: $filePath');
     }
   }
+  print("results from compressImage ${results}");
   return results;
 }
 

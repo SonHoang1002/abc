@@ -3,18 +3,18 @@ import 'dart:ui';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/extract_list.dart';
-import 'package:photo_to_pdf/helpers/random_number.dart';
-import 'package:photo_to_pdf/helpers/render_boxfit.dart';
 import 'package:photo_to_pdf/models/project.dart';
+import 'package:photo_to_pdf/providers/ratio_images_provider.dart';
 import 'package:photo_to_pdf/widgets/project_items/w_layout_media_project.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 
-class PreviewProject extends StatefulWidget {
+class PreviewProject extends ConsumerStatefulWidget {
   final Project project;
   final int indexPage;
   final List<double>? ratioTarget;
@@ -27,10 +27,10 @@ class PreviewProject extends StatefulWidget {
       this.onClose});
 
   @override
-  State<PreviewProject> createState() => _PreviewState();
+  ConsumerState<PreviewProject> createState() => _PreviewState();
 }
 
-class _PreviewState extends State<PreviewProject>
+class _PreviewState extends ConsumerState<PreviewProject>
     with SingleTickerProviderStateMixin {
   late Project _project;
   late List _previewExtractList;
@@ -38,6 +38,7 @@ class _PreviewState extends State<PreviewProject>
   late Animation<double> scaleAnimation;
 
   late int _indexCurrentCarousel;
+  List<double>? _listRatioWHImage;
 
   @override
   void initState() {
@@ -50,6 +51,16 @@ class _PreviewState extends State<PreviewProject>
       } else {
         _previewExtractList =
             extractList(_project.placements!.length, _project.listMedia);
+        if (_project.paper?.title == LIST_PAGE_SIZE[0].title) {
+          _listRatioWHImage =
+              List.from(ref.read(ratioWHImagesControllerProvider).listRatioWH);
+          if (_project.coverPhoto?.frontPhoto != null) {
+            _listRatioWHImage!.insert(0, -1);
+          }
+          if (_project.coverPhoto?.backPhoto) {
+            _listRatioWHImage!.add(-1);
+          }
+        }
       }
     } else {
       _previewExtractList = [BLANK_PAGE];
@@ -131,16 +142,23 @@ class _PreviewState extends State<PreviewProject>
                         itemCount: _previewExtractList.length,
                         itemBuilder: (context, currentIndex, afterIndex) {
                           return Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.end,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              _buildImageContent(
-                                _project,
-                                currentIndex,
-                                widget.ratioTarget!,
-                              ),
-                              WSpacer(
-                                width: 40,
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const SizedBox(),
+                                    _buildImageContent(
+                                      _project,
+                                      currentIndex,
+                                      widget.ratioTarget!,
+                                    ),
+                                    const SizedBox(),
+                                  ],
+                                ),
                               ),
                               WTextContent(
                                 value: "Page ${currentIndex + 1}",
@@ -151,12 +169,15 @@ class _PreviewState extends State<PreviewProject>
                                     .textTheme
                                     .bodyMedium!
                                     .color,
-                              )
+                              ),
+                              WSpacer(
+                                height: 20,
+                              ),
                             ],
                           );
                         },
                         options: CarouselOptions(
-                          height: size.height * 0.9,
+                          height: size.height * (589 / 844) * 0.95,
                           aspectRatio: size.height / size.width + 1,
                           initialPage: _indexCurrentCarousel,
                           scrollPhysics: const BouncingScrollPhysics(),
@@ -183,7 +204,7 @@ class _PreviewState extends State<PreviewProject>
                       height: 60,
                       backgroundColor: colorWhite,
                       onPressed: () {
-                        /// không hiểu tại sao lại data binding 2 chiều ??
+                        /// data binding 2 chiều ??
                         setState(() {
                           if (_project.coverPhoto?.frontPhoto != null) {
                             _previewExtractList.removeAt(
@@ -259,6 +280,7 @@ class _PreviewState extends State<PreviewProject>
           layoutExtractList: _previewExtractList[indexExtract],
           title: "",
           ratioTarget: ratioTarget,
+          ratioWHImages: _listRatioWHImage,
         ),
       );
     } else {
@@ -270,6 +292,7 @@ class _PreviewState extends State<PreviewProject>
             indexImage: 0,
             title: "",
             ratioTarget: ratioTarget,
+            ratioWHImages: _listRatioWHImage,
           ),
         );
       } else {
@@ -281,6 +304,7 @@ class _PreviewState extends State<PreviewProject>
             layoutExtractList: _previewExtractList[indexExtract],
             title: "",
             ratioTarget: ratioTarget,
+            ratioWHImages: _listRatioWHImage,
           ),
         );
       }
@@ -288,7 +312,7 @@ class _PreviewState extends State<PreviewProject>
   }
 }
 
-class WProjectItemPreview extends StatelessWidget {
+class WProjectItemPreview extends ConsumerWidget {
   final Project project;
 
   /// index of image on project
@@ -299,6 +323,7 @@ class WProjectItemPreview extends StatelessWidget {
 
   final List<dynamic>? layoutExtractList;
   final List<double> ratioTarget;
+  final List<double>? ratioWHImages;
 
   const WProjectItemPreview(
       {super.key,
@@ -308,6 +333,7 @@ class WProjectItemPreview extends StatelessWidget {
       this.onRemove,
       this.layoutExtractList,
       this.coverFile,
+      this.ratioWHImages,
       required this.ratioTarget});
 
   List<double> _getRealWH(BuildContext context) {
@@ -341,9 +367,9 @@ class WProjectItemPreview extends StatelessWidget {
     }
     return [width, height];
   }
-
+  
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Stack(
       children: [
         Container(
@@ -352,13 +378,28 @@ class WProjectItemPreview extends StatelessWidget {
             children: [
               Stack(
                 children: [
-                  (project.paper?.title == LIST_PAGE_SIZE[0].title && layoutExtractList!=null)
-                      ? Image.file(
-                          layoutExtractList![0][0],
-                          fit: BoxFit.fitWidth,
-                          width: _getRealWH(context)[0], // delete height
-                          filterQuality: FilterQuality.high,
-                        )
+                  (project.paper?.title == LIST_PAGE_SIZE[0].title &&
+                          layoutExtractList != null)
+                      ? ratioWHImages == null
+                          ? Image.file(
+                              layoutExtractList![0][0],
+                              fit: BoxFit.fill,
+                              width: _getRealWH(context)[0],
+                              filterQuality: FilterQuality.high,
+                            )
+                          : AspectRatio(
+                              aspectRatio:
+                                  ratioWHImages![indexImage] > INFINITY_NUMBER
+                                      ? 1.0
+                                      : ratioWHImages![indexImage],
+                              child: Image.file(
+                                layoutExtractList![0][0],
+                                fit: BoxFit.fill,
+                                width: _getRealWH(context)[0],
+                                height: _getRealWH(context)[0] / ratioWHImages![indexImage], // delete height
+                                filterQuality: FilterQuality.high,
+                              ),
+                            )
                       : Container(
                           width: _getRealWH(context)[0],
                           height: _getRealWH(context)[1],

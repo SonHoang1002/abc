@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
@@ -77,11 +76,11 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
     _getFileSize(_sliderValue);
   }
 
-  Future<void> _getFileSize(
+  void _getFileSize(
     double value,
-  ) async {
-    print("");
-    Future.delayed(const Duration(milliseconds: 1000), () async {
+  ) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    Future.delayed(const Duration(milliseconds: 100), () async {
       List<double> ratioWHImages = [];
       for (var key in _listGlobalKeyForImages) {
         final renderBox = key.currentContext?.findRenderObject() as RenderBox;
@@ -91,13 +90,13 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
       // ignore: use_build_context_synchronously
       final pdfUint8List = await createPdfFile(
           _project, context, _getRatioProject(LIST_RATIO_PDF),
-          compressValue: widget.sliderCompressionLevelValue,
-          ratioWHImages: ratioWHImages);
+          compressValue: value, ratioWHImages: ratioWHImages);
       // render to file
       final pdfFile = await convertUint8ListToFilePDF(pdfUint8List);
       _sizeOfFileValue = convertByteUnit((await pdfFile.length()) / 1024);
       setState(() {});
       widget.reRenderFunction();
+    });
     });
   }
 
@@ -202,23 +201,7 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
                             project: _project,
                             isFocusByLongPress: _isFocusProject,
                             index: index,
-                            imageKeys: _listGlobalKeyForImages,
-                            onRemove: (value) async {
-                              int indexRemove =
-                                  _project.listMedia.indexOf(value);
-                              if (indexRemove != -1) {
-                                List abc = _project.listMedia;
-                                List<GlobalKey> listKeys =
-                                    _listGlobalKeyForImages;
-                                abc.removeAt(indexRemove);
-                                listKeys.removeAt(indexRemove);
-                                _project = _project.copyWith(listMedia: abc);
-                                _listGlobalKeyForImages = listKeys;
-                                setState(() {});
-                                widget.reRenderFunction();
-                                await _getFileSize(_sliderValue);
-                              }
-                            },
+                            onRemove: (value) async {},
                           )),
                   children: _project.listMedia.map((e) {
                     final index = _project.listMedia.indexOf(e);
@@ -228,13 +211,20 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
                       isFocusByLongPress: _isFocusProject,
                       index: index,
                       imageKeys: _listGlobalKeyForImages,
-                      onRemove: (value) {
-                        setState(() {
-                          _project = _project.copyWith(
-                              listMedia: _project.listMedia
-                                  .where((element) => element != value)
-                                  .toList());
-                        });
+                      onRemove: (value) async {
+                        int indexRemove = _project.listMedia.indexOf(value);
+                        if (indexRemove != -1) {
+                          List abc = List.from(_project.listMedia);
+                          List<GlobalKey> listKeys =
+                              List.from(_listGlobalKeyForImages);
+                          abc.removeAt(indexRemove);
+                          listKeys.removeAt(indexRemove);
+                          _project = _project.copyWith(listMedia: abc);
+                          _listGlobalKeyForImages = listKeys;
+                          setState(() {});
+                          widget.reRenderFunction();
+                          _getFileSize(_sliderValue);
+                        }
                       },
                     );
                   }).toList(),
@@ -340,9 +330,14 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
                         min: 0,
                         max: 1,
                         onChangeEnd: (value) async {
-                          _project = _project.copyWith(compression: value);
+                          _project = _project.copyWith(
+                            compression: value,
+                          );
+                          _listGlobalKeyForImages =
+                              List<GlobalKey>.from(_listGlobalKeyForImages);
                           setState(() {});
                           widget.reRenderFunction();
+                          print("_sliderValue ${_sliderValue}");
                           _getFileSize(value);
                         },
                         thumbColor: colorWhite,

@@ -70,7 +70,6 @@ dependencies:
   #   git:
   #     url: https://github.com/dattm2593/document_scanner_flutter.git
   #     ref: 6ead0cf989e3d3567c785ab2774737a4f8e7bcd7
-
 dev_dependencies:
   flutter_test:
     sdk: flutter

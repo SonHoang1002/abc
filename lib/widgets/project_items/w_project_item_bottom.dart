@@ -27,7 +27,6 @@ class WProjectItemHomeBottom extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("imageKeys ${imageKeys?.length}");
     return Container(
       key: key,
       padding: const EdgeInsets.all(3),

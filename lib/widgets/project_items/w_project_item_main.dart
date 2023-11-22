@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/commons/themes.dart';
 import 'package:photo_to_pdf/models/project.dart';
@@ -28,8 +29,8 @@ class WProjectItemEditor extends StatelessWidget {
   WProjectItemEditor(
       {super.key,
       required this.project,
-      this.isFocusByLongPress = false,
       required this.indexImage,
+      this.isFocusByLongPress = false,
       this.title,
       this.onRemove,
       this.layoutExtractList,
@@ -75,6 +76,61 @@ class WProjectItemEditor extends StatelessWidget {
     }
   }
 
+  Widget _buildNormalLayoutMedia(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Container(
+        width: _getRealWH(context)[0],
+        height: _getRealWH(context)[1],
+        decoration: BoxDecoration(color: project.backgroundColor, boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            spreadRadius: 0,
+            blurRadius: 7,
+            offset: const Offset(0, 2),
+          ),
+        ]),
+        child: LayoutMedia(
+            indexImage: indexImage,
+            project: project,
+            layoutExtractList: layoutExtractList,
+            widthAndHeight: _getRealWH(context),
+            useCoverPhoto: useCoverPhoto,
+            listWH: _getRealWH(context)),
+      ),
+    );
+  }
+
+  Widget _buildNoneLayoutMedia(BuildContext context) {
+    return Container(
+      width: _getRealWH(context)[0],
+      decoration: BoxDecoration(color: project.backgroundColor, boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.2),
+          spreadRadius: 0,
+          blurRadius: 7,
+          offset: const Offset(0, 2),
+        ),
+      ]),
+      child: Image.file(
+        layoutExtractList?[0][0],
+        key: imageKey,
+        fit: BoxFit.fitWidth,
+        width: _getRealWH(context)[0], // delete height
+        filterQuality: FilterQuality.high,
+      ),
+    );
+  }
+
+  Widget _buildMainRootItem(BuildContext context) {
+    if (useCoverPhoto == true ||
+        !(project.paper?.title == LIST_PAGE_SIZE[0].title &&
+            layoutExtractList != null)) {
+      return _buildNormalLayoutMedia(context);
+    }
+    return _buildNoneLayoutMedia(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     _size = MediaQuery.sizeOf(context);
@@ -92,51 +148,9 @@ class WProjectItemEditor extends StatelessWidget {
               Stack(
                 alignment: Alignment.bottomCenter,
                 children: [
-                  Stack(
-                    alignment: Alignment.centerLeft,
-                    children: [
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const SizedBox(),
-                          (project.paper?.title == LIST_PAGE_SIZE[0].title &&
-                                  layoutExtractList != null)
-                              ? Image.file(
-                                  layoutExtractList?[0][0],
-                                  key: imageKey,
-                                  fit: BoxFit.fitWidth,
-                                  width:
-                                      _getRealWH(context)[0], // delete height
-                                  filterQuality: FilterQuality.high,
-                                )
-                              : Padding(
-                                  padding: const EdgeInsets.all(10),
-                                  child: Container(
-                                    width: _getRealWH(context)[0],
-                                    height: _getRealWH(context)[1],
-                                    decoration: BoxDecoration(
-                                        color: project.backgroundColor,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color:
-                                                Colors.black.withOpacity(0.2),
-                                            spreadRadius: 0,
-                                            blurRadius: 7,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ]),
-                                    child: LayoutMedia(
-                                        indexImage: indexImage,
-                                        project: project,
-                                        layoutExtractList: layoutExtractList,
-                                        widthAndHeight: _getRealWH(context),
-                                        useCoverPhoto: useCoverPhoto,
-                                        listWH: _getRealWH(context)),
-                                  ),
-                                ),
-                        ],
-                      ),
-                    ],
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [const SizedBox(), _buildMainRootItem(context)],
                   ),
                   Container(
                       height: _getRealWH(context)[1] + 20,
@@ -144,7 +158,7 @@ class WProjectItemEditor extends StatelessWidget {
                       alignment: Alignment.topLeft,
                       child: Stack(
                         children: [
-                          Container(
+                          const SizedBox(
                             width: 30,
                             height: 30,
                           ),

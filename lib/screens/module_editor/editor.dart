@@ -81,6 +81,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     super.initState();
     _project = widget.project;
     _fileNameController.text = _project.title;
+    _autofocusFileName = _project.title == "Untitled" || _project.title == "";
 
     _paperConfig = {
       "mediaSrc": {
@@ -110,6 +111,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         "content": "Edit"
       };
     }
+
     _photosConfig = {
       "mediaSrc": {
         "light": "${PATH_PREFIX_ICON}icon_frame_border_lm.png",
@@ -118,6 +120,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
       "title": "Selected Photos",
       "content": "${_project.listMedia.length} Photos"
     };
+
     if (_project.coverPhoto?.frontPhoto != null ||
         _project.coverPhoto?.backPhoto != null) {
       _coverConfig = {
@@ -138,8 +141,8 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         "content": "None"
       };
     }
+
     _sliderCompressionValue = _project.compression;
-    _autofocusFileName = _project.title == "Untitled" || _project.title == "";
     _sizeOfFile = "0.0 MB";
     _segmentCurrentIndex = _project.useAvailableLayout == true ? 0 : 1;
     _isShowPreview = false;
@@ -148,15 +151,21 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         _project.listMedia.map((e) => GlobalKey()).toList();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       await _getFileSize();
+      if (_autofocusFileName) {
+        _fileNameController.selection = TextSelection(
+            baseOffset: 0, extentOffset: _fileNameController.value.text.length);
+      }
     });
   }
 
   void _updateRatioWHImages() {
     List<double> listRatioWH = [];
+    List<Size> testAbc = [];
     for (var key in _listGlobalKeyForImages) {
       final renderBox = key.currentContext?.findRenderObject() as RenderBox;
       final imageSize = renderBox.size;
       listRatioWH.add(imageSize.width / imageSize.height);
+      testAbc.add(imageSize);
       ref
           .read(ratioWHImagesControllerProvider.notifier)
           .setRatioWHImages(listRatioWH);
@@ -164,17 +173,19 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   }
 
   Future<void> _getFileSize() async {
-    Future.delayed(Duration.zero, () async {
-      // goi update lai ratioWH cua moi anh neu nhu preset dang la none
-      if (_project.paper?.title == "None") {
-        _updateRatioWHImages();
-      }
-      _sizeOfFile = convertByteUnit(await getPdfFileSize(
-          _project, context, _getRatioProject(LIST_RATIO_PDF),
-          compressValue: _sliderCompressionValue,
-          ratioWHImages:
-              ref.watch(ratioWHImagesControllerProvider).listRatioWH));
-      setState(() {});
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      Future.delayed(Duration.zero, () async {
+        // goi update lai ratioWH cua moi anh neu nhu preset dang la none
+        if (_project.paper?.title == "None") {
+          _updateRatioWHImages();
+        }
+        _sizeOfFile = convertByteUnit(await getPdfFileSize(
+            _project, context, _getRatioProject(LIST_RATIO_PDF),
+            compressValue: _sliderCompressionValue,
+            ratioWHImages:
+                ref.watch(ratioWHImagesControllerProvider).listRatioWH));
+        setState(() {});
+      });
     });
   }
 
@@ -594,7 +605,8 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                     ..._photosConfig,
                     "content": "${_project.listMedia.length} Photos"
                   };
-                  _listGlobalKeyForImages = newProject.listMedia.map((e) => GlobalKey()).toList();
+                  _listGlobalKeyForImages =
+                      newProject.listMedia.map((e) => GlobalKey()).toList();
                   _sizeOfFile = size;
                   _sliderCompressionValue = sliderValue;
                 });
@@ -738,6 +750,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         });
         return Wrap(
           alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.end,
           children: abc.map((e) {
             final index = abc.indexOf(e);
             return Container(

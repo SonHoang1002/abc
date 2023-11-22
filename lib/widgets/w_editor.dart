@@ -7,7 +7,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/commons/themes.dart';
-import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:photo_to_pdf/widgets/w_divider.dart';
@@ -270,7 +269,7 @@ Widget buildFileNameInput(BuildContext context, Project project,
                   Theme.of(context).textTheme.bodyLarge!.color!)),
         ),
         placeholder: "Untitled",
-        placeholderStyle: buildTextStyleInputFileName(colorBlue),
+        placeholderStyle: buildTextStyleInputFileName(colorBlue.withOpacity(0.3)),
         autofocus: autofocus,
       ),
     ),
