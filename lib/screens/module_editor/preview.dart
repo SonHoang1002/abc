@@ -38,7 +38,7 @@ class _PreviewState extends ConsumerState<PreviewProject>
   late Animation<double> scaleAnimation;
 
   late int _indexCurrentCarousel;
-  List<double>? _listRatioWHImage;
+  List<double> _listRatioWHImage = [];
 
   @override
   void initState() {
@@ -48,19 +48,19 @@ class _PreviewState extends ConsumerState<PreviewProject>
       if (_project.useAvailableLayout == true) {
         _previewExtractList = extractList1(
             LIST_LAYOUT_SUGGESTION[_project.layoutIndex], _project.listMedia);
-      } else {
-        _previewExtractList =
-            extractList(_project.placements!.length, _project.listMedia);
         if (_project.paper?.title == LIST_PAGE_SIZE[0].title) {
           _listRatioWHImage =
               List.from(ref.read(ratioWHImagesControllerProvider).listRatioWH);
           if (_project.coverPhoto?.frontPhoto != null) {
-            _listRatioWHImage!.insert(0, -1);
+            _listRatioWHImage.insert(0, 1 / INFINITY_NUMBER - 1);
           }
-          if (_project.coverPhoto?.backPhoto) {
-            _listRatioWHImage!.add(-1);
+          if (_project.coverPhoto?.backPhoto != null) {
+            _listRatioWHImage.add(1 / INFINITY_NUMBER - 1);
           }
         }
+      } else {
+        _previewExtractList =
+            extractList(_project.placements!.length, _project.listMedia);
       }
     } else {
       _previewExtractList = [BLANK_PAGE];
@@ -97,13 +97,30 @@ class _PreviewState extends ConsumerState<PreviewProject>
     controller.dispose();
   }
 
+  Widget _buildTitleCarouselItem(int currentIndex) {
+    String value = "";
+    if(_project.coverPhoto?.frontPhoto != null){
+      value = "Page ${currentIndex}";
+    }else{
+      value = "Page ${currentIndex+1}";
+    }
+    if (_project.coverPhoto?.frontPhoto != null && currentIndex == 0 ||
+        _project.coverPhoto?.backPhoto != null &&
+            currentIndex == _previewExtractList.length - 1) {
+      value = "Cover";
+    }
+
+    return WTextContent(
+      value: value,
+      textSize: 12,
+      textFontWeight: FontWeight.w600,
+      textLineHeight: 14.32,
+      textColor: Theme.of(context).textTheme.bodyMedium!.color,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // if (widget.project.coverPhoto?.frontPhoto != null) {
-    //   _indexCurrentCarousel = widget.indexPage + 1;
-    // } else {
-    //   _indexCurrentCarousel = widget.indexPage;
-    // }
     final size = MediaQuery.sizeOf(context);
     return Stack(
       children: [
@@ -160,16 +177,7 @@ class _PreviewState extends ConsumerState<PreviewProject>
                                   ],
                                 ),
                               ),
-                              WTextContent(
-                                value: "Page ${currentIndex + 1}",
-                                textSize: 12,
-                                textFontWeight: FontWeight.w600,
-                                textLineHeight: 14.32,
-                                textColor: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium!
-                                    .color,
-                              ),
+                              _buildTitleCarouselItem(currentIndex),
                               WSpacer(
                                 height: 20,
                               ),
@@ -236,28 +244,24 @@ class _PreviewState extends ConsumerState<PreviewProject>
         _previewExtractList[currentIndex] is! File &&
         _previewExtractList[currentIndex] is! String &&
         _previewExtractList[currentIndex]?['front_cover'] != null) {
-      return Container(
-        margin: const EdgeInsets.only(right: 10),
-        child: WProjectItemPreview(
-          project: _project,
-          indexImage: 0,
-          coverFile: _previewExtractList[currentIndex]?['front_cover'],
-          ratioTarget: ratioTarget,
-        ),
+      return WProjectItemPreview(
+        project: _project,
+        indexImage: 0,
+        coverFile: _previewExtractList[currentIndex]?['front_cover'],
+        ratioTarget: ratioTarget,
+        ratioWHImages: _listRatioWHImage,
       );
     }
     if (_previewExtractList[currentIndex] is! List &&
         _previewExtractList[currentIndex] is! File &&
         _previewExtractList[currentIndex] is! String &&
         _previewExtractList[currentIndex]?['back_cover'] != null) {
-      return Container(
-        margin: const EdgeInsets.only(right: 10),
-        child: WProjectItemPreview(
-          project: _project,
-          indexImage: 0,
-          coverFile: _previewExtractList[currentIndex]?['back_cover'],
-          ratioTarget: ratioTarget,
-        ),
+      return WProjectItemPreview(
+        project: _project,
+        indexImage: 0,
+        coverFile: _previewExtractList[currentIndex]?['back_cover'],
+        ratioTarget: ratioTarget,
+        ratioWHImages: _listRatioWHImage,
       );
     }
 
@@ -323,21 +327,21 @@ class WProjectItemPreview extends ConsumerWidget {
 
   final List<dynamic>? layoutExtractList;
   final List<double> ratioTarget;
-  final List<double>? ratioWHImages;
+  final List<double> ratioWHImages;
 
   const WProjectItemPreview(
       {super.key,
       required this.project,
       required this.indexImage,
+      required this.ratioWHImages,
       this.title,
       this.onRemove,
       this.layoutExtractList,
       this.coverFile,
-      this.ratioWHImages,
       required this.ratioTarget});
 
   List<double> _getRealWH(BuildContext context) {
-    final MAXWIDTH = MediaQuery.sizeOf(context).width * 0.7;
+    final MAXWIDTH = MediaQuery.sizeOf(context).width * 0.6;
     final MAXHEIGHT = MediaQuery.sizeOf(context).height * 0.55;
 
     double height = MAXHEIGHT;
@@ -367,7 +371,7 @@ class WProjectItemPreview extends ConsumerWidget {
     }
     return [width, height];
   }
-  
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Stack(
@@ -380,24 +384,23 @@ class WProjectItemPreview extends ConsumerWidget {
                 children: [
                   (project.paper?.title == LIST_PAGE_SIZE[0].title &&
                           layoutExtractList != null)
-                      ? ratioWHImages == null
+                      ? 1 / ratioWHImages[indexImage] > INFINITY_NUMBER
                           ? Image.file(
                               layoutExtractList![0][0],
                               fit: BoxFit.fill,
                               width: _getRealWH(context)[0],
                               filterQuality: FilterQuality.high,
                             )
-                          : AspectRatio(
-                              aspectRatio:
-                                  ratioWHImages![indexImage] > INFINITY_NUMBER
-                                      ? 1.0
-                                      : ratioWHImages![indexImage],
-                              child: Image.file(
-                                layoutExtractList![0][0],
-                                fit: BoxFit.fill,
-                                width: _getRealWH(context)[0],
-                                height: _getRealWH(context)[0] / ratioWHImages![indexImage], // delete height
-                                filterQuality: FilterQuality.high,
+                          : Container(
+                              constraints: const BoxConstraints(maxHeight: 400),
+                              alignment: Alignment.center,
+                              child: AspectRatio(
+                                aspectRatio: ratioWHImages[indexImage],
+                                child: Image.file(
+                                  layoutExtractList![0][0],
+                                  fit: BoxFit.fill,
+                                  filterQuality: FilterQuality.high,
+                                ),
                               ),
                             )
                       : Container(

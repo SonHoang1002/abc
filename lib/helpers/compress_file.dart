@@ -8,7 +8,6 @@ Future<List<File>> compressImageFile(
   double compressValue,
 ) async {
   List<File> results = [];
-  print("imageFiles from compressImage ${imageFiles}");
   for (var element in imageFiles) {
     String filePath = element.absolute.path;
     final lastIndex = _getLastIndexOfFormat(filePath);

@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/commons/themes.dart';
@@ -9,7 +12,7 @@ import 'package:photo_to_pdf/widgets/w_text_content.dart';
 import "package:provider/provider.dart" as pv;
 
 // ignore: must_be_immutable
-class WProjectItemEditor extends StatelessWidget {
+class WProjectItemEditor extends ConsumerWidget {
   final Project project;
   final bool isFocusByLongPress;
 
@@ -25,6 +28,7 @@ class WProjectItemEditor extends StatelessWidget {
   // chi su dung key nay trong truong hop paper size la none,
   // nham muc dich lay ra ratio width - height cua anh, phuc vu cho viec tao pdf
   final GlobalKey? imageKey;
+  final List<double>? ratioWHImages;
 
   WProjectItemEditor(
       {super.key,
@@ -37,11 +41,21 @@ class WProjectItemEditor extends StatelessWidget {
       this.onTap,
       this.useCoverPhoto,
       this.imageKey,
+      this.ratioWHImages,
       this.ratioTarget = LIST_RATIO_PROJECT_ITEM});
 
   double? maxHeight;
   double? maxWidth;
   late Size _size;
+  List<BoxShadow> listShadow = [
+    const BoxShadow(
+      // color: Color.fromRGBO(0, 0, 0, 0.1),
+      color: colorBlue,
+      spreadRadius: -15,
+      blurRadius: 30,
+      offset: Offset(0, 2),
+    )
+  ];
 
   double _getWidth(BuildContext context) {
     return (MediaQuery.sizeOf(context).width * 0.4) * (1 + ratioTarget![0]);
@@ -82,118 +96,180 @@ class WProjectItemEditor extends StatelessWidget {
       child: Container(
         width: _getRealWH(context)[0],
         height: _getRealWH(context)[1],
-        decoration: BoxDecoration(color: project.backgroundColor, boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            spreadRadius: 0,
-            blurRadius: 7,
-            offset: const Offset(0, 2),
-          ),
-        ]),
-        child: LayoutMedia(
-            indexImage: indexImage,
-            project: project,
-            layoutExtractList: layoutExtractList,
-            widthAndHeight: _getRealWH(context),
-            useCoverPhoto: useCoverPhoto,
-            listWH: _getRealWH(context)),
+        decoration: BoxDecoration(
+            color: project.backgroundColor, boxShadow: listShadow),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            LayoutMedia(
+                indexImage: indexImage,
+                project: project,
+                layoutExtractList: layoutExtractList,
+                widthAndHeight: _getRealWH(context),
+                useCoverPhoto: useCoverPhoto,
+                listWH: _getRealWH(context)),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildNoneLayoutMedia(BuildContext context) {
-    return Container(
+    dynamic mediaValue = layoutExtractList?[0][0];
+    if (project.coverPhoto?.frontPhoto != null && useCoverPhoto == true) {
+      mediaValue = project.coverPhoto?.frontPhoto;
+    }
+    if (project.listMedia.isEmpty ||
+        (project.listMedia.length == 1 && project.listMedia[0] is String)) {
+      mediaValue = BLANK_PAGE;
+    }
+    return SizedBox(
       width: _getRealWH(context)[0],
-      decoration: BoxDecoration(color: project.backgroundColor, boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.2),
-          spreadRadius: 0,
-          blurRadius: 7,
-          offset: const Offset(0, 2),
-        ),
-      ]),
-      child: Image.file(
-        layoutExtractList?[0][0],
-        key: imageKey,
-        fit: BoxFit.fitWidth,
-        width: _getRealWH(context)[0], // delete height
-        filterQuality: FilterQuality.high,
+      height: _getRealWH(context)[1],
+      child: Stack(
+        alignment: Alignment.bottomCenter,
+        children: [
+          Stack(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(3.0),
+                decoration: BoxDecoration(boxShadow: listShadow),
+                child: _buildImageWidget(context, project, mediaValue),
+              ),
+              Stack(
+                children: [
+                  const SizedBox(
+                    width: 30,
+                    height: 30,
+                  ),
+                  isFocusByLongPress
+                      ? Positioned.fill(
+                          top: -10,
+                          left: -10,
+                          child: GestureDetector(
+                            onTap: onRemove,
+                            child: Image.asset(
+                              pv.Provider.of<ThemeManager>(context).isDarkMode
+                                  ? "${PATH_PREFIX_ICON}icon_remove_dark.png"
+                                  : "${PATH_PREFIX_ICON}icon_remove_light.png",
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        )
+                      : const SizedBox(),
+                ],
+              )
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildMainRootItem(BuildContext context) {
-    if (useCoverPhoto == true ||
-        !(project.paper?.title == LIST_PAGE_SIZE[0].title &&
-            layoutExtractList != null)) {
-      return _buildNormalLayoutMedia(context);
+  Widget _buildImageWidget(
+    BuildContext context,
+    Project project,
+    dynamic mediaValue,
+  ) {
+    if (mediaValue == null) {
+      return Container();
+    } else {
+      if (mediaValue is File) {
+        return Image.file(
+          mediaValue,
+          key: imageKey,
+          fit: BoxFit.fitWidth,
+          filterQuality: FilterQuality.high,
+          // width: _getRealWH(context)[0],
+        );
+      } else {
+        if (mediaValue is String) {
+          return Image.asset(
+            mediaValue,
+            key: imageKey,
+            fit: BoxFit.fitWidth,
+            filterQuality: FilterQuality.high,
+          );
+        } else {
+          return const SizedBox();
+        }
+      }
     }
-    return _buildNoneLayoutMedia(context);
+  }
+
+  // hien anh anh bia(cover photo) khi cho phep su dung coverphoto va data ko null,
+  Widget _buildMainRootItem(BuildContext context) {
+    if ((project.paper?.title != LIST_PAGE_SIZE[0].title)) {
+      return Container(
+          // color: colorRed.withOpacity(0.3),
+          child: _buildNormalLayoutMedia(context));
+    }
+    return Container(
+        // color: colorBlue.withOpacity(0.3),
+        child: _buildNoneLayoutMedia(context));
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     _size = MediaQuery.sizeOf(context);
-    maxHeight ??= _size.width * 0.35;
-    maxWidth ??= _size.width * 0.35;
+    maxHeight ??= _size.width * 0.415;
+    maxWidth ??= _size.width * 0.415;
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.all(4),
-        child: Align(
-          alignment: Alignment.bottomCenter,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Stack(
-                alignment: Alignment.bottomCenter,
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [const SizedBox(), _buildMainRootItem(context)],
-                  ),
-                  Container(
-                      height: _getRealWH(context)[1] + 20,
-                      width: _getRealWH(context)[0] + 20,
-                      alignment: Alignment.topLeft,
-                      child: Stack(
-                        children: [
-                          const SizedBox(
-                            width: 30,
-                            height: 30,
-                          ),
-                          isFocusByLongPress
-                              ? Positioned.fill(
-                                  top: -10,
-                                  left: -10,
-                                  child: GestureDetector(
-                                    onTap: onRemove,
-                                    child: Image.asset(
-                                      pv.Provider.of<ThemeManager>(context)
-                                              .isDarkMode
-                                          ? "${PATH_PREFIX_ICON}icon_remove_dark.png"
-                                          : "${PATH_PREFIX_ICON}icon_remove_light.png",
-                                      fit: BoxFit.cover,
-                                    ),
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Stack(
+              alignment: Alignment.bottomCenter,
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [const SizedBox(), _buildMainRootItem(context)],
+                ),
+                Container(
+                    height: _getRealWH(context)[1] + 20,
+                    width: _getRealWH(context)[0] + 20,
+                    alignment: Alignment.topLeft,
+                    child: Stack(
+                      children: [
+                        const SizedBox(
+                          width: 30,
+                          height: 30,
+                        ),
+                        isFocusByLongPress &&
+                                project.paper?.title != LIST_PAGE_SIZE[0].title
+                            ? Positioned.fill(
+                                top: -10,
+                                left: -10,
+                                child: GestureDetector(
+                                  onTap: onRemove,
+                                  child: Image.asset(
+                                    pv.Provider.of<ThemeManager>(context)
+                                            .isDarkMode
+                                        ? "${PATH_PREFIX_ICON}icon_remove_dark.png"
+                                        : "${PATH_PREFIX_ICON}icon_remove_light.png",
+                                    fit: BoxFit.cover,
                                   ),
-                                )
-                              : const SizedBox(),
-                        ],
-                      ))
-                ],
-              ),
-              WSpacer(
-                height: 10,
-              ),
-              WTextContent(
-                value: title ?? "",
-                textFontWeight: FontWeight.w600,
-                textLineHeight: 14.32,
-                textSize: 12,
-                textColor: Theme.of(context).textTheme.bodyMedium!.color,
-              ),
-            ],
-          ),
+                                ),
+                              )
+                            : const SizedBox(),
+                      ],
+                    ))
+              ],
+            ),
+            WSpacer(
+              height: 5,
+            ),
+            WTextContent(
+              value: title ?? "",
+              textFontWeight: FontWeight.w600,
+              textLineHeight: 14.32,
+              textSize: 12,
+              textColor: Theme.of(context).textTheme.bodyMedium!.color,
+            ),
+          ],
         ),
       ),
     );

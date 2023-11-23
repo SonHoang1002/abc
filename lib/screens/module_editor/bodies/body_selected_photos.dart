@@ -80,7 +80,7 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
     double value,
   ) {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-    Future.delayed(const Duration(milliseconds: 100), () async {
+    Future.delayed(const Duration(milliseconds: 200), () async {
       List<double> ratioWHImages = [];
       for (var key in _listGlobalKeyForImages) {
         final renderBox = key.currentContext?.findRenderObject() as RenderBox;
@@ -92,8 +92,12 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
           _project, context, _getRatioProject(LIST_RATIO_PDF),
           compressValue: value, ratioWHImages: ratioWHImages);
       // render to file
+      
       final pdfFile = await convertUint8ListToFilePDF(pdfUint8List);
-      _sizeOfFileValue = convertByteUnit((await pdfFile.length()) / 1024);
+      print("pdfFile ${pdfFile}");
+      final filseSize =await pdfFile.length();
+      print("filseSize ${filseSize}");
+      _sizeOfFileValue = convertByteUnit(filseSize / 1024);
       setState(() {});
       widget.reRenderFunction();
     });

@@ -81,7 +81,6 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // bool isDarkMode = Provider.of<ThemeManager>(context).isDarkMode;
     _listProject = ref.watch(projectControllerProvider).listProject;
     return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -175,10 +174,8 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
             _disableReOrderFocus();
           },
           child: ReorderableGridView.count(
-            padding: const EdgeInsets.only(left: 7, right: 7),
+            padding: const EdgeInsets.only(left: 10, right: 10),
             shrinkWrap: true,
-            crossAxisSpacing: 5,
-            mainAxisSpacing: 5,
             crossAxisCount: 2,
             childAspectRatio: 9 / 10.5,
             onReorder: (oldIndex, newIndex) {

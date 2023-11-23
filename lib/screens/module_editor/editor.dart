@@ -174,7 +174,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
 
   Future<void> _getFileSize() async {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      Future.delayed(Duration.zero, () async {
+      Future.delayed(const Duration(milliseconds: 200), () async {
         // goi update lai ratioWH cua moi anh neu nhu preset dang la none
         if (_project.paper?.title == "None") {
           _updateRatioWHImages();
@@ -238,6 +238,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                         _onTapFileNameInput();
                       },
                     ),
+                    
                     WSpacer(
                       height: 10,
                     ),
@@ -249,9 +250,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                               borderRadius: BorderRadius.circular(10),
                               color: Theme.of(context).cardColor,
                             ),
-                            child: SingleChildScrollView(
-                                padding: const EdgeInsets.only(top: 15),
-                                child: _buildPreviewProjectBody()))),
+                            child: _buildPreviewProjectBody())),
                     // page size and bottom buttons
                     SizedBox(
                       child: Column(
@@ -674,6 +673,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
               project: _project.copyWith(listMedia: [BLANK_PAGE]),
               indexImage: 0,
               title: "Page ${1}",
+              ratioWHImages: ref.watch(ratioWHImagesControllerProvider).listRatioWH,
               onTap: () {
                 _previewRatio = LIST_RATIO_PREVIEW;
                 if (_project.paper != null &&
@@ -705,14 +705,18 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         setState(() {
           _lengthOfProjectList = list.length;
         });
-        return Wrap(
-          alignment: WrapAlignment.center,
-          children: list.map((e) {
-            final index = list.indexOf(e);
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 10),
-              child: SizedBox(
+        return GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisSpacing: 5,
+              mainAxisSpacing: 2,
+              crossAxisCount: 2,
+              childAspectRatio: 9 / 10.5,
+            ),
+            itemCount: list.length,
+            itemBuilder: (context, index) {
+              return SizedBox(
                 width: _size.width * 0.4,
+                height: 300,
                 child: WProjectItemEditor(
                     key: ValueKey(_project.listMedia[index]),
                     project: _project,
@@ -720,6 +724,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                     indexImage: index,
                     layoutExtractList: list[index],
                     title: "Page ${index + 1}",
+                    ratioWHImages: ref.watch(ratioWHImagesControllerProvider).listRatioWH,
                     onTap: () {
                       _previewRatio = LIST_RATIO_PREVIEW;
                       if (_project.paper != null &&
@@ -738,54 +743,54 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                       });
                     },
                     ratioTarget: _getRatioProject(LIST_RATIO_PROJECT_ITEM)),
-              ),
-            );
-          }).toList(),
-        );
+              );
+            });
       } else {
         final abc = extractList1(
             LIST_LAYOUT_SUGGESTION[_project.layoutIndex], _project.listMedia);
         setState(() {
           _lengthOfProjectList = abc.length;
         });
-        return Wrap(
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.end,
-          children: abc.map((e) {
-            final index = abc.indexOf(e);
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 5),
-              child: SizedBox(
-                width: _size.width * 0.4,
-                child: WProjectItemEditor(
-                  key: ValueKey(_project.listMedia[index]),
-                  project: _project,
-                  indexImage: index,
-                  layoutExtractList: abc[index],
-                  imageKey: _listGlobalKeyForImages[index],
-                  title: "Page ${index + 1}",
-                  onTap: () {
-                    _previewRatio = LIST_RATIO_PREVIEW;
-                    if (_project.paper != null &&
-                        _project.paper!.height != 0 &&
-                        _project.paper!.width != 0) {
-                      _previewRatio = [
-                        LIST_RATIO_PREVIEW[0],
-                        LIST_RATIO_PREVIEW[0] *
-                            _project.paper!.height /
-                            _project.paper!.width
-                      ];
-                    }
-                    setState(() {
-                      _indexCurrentCarousel = index;
-                      _isShowPreview = true;
-                    });
-                  },
-                  ratioTarget: _getRatioProject(LIST_RATIO_PROJECT_ITEM),
-                ),
+        return GridView.builder(
+          itemCount: abc.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisSpacing: 5,
+            mainAxisSpacing: 5,
+            crossAxisCount: 2,
+            childAspectRatio: 9 / 10.5,
+          ),
+          itemBuilder: (context, index) {
+            return SizedBox(
+              width: _size.width * 0.4,
+              height: 300,
+              child: WProjectItemEditor(
+                key: ValueKey(_project.listMedia[index]),
+                project: _project,
+                indexImage: index,ratioWHImages: ref.watch(ratioWHImagesControllerProvider).listRatioWH,
+                layoutExtractList: abc[index],
+                imageKey: _listGlobalKeyForImages[index],
+                title: "Page ${index + 1}",
+                onTap: () {
+                  _previewRatio = LIST_RATIO_PREVIEW;
+                  if (_project.paper != null &&
+                      _project.paper!.height != 0 &&
+                      _project.paper!.width != 0) {
+                    _previewRatio = [
+                      LIST_RATIO_PREVIEW[0],
+                      LIST_RATIO_PREVIEW[0] *
+                          _project.paper!.height /
+                          _project.paper!.width
+                    ];
+                  }
+                  setState(() {
+                    _indexCurrentCarousel = index;
+                    _isShowPreview = true;
+                  });
+                },
+                ratioTarget: _getRatioProject(LIST_RATIO_PROJECT_ITEM),
               ),
             );
-          }).toList(),
+          },
         );
       }
     }

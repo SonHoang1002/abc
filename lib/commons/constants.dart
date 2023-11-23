@@ -7,7 +7,7 @@ import 'package:photo_to_pdf/models/placement.dart';
 const String PATH_PREFIX_ICON = "assets/icons/";
 const String PATH_PREFIX_IMAGE = "assets/images/";
 const String MY_CUSTOM_FONT = "FontsFree-Net-SFProDisplay-Regular";
-const String BLANK_PAGE = "${PATH_PREFIX_IMAGE}test_blank.png";
+const String BLANK_PAGE = "${PATH_PREFIX_IMAGE}blank_page.png";
 // ignore: non_constant_identifier_names
 List<PaperAttribute> LIST_PAGE_SIZE = [
   PaperAttribute(title: "None", width: 8.5, height: 11.0, unit: INCH),
@@ -243,3 +243,12 @@ const String F_WEBP = ".webp";
 const List<String> IMAGE_FORMAT = [F_JPEG, F_JPG, F_PNG, F_HEIC, F_WEBP];
 
 const double INFINITY_NUMBER = 1021029320900;
+
+List<BoxShadow> SHADOWS = [
+  BoxShadow(
+    color: Colors.black.withOpacity(0.2),
+    spreadRadius: -15,
+    blurRadius: 10,
+    offset: const Offset(0, 10),
+  ),
+];

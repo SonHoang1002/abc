@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -91,6 +92,12 @@ Future<Uint8List> createPdfFile(
   }
 
   PdfPageFormat? pdfPageFormat;
+  Unit? unit =_project.paper?.unit;
+  double valueUnit;
+  // if(unit?.title ==POINT.title){
+
+  // }
+   
   if (_project.paper != null &&
       ![null, 0].contains(_project.paper?.height) &&
       _project.paper?.width != null) {
@@ -117,6 +124,7 @@ Future<Uint8List> createPdfFile(
   if (compressValue != null) {
     List<File> compressImages =
         await compressImageFile(_project.listMedia, compressValue);
+    print("compressimage RESULT: $compressImages");
     _project = _project.copyWith(listMedia: compressImages);
   }
 
@@ -159,38 +167,27 @@ Future<Uint8List> createPdfFile(
     if (_project.paper?.title == "None") {
       for (var element in listExtract) {
         int index = listExtract.indexOf(element);
-        double width;
-        double height;
-
-        if (_project.paper!.unit!.title == POINT.title) {
-          width = _project.paper!.width * point;
-          height = ratioWHImages![index] > INFINITY_NUMBER
-              ? double.infinity * point
-              : (width / ratioWHImages[index]);
-        } else if (_project.paper!.unit!.title == INCH.title) {
-          width = _project.paper!.width * inch;
-          height = ratioWHImages![index] > INFINITY_NUMBER
-              ? double.infinity * inch
-              : (width / ratioWHImages[index]);
-        } else if (_project.paper!.unit!.title == CENTIMET.title) {
-          width = _project.paper!.width * cm;
-          height = ratioWHImages![index] > INFINITY_NUMBER
-              ? double.infinity * cm
-              : (width / ratioWHImages[index]);
-        } else {
-          width = PdfPageFormat.a4.width;
-          height = PdfPageFormat.a4.height;
-        }
-        pdf.addPage(pw.Page(
-          build: (ctx) {
-            return _buildPdfPreviewPaperNone(
-                project, index, pdfPageFormat!.width);
-          },
-          pageTheme: pw.PageTheme(
-            pageFormat: PdfPageFormat(width, height, marginAll: 0),
-            margin: pw.EdgeInsets.zero,
+        var imageFile = File(_project.listMedia[index].path);
+        var memImage = pw.MemoryImage(imageFile.readAsBytesSync());
+        double width = (memImage.width ?? 0) * inch;
+        double height = (memImage.height ?? 0) * inch;
+        var image = pw.Image(
+          memImage,
+          // fit: pw.BoxFit.fill,
+          width: width,
+          height: height,
+        );
+        pdf.addPage(
+          pw.Page(
+            build: (ctx) {
+              return image;
+            },
+            pageTheme: pw.PageTheme(
+              pageFormat: PdfPageFormat(width, height, marginAll: 0),
+              margin: pw.EdgeInsets.zero,
+            ),
           ),
-        ));
+        );
       }
     } else {
       print("111");
@@ -254,15 +251,6 @@ Future<Uint8List> createPdfFile(
   // return result
   final result = await pdf.save();
   return result;
-}
-
-pw.Widget _buildPdfPreviewPaperNone(
-    Project project, int indexPage, double width) {
-  return pw.Image(
-    pw.MemoryImage(File(project.listMedia[indexPage].path).readAsBytesSync()),
-    fit: pw.BoxFit.fill,
-    width: width,
-  );
 }
 
 /// ap dung doi voi page co chung template hoac dung layout placements

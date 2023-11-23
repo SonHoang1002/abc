@@ -1,5 +1,11 @@
+import 'dart:ui';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+class ImageSizeState{
+  final List<Size> sizeList;
+  ImageSizeState(this.sizeList);
+}
 class RatioWHState {
   final List<double> listRatioWH;
 
