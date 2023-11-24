@@ -17,14 +17,14 @@ import 'package:photo_to_pdf/widgets/w_text_content.dart';
 import 'package:photo_to_pdf/widgets/w_thumb_slider.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 
-class SelectedPhotosBody extends StatefulWidget {
+class BodySelectedPhotos extends StatefulWidget {
   final Project project;
   final double sliderCompressionLevelValue;
   final Function(double)? onChangedSlider;
   final Function() reRenderFunction;
   final Function(Project project, String sizeValue, double sliderValue) onApply;
   final String sizeOfFileValue;
-  const SelectedPhotosBody(
+  const BodySelectedPhotos(
       {super.key,
       required this.project,
       required this.sliderCompressionLevelValue,
@@ -34,10 +34,10 @@ class SelectedPhotosBody extends StatefulWidget {
       required this.sizeOfFileValue});
 
   @override
-  State<SelectedPhotosBody> createState() => _SelectedPhotosBodyState();
+  State<BodySelectedPhotos> createState() => _BodySelectedPhotosState();
 }
 
-class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
+class _BodySelectedPhotosState extends State<BodySelectedPhotos> {
   late bool _isFocusProject;
   late Project _project;
   late String _sizeOfFileValue;
@@ -80,27 +80,23 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
     double value,
   ) {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-    Future.delayed(const Duration(milliseconds: 200), () async {
-      List<double> ratioWHImages = [];
-      for (var key in _listGlobalKeyForImages) {
-        final renderBox = key.currentContext?.findRenderObject() as RenderBox;
-        final imageSize = renderBox.size;
-        ratioWHImages.add(imageSize.width / imageSize.height);
-      }
-      // ignore: use_build_context_synchronously
-      final pdfUint8List = await createPdfFile(
-          _project, context, _getRatioProject(LIST_RATIO_PDF),
-          compressValue: value, ratioWHImages: ratioWHImages);
-      // render to file
-      
-      final pdfFile = await convertUint8ListToFilePDF(pdfUint8List);
-      print("pdfFile ${pdfFile}");
-      final filseSize =await pdfFile.length();
-      print("filseSize ${filseSize}");
-      _sizeOfFileValue = convertByteUnit(filseSize / 1024);
-      setState(() {});
-      widget.reRenderFunction();
-    });
+      Future.delayed(const Duration(milliseconds: 200), () async {
+        List<double> ratioWHImages = [];
+        for (var key in _listGlobalKeyForImages) {
+          final renderBox = key.currentContext?.findRenderObject() as RenderBox;
+          final imageSize = renderBox.size;
+          ratioWHImages.add(imageSize.width / imageSize.height);
+        }
+        final pdfUint8List = await createPdfFile(
+            _project, context, _getRatioProject(LIST_RATIO_PDF),
+            compressValue: value, ratioWHImages: ratioWHImages);
+        // render to file
+        final pdfFile = await convertUint8ListToFilePDF(pdfUint8List);
+        final filseSize = await pdfFile.length();
+        _sizeOfFileValue = convertByteUnit(filseSize / 1024);
+        setState(() {});
+        widget.reRenderFunction();
+      });
     });
   }
 
@@ -341,7 +337,6 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
                               List<GlobalKey>.from(_listGlobalKeyForImages);
                           setState(() {});
                           widget.reRenderFunction();
-                          print("_sliderValue ${_sliderValue}");
                           _getFileSize(value);
                         },
                         thumbColor: colorWhite,
@@ -352,7 +347,7 @@ class _SelectedPhotosBodyState extends State<SelectedPhotosBody> {
                   ],
                 ),
                 WTextContent(
-                  value: "Estimated Total Size: ${_sizeOfFileValue}",
+                  value: "Estimated Total Size: $_sizeOfFileValue",
                   textSize: 14,
                   textLineHeight: 16.71,
                   textColor: Theme.of(context).textTheme.bodyMedium!.color,

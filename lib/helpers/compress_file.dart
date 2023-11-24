@@ -24,10 +24,12 @@ Future<List<File>> compressImageFile(
         results.add(File(result.path));
       }
     } else {
-      print('Không tìm thấy phần mở rộng trong đường dẫn: $filePath');
+      Error.throwWithStackTrace(
+        'Không tìm thấy phần mở rộng trong đường dẫn: $filePath',
+        StackTrace.current,
+      );
     }
   }
-  print("results from compressImage ${results}");
   return results;
 }
 

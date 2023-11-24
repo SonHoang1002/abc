@@ -1,9 +1,7 @@
 import 'dart:io';
-import 'dart:math';
 import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/caculate_padding.dart';
@@ -92,39 +90,31 @@ Future<Uint8List> createPdfFile(
   }
 
   PdfPageFormat? pdfPageFormat;
-  Unit? unit =_project.paper?.unit;
-  double valueUnit;
-  // if(unit?.title ==POINT.title){
+  Unit? unit = _project.paper?.unit;
+  double? valueUnit;
+  if (unit?.title == POINT.title) {
+    valueUnit = point;
+  } else if (unit?.title == INCH.title) {
+    valueUnit = inch;
+  } else if (unit?.title == CENTIMET.title) {
+    valueUnit = cm;
+  }
 
-  // }
-   
   if (_project.paper != null &&
       ![null, 0].contains(_project.paper?.height) &&
       _project.paper?.width != null) {
     pdfPageFormat =
         PDF_PAGE_FORMAT[_project.paper?.title]?[pageOrientationValue];
-
-    if (_project.paper!.unit!.title == POINT.title) {
+    if (valueUnit != null) {
       pdfPageFormat = PdfPageFormat(
-          _project.paper!.width, _project.paper!.height,
-          marginAll: 2.0 * point);
-    } else if (_project.paper!.unit!.title == INCH.title) {
-      pdfPageFormat = PdfPageFormat(
-          _project.paper!.width * inch, _project.paper!.height * inch,
-          marginAll: 2.0 * inch);
-    } else if (_project.paper!.unit!.title == CENTIMET.title) {
-      pdfPageFormat = PdfPageFormat(
-          _project.paper!.width * cm, _project.paper!.height * cm,
-          marginAll: 2.0 * cm);
-    } else {
-      print("NONE");
+          _project.paper!.width * valueUnit, _project.paper!.height * valueUnit,
+          marginAll: 2.0 * valueUnit);
     }
   }
 
   if (compressValue != null) {
     List<File> compressImages =
         await compressImageFile(_project.listMedia, compressValue);
-    print("compressimage RESULT: $compressImages");
     _project = _project.copyWith(listMedia: compressImages);
   }
 
@@ -169,13 +159,15 @@ Future<Uint8List> createPdfFile(
         int index = listExtract.indexOf(element);
         var imageFile = File(_project.listMedia[index].path);
         var memImage = pw.MemoryImage(imageFile.readAsBytesSync());
-        double width = (memImage.width ?? 0) * inch;
-        double height = (memImage.height ?? 0) * inch;
+        double ratio = memImage.width! / memImage.height!;
+        double widthPdf = ((_project.paper?.width) ?? (memImage.width) ?? 0) *
+            (valueUnit ?? 0.0);
+        double heightPdf = widthPdf/ratio;
         var image = pw.Image(
           memImage,
           // fit: pw.BoxFit.fill,
-          width: width,
-          height: height,
+          width: widthPdf,
+          height: heightPdf,
         );
         pdf.addPage(
           pw.Page(
@@ -183,14 +175,13 @@ Future<Uint8List> createPdfFile(
               return image;
             },
             pageTheme: pw.PageTheme(
-              pageFormat: PdfPageFormat(width, height, marginAll: 0),
+              pageFormat: PdfPageFormat(widthPdf, heightPdf, marginAll: 0),
               margin: pw.EdgeInsets.zero,
             ),
           ),
         );
       }
     } else {
-      print("111");
       for (var element in listExtract) {
         int index = listExtract.indexOf(element);
         pdf.addPage(pw.Page(

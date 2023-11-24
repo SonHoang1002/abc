@@ -18,6 +18,7 @@ import 'package:provider/provider.dart' as pv;
 
 Widget buildPageSizePreset(
     {required dynamic item,
+    required double width,
     required BuildContext context,
     required Function() onTap,
     required bool isFocus,
@@ -25,7 +26,8 @@ Widget buildPageSizePreset(
   return Flexible(
     child: Container(
         height: 50,
-        width: 200 / 390 * MediaQuery.sizeOf(context).width,
+        width: width,
+        margin: const EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
             color: Theme.of(context).cardColor,
@@ -38,7 +40,7 @@ Widget buildPageSizePreset(
           child: DropdownButton2<dynamic>(
             barrierColor: transparent,
             isExpanded: true,
-            hint: Row(children: [
+            hint: Row(mainAxisAlignment: MainAxisAlignment.start, children: [
               Container(
                 constraints: const BoxConstraints(minWidth: 55),
                 child: WTextContent(
@@ -49,18 +51,16 @@ Widget buildPageSizePreset(
                   textFontWeight: FontWeight.w600,
                 ),
               ),
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    WTextContent(
-                      value: item['content'].title,
-                      textSize: 14,
-                      textLineHeight: 16.71,
-                      textColor: const Color.fromRGBO(10, 132, 255, 1),
-                    ),
-                  ],
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  WTextContent(
+                    value: item['content'].title,
+                    textSize: 14,
+                    textLineHeight: 16.71,
+                    textColor: const Color.fromRGBO(10, 132, 255, 1),
+                  ),
+                ],
               )
             ]),
             items: LIST_PAGE_SIZE.map((dynamic item) {
@@ -135,81 +135,85 @@ Widget buildPageSizePreset(
   );
 }
 
-Widget buildCupertinoInput(
-    {required BuildContext context,
-    required TextEditingController controller,
-    required String title,
-    required String suffixValue,
-    required Function() onTap,
-    required bool isFocus,
-    required Function(String value)? onChanged,
-    String? placeholder}) {
-  return Container(
-    width: 200 / 390 * MediaQuery.sizeOf(context).width,
-    decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(15.0),
-        border: Border.all(
-            color:
-                isFocus ? const Color.fromRGBO(10, 132, 255, 1) : transparent,
-            width: 2)),
-    height: 47,
-    child: CupertinoTextField(
-      onTap: () {
-        controller.selection = TextSelection(
-            baseOffset: 0, extentOffset: controller.text.trim().length);
-        onTap();
-      },
-      onChanged: onChanged,
-      decoration: const BoxDecoration(),
-      style: const TextStyle(
-          color: colorBlue,
-          height: 16.71 / 14,
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-          fontFamily: MY_CUSTOM_FONT),
-      controller: controller,
-      keyboardType: TextInputType.number,
-      prefix: Container(
-        constraints: const BoxConstraints(minWidth: 50),
-        margin: const EdgeInsets.only(left: 15),
-        child: Text(title,
-            style: TextStyle(
-                color: Theme.of(context).textTheme.bodyMedium!.color,
-                fontFamily: MY_CUSTOM_FONT,
-                fontWeight: FontWeight.w700,
-                height: 16.71 / 14,
-                fontSize: 14)),
-      ),
-      suffix: Container(
-        alignment: Alignment.centerLeft,
-        constraints: const BoxConstraints(minWidth: 50),
-        margin: const EdgeInsets.only(right: 20),
-        child: Text(suffixValue,
-            style: const TextStyle(
-                color: Color.fromRGBO(10, 132, 255, 1),
-                fontFamily: MY_CUSTOM_FONT,
-                fontWeight: FontWeight.w700,
-                height: 16.71 / 14,
-                fontSize: 14)),
-      ),
-      placeholder: placeholder ?? "Untitled",
-      placeholderStyle: const TextStyle(
-          color: colorBlue,
-          fontFamily: MY_CUSTOM_FONT,
-          fontWeight: FontWeight.w700,
-          height: 19.09 / 16,
-          fontSize: 16),
-    ),
-  );
-}
+// Widget buildCupertinoInput(
+//     {required BuildContext context,
+//     required TextEditingController controller,
+//     required String title,
+//     required String suffixValue,
+//     required Function() onTap,
+//     required bool isFocus,
+//     required Function(String value)? onChanged,
+//     required double width,
+//     String? placeholder}) {
+//   TextStyle textStyleInput = const TextStyle(
+//       color: colorBlue,
+//       height: 16.71 / 14,
+//       fontSize: 14,
+//       fontWeight: FontWeight.w700,
+//       fontFamily: MY_CUSTOM_FONT);
+//   return Container(
+//     width: width,
+//     margin: const EdgeInsets.symmetric(horizontal: 10),
+//     decoration: BoxDecoration(
+//         color: Theme.of(context).cardColor,
+//         borderRadius: BorderRadius.circular(15.0),
+//         border: Border.all(
+//             color:
+//                 isFocus ? const Color.fromRGBO(10, 132, 255, 1) : transparent,
+//             width: 2)),
+//     height: 47,
+//     child: CupertinoTextField(
+//       onTap: () {
+//         controller.selection = TextSelection(
+//             baseOffset: 0, extentOffset: controller.text.trim().length);
+//         onTap();
+//       },
+//       onChanged: onChanged,
+//       decoration: const BoxDecoration(),
+//       style: textStyleInput,
+//       controller: controller,
+//       keyboardType: TextInputType.number,
+//       prefix: Container(
+//         constraints: const BoxConstraints(minWidth: 47),
+//         margin: const EdgeInsets.only(left: 15),
+//         child: Text(title,
+//             style: TextStyle(
+//                 color: Theme.of(context).textTheme.bodyMedium!.color,
+//                 fontFamily: MY_CUSTOM_FONT,
+//                 fontWeight: FontWeight.w700,
+//                 height: 16.71 / 14,
+//                 fontSize: 14)),
+//       ),
+//       suffix: Container(
+//         color: colorRed,
+//         alignment: Alignment.centerLeft,
+//         constraints: const BoxConstraints(minWidth: 50),
+//         margin: const EdgeInsets.only(right: 20),
+//         child: WTextContent(
+//             value: suffixValue,
+//             textColor: const Color.fromRGBO(10, 132, 255, 1),
+//             textFontWeight: FontWeight.w700,
+//             textLineHeight: 16.71,
+//             textSize: 14),
+//       ),
+//       placeholder: placeholder ?? "Untitled",
+//       placeholderStyle: const TextStyle(
+//           color: colorBlue,
+//           fontFamily: MY_CUSTOM_FONT,
+//           fontWeight: FontWeight.w700,
+//           height: 19.09 / 16,
+//           fontSize: 16),
+//     ),
+//   );
+// }
 
 Widget buildPageSizeOrientationItem(
     {required BuildContext context,
     required String mediaSrc,
     required bool isSelected,
     required Function() onTap,
-    EdgeInsets? padding}) {
+    EdgeInsets? padding,
+    Color? backgroundColor}) {
   return GestureDetector(
     onTap: onTap,
     child: Container(
@@ -269,7 +273,8 @@ Widget buildFileNameInput(BuildContext context, Project project,
                   Theme.of(context).textTheme.bodyLarge!.color!)),
         ),
         placeholder: "Untitled",
-        placeholderStyle: buildTextStyleInputFileName(colorBlue.withOpacity(0.3)),
+        placeholderStyle:
+            buildTextStyleInputFileName(colorBlue.withOpacity(0.3)),
         autofocus: autofocus,
       ),
     ),
@@ -518,8 +523,8 @@ Widget buildDialogResizeMode(
         () => onSelected(
               LIST_RESIZE_MODE[1],
             ),
-        boxDecoration:
-            BoxDecoration(color: Theme.of(context).dialogTheme.backgroundColor)),
+        boxDecoration: BoxDecoration(
+            color: Theme.of(context).dialogTheme.backgroundColor)),
     const WDivider(height: 1, color: Colors.black),
     _buildDialogInformationItem(
       context,
@@ -682,8 +687,8 @@ Widget buildDialogAddCover(
         () => onSelected(
               LIST_ADD_COVER[1],
             ),
-        boxDecoration:
-            BoxDecoration(color: Theme.of(context).dialogTheme.backgroundColor)),
+        boxDecoration: BoxDecoration(
+            color: Theme.of(context).dialogTheme.backgroundColor)),
     WDivider(height: 1, color: Theme.of(context).dividerColor),
     _buildDialogInformationItem(
       context,

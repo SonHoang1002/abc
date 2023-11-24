@@ -16,12 +16,12 @@ import 'package:photo_to_pdf/widgets/w_layout_suggestion.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 
-class LayoutBody extends StatefulWidget {
+class BodyLayout extends StatefulWidget {
   final Project project;
   final Function() reRenderFunction;
   final Function(Project project, int segmentIndex) onApply;
   final int segmentCurrentIndex;
-  const LayoutBody(
+  const BodyLayout(
       {super.key,
       required this.project,
       required this.reRenderFunction,
@@ -29,10 +29,10 @@ class LayoutBody extends StatefulWidget {
       required this.segmentCurrentIndex});
 
   @override
-  State<LayoutBody> createState() => _LayoutBodyState();
+  State<BodyLayout> createState() => _BodyLayoutState();
 }
 
-class _LayoutBodyState extends State<LayoutBody> {
+class _BodyLayoutState extends State<BodyLayout> {
   late Project _project;
   late int _segmentCurrentIndex;
   late List _listLayoutStatus;

@@ -49,12 +49,15 @@ class WProjectItemEditor extends ConsumerWidget {
   late Size _size;
   List<BoxShadow> listShadow = [
     const BoxShadow(
-      // color: Color.fromRGBO(0, 0, 0, 0.1),
-      color: colorBlue,
-      spreadRadius: -15,
-      blurRadius: 30,
-      offset: Offset(0, 2),
-    )
+        color: Color.fromRGBO(0, 0, 0, 0.3),
+        // color: colorRed,
+        // spreadRadius: -30,
+        // blurRadius: 40,
+        // offset: Offset(0, 7),
+        spreadRadius: -20,
+        blurRadius: 40,
+        offset: Offset(0, 5),
+        blurStyle: BlurStyle.normal)
   ];
 
   double _getWidth(BuildContext context) {
@@ -97,7 +100,9 @@ class WProjectItemEditor extends ConsumerWidget {
         width: _getRealWH(context)[0],
         height: _getRealWH(context)[1],
         decoration: BoxDecoration(
-            color: project.backgroundColor, boxShadow: listShadow),
+            // border: Border.all(color: grey.withOpacity(0.4), width: 0.4),
+            color: project.backgroundColor,
+            boxShadow: listShadow),
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -116,24 +121,28 @@ class WProjectItemEditor extends ConsumerWidget {
 
   Widget _buildNoneLayoutMedia(BuildContext context) {
     dynamic mediaValue = layoutExtractList?[0][0];
-    if (project.coverPhoto?.frontPhoto != null && useCoverPhoto == true) {
-      mediaValue = project.coverPhoto?.frontPhoto;
-    }
+
     if (project.listMedia.isEmpty ||
         (project.listMedia.length == 1 && project.listMedia[0] is String)) {
       mediaValue = BLANK_PAGE;
     }
+    if (project.coverPhoto?.frontPhoto != null && useCoverPhoto == true) {
+      mediaValue = project.coverPhoto?.frontPhoto;
+    }
     return SizedBox(
       width: _getRealWH(context)[0],
-      height: _getRealWH(context)[1],
+      height: _size.width * 0.45,
       child: Stack(
         alignment: Alignment.bottomCenter,
         children: [
           Stack(
             children: [
               Container(
-                padding: const EdgeInsets.all(3.0),
-                decoration: BoxDecoration(boxShadow: listShadow),
+                margin: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  boxShadow: listShadow,
+                  // border: Border.all(color: grey.withOpacity(0.4), width: 0.4),
+                ),
                 child: _buildImageWidget(context, project, mediaValue),
               ),
               Stack(

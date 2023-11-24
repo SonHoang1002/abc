@@ -36,9 +36,10 @@ class WProjectItemHomeBottom extends StatelessWidget {
             children: [
               Stack(
                 children: [
-                  SizedBox(
+                  Container(
                     width: MediaQuery.sizeOf(context).width * 0.29,
                     height: MediaQuery.sizeOf(context).width * 0.29,
+                    padding:EdgeInsets.all(6),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: project.listMedia[index] is File

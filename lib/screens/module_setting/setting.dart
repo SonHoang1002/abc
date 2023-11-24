@@ -1,13 +1,10 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
-import 'package:photo_to_pdf/commons/themes.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
-import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 class Setting extends StatelessWidget {
@@ -51,7 +48,7 @@ class Setting extends StatelessWidget {
                 textAlign: TextAlign.start,
               ),
               const SizedBox()
-              ],
+            ],
           ),
         ),
         WSpacer(

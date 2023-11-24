@@ -12,21 +12,21 @@ import 'package:photo_to_pdf/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 
-class CoverBody extends StatefulWidget {
+class BodyCover extends StatefulWidget {
   final Project project;
   final Function(CoverPhoto newPhoto) onUpdatePhoto;
   final Function() reRenderFunction;
-  const CoverBody(
+  const BodyCover(
       {super.key,
       required this.project,
       required this.onUpdatePhoto,
       required this.reRenderFunction});
 
   @override
-  State<CoverBody> createState() => _CoverBodyState();
+  State<BodyCover> createState() => _BodyCoverState();
 }
 
-class _CoverBodyState extends State<CoverBody> {
+class _BodyCoverState extends State<BodyCover> {
   late Project _project;
   late CoverPhoto _coverPhoto;
   final GlobalKey _frontKey = GlobalKey();

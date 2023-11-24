@@ -10,6 +10,7 @@ class WTextContent extends StatelessWidget {
   FontWeight? textFontWeight;
   TextOverflow? textOverflow;
   int? textMaxLength;
+  String? textFontFamily;
   void Function()? onTap;
   WTextContent(
       {required this.value,
@@ -21,6 +22,7 @@ class WTextContent extends StatelessWidget {
       this.textSize = 12,
       this.textOverflow,
       this.textMaxLength,
+      this.textFontFamily,
       this.onTap});
 
   @override

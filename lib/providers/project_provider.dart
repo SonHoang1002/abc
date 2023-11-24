@@ -43,6 +43,6 @@ class ProjectProvider extends StateNotifier<ProjectState> {
   }
 
   addProject(Project project) {
-    state = state.copyWith(listProject: [...state.listProject, project]);
+    state = state.copyWith(listProject: [project, ...state.listProject]);
   }
 }

@@ -159,17 +159,19 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
   }
 
   void _updateRatioWHImages() {
-    List<double> listRatioWH = [];
-    List<Size> testAbc = [];
-    for (var key in _listGlobalKeyForImages) {
-      final renderBox = key.currentContext?.findRenderObject() as RenderBox;
-      final imageSize = renderBox.size;
-      listRatioWH.add(imageSize.width / imageSize.height);
-      testAbc.add(imageSize);
-      ref
-          .read(ratioWHImagesControllerProvider.notifier)
-          .setRatioWHImages(listRatioWH);
-    }
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      List<double> listRatioWH = [];
+      List<Size> testAbc = [];
+      for (var key in _listGlobalKeyForImages) {
+        final renderBox = key.currentContext?.findRenderObject() as RenderBox;
+        final imageSize = renderBox.size;
+        listRatioWH.add(imageSize.width / imageSize.height);
+        testAbc.add(imageSize);
+        ref
+            .read(ratioWHImagesControllerProvider.notifier)
+            .setRatioWHImages(listRatioWH);
+      }
+    });
   }
 
   Future<void> _getFileSize() async {
@@ -238,7 +240,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                         _onTapFileNameInput();
                       },
                     ),
-                    
+
                     WSpacer(
                       height: 10,
                     ),
@@ -480,7 +482,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                     topRight: Radius.circular(20.0),
                   ),
                 ),
-                child: LayoutBody(
+                child: BodyLayout(
                   project: _project,
                   reRenderFunction: () {
                     setStatefull(() {});
@@ -511,7 +513,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         },
         isDismissible: false,
         isScrollControlled: true,
-        enableDrag: false,
+        enableDrag: true,
         backgroundColor: transparent);
   }
 
@@ -523,7 +525,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
             padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom),
             child: StatefulBuilder(builder: (context, setStatefull) {
-              return PaperBody(
+              return BodyPaper(
                   project: _project,
                   reRenderFunction: () {
                     setStatefull(() {});
@@ -582,7 +584,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         context: context,
         builder: (context) {
           return StatefulBuilder(builder: (context, setStatefull) {
-            return SelectedPhotosBody(
+            return BodySelectedPhotos(
               reRenderFunction: () {
                 setStatefull(() {});
               },
@@ -628,7 +630,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
             context: context,
             builder: (context) {
               return StatefulBuilder(builder: (context, setStatefull) {
-                return CoverBody(
+                return BodyCover(
                     project: _project,
                     onUpdatePhoto: (newCoverPhoto) async {
                       if (newCoverPhoto.backPhoto != null ||
@@ -673,7 +675,8 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
               project: _project.copyWith(listMedia: [BLANK_PAGE]),
               indexImage: 0,
               title: "Page ${1}",
-              ratioWHImages: ref.watch(ratioWHImagesControllerProvider).listRatioWH,
+              ratioWHImages:
+                  ref.watch(ratioWHImagesControllerProvider).listRatioWH,
               onTap: () {
                 _previewRatio = LIST_RATIO_PREVIEW;
                 if (_project.paper != null &&
@@ -724,7 +727,8 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                     indexImage: index,
                     layoutExtractList: list[index],
                     title: "Page ${index + 1}",
-                    ratioWHImages: ref.watch(ratioWHImagesControllerProvider).listRatioWH,
+                    ratioWHImages:
+                        ref.watch(ratioWHImagesControllerProvider).listRatioWH,
                     onTap: () {
                       _previewRatio = LIST_RATIO_PREVIEW;
                       if (_project.paper != null &&
@@ -766,7 +770,9 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
               child: WProjectItemEditor(
                 key: ValueKey(_project.listMedia[index]),
                 project: _project,
-                indexImage: index,ratioWHImages: ref.watch(ratioWHImagesControllerProvider).listRatioWH,
+                indexImage: index,
+                ratioWHImages:
+                    ref.watch(ratioWHImagesControllerProvider).listRatioWH,
                 layoutExtractList: abc[index],
                 imageKey: _listGlobalKeyForImages[index],
                 title: "Page ${index + 1}",

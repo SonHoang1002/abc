@@ -53,7 +53,9 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
     Future.delayed(Duration.zero, () async {
       final List<Project> listProject =
           await IsarProjectService().getProjects();
-      ref.read(projectControllerProvider.notifier).setProject(listProject);
+      ref
+          .read(projectControllerProvider.notifier)
+          .setProject(listProject.reversed.toList());
     });
     _isFocusProjectList = false;
     _isFocusProjectListBottom = true;
@@ -238,6 +240,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
       title: _listProject[indexOfProject].title,
       useCoverPhoto: true,
       onTap: () {
+        _disableReOrderFocus();
         pushNavigator(context, Editor(project: _listProject[indexOfProject]));
       },
       onRemove: () async {
