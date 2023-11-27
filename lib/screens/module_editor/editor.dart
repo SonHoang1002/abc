@@ -533,6 +533,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                   indexPageSizeSelectionWidget: _indexPageSizeSelectionWidget,
                   paperConfig: _paperConfig,
                   onApply: (newPaper, pageSizeIsPortrait) async {
+                    _paperConfig['content'] = newPaper;
                     final oldPaper = _project.paper;
                     if (oldPaper != null && oldPaper != newPaper) {
                       List<Placement> newPlacements = [];

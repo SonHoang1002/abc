@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/widgets/w_editor.dart';
@@ -27,14 +28,6 @@ class BodyPaper extends StatefulWidget {
   @override
   State<BodyPaper> createState() => _BodyPaperState();
 }
-// _paperConfig = {
-//       "mediaSrc": {
-//         "light": "${PATH_PREFIX_ICON}icon_letter_lm.png",
-//         "dark": "${PATH_PREFIX_ICON}icon_letter_dm.png"
-//       },
-//       "title": "Paper Size",
-//       "content": _project.paper ?? LIST_PAGE_SIZE[0]
-//     };
 
 class _BodyPaperState extends State<BodyPaper> {
   late Project _project;
@@ -67,15 +60,11 @@ class _BodyPaperState extends State<BodyPaper> {
       _project = _project.copyWith(paper: LIST_PAGE_SIZE[0]);
     }
     _indexPageSizeSelectionWidget = widget.indexPageSizeSelectionWidget;
-    _paperConfig = widget.paperConfig;
-    // _paperConfig = {
-    //   "mediaSrc": {
-    //     "light": "${PATH_PREFIX_ICON}icon_letter_lm.png",
-    //     "dark": "${PATH_PREFIX_ICON}icon_letter_dm.png"
-    //   },
-    //   "title": "Paper Size",
-    //   "content": widget.paperConfig["content"] ?? LIST_PAGE_SIZE[0]
-    // };
+    _paperConfig = {
+      "mediaSrc": widget.paperConfig['mediaSrc'],
+      "title": widget.paperConfig['title'],
+      "content": widget.paperConfig["content"] ?? LIST_PAGE_SIZE[0]
+    };
     _paperSizeWidthController.text =
         _paperWidthValue = (_project.paper?.width).toString();
     _paperSizeHeightController.text =
@@ -166,12 +155,13 @@ class _BodyPaperState extends State<BodyPaper> {
                           height: 10,
                         ),
                         // width
-                        WInput(
+                        WInputPaper(
                             controller: _paperSizeWidthController,
                             title: "Width",
                             inputWidth: widthEdit,
                             inputHeight: 47,
                             placeholder: "",
+                            paperConfig: _paperConfig,
                             onTap: () {
                               setState(() {
                                 _indexPageSizeSelectionWidget = 1;
@@ -187,10 +177,11 @@ class _BodyPaperState extends State<BodyPaper> {
                               if (_paperSizeWidthController.text.trim() !=
                                   _paperConfig['content'].width) {
                                 setState(() {
-                                  _paperConfig['content'] = LIST_PAGE_SIZE[8];
+                                  _paperConfig['content'] = LIST_PAGE_SIZE[8].copyWith(unit: _paperConfig['content'].unit);
                                 });
                               }
                             },
+                            isVerticalOrientation: !_pageSizeIsPortrait,
                             suffixValue: _paperConfig['content'].unit.value,
                             isFocus: _indexPageSizeSelectionWidget == 1),
 
@@ -200,12 +191,14 @@ class _BodyPaperState extends State<BodyPaper> {
                         // height
                         _paperConfig['content'].title == "None"
                             ? const SizedBox()
-                            : WInput(
+                            : WInputPaper(
                                 controller: _paperSizeHeightController,
                                 title: "Height",
                                 inputWidth: widthEdit,
                                 inputHeight: 47,
                                 placeholder: "",
+                                paperConfig: _paperConfig,
+                                isVerticalOrientation: !_pageSizeIsPortrait,
                                 onTap: () {
                                   setState(() {
                                     _indexPageSizeSelectionWidget = 2;
@@ -220,7 +213,7 @@ class _BodyPaperState extends State<BodyPaper> {
                                   }
                                   if (_paperSizeHeightController.text.trim() !=
                                       _paperConfig['content'].height) {
-                                    _paperConfig['content'] = LIST_PAGE_SIZE[8];
+                                    _paperConfig['content'] = LIST_PAGE_SIZE[8].copyWith(unit: _paperConfig['content'].unit);
                                   }
                                   setState(() {});
                                   widget.reRenderFunction();
@@ -336,6 +329,7 @@ class _BodyPaperState extends State<BodyPaper> {
                       unitValue: _paperConfig['content'].unit,
                       onSelected: (value) {
                         setState(() {
+                          final oldUnit = _paperConfig['content'].unit;
                           if (_paperConfig['content'].title ==
                               LIST_PAGE_SIZE[0].title) {
                             _paperConfig['content'] =
@@ -347,6 +341,18 @@ class _BodyPaperState extends State<BodyPaper> {
                                 LIST_PAGE_SIZE[8].copyWith(
                               unit: value,
                             );
+                            _paperSizeHeightController.text = convertUnit(
+                                    oldUnit,
+                                    value,
+                                    double.parse(
+                                        _paperSizeHeightController.text))
+                                .toStringAsFixed(2);
+                            _paperSizeWidthController.text = convertUnit(
+                                    oldUnit,
+                                    value,
+                                    double.parse(
+                                        _paperSizeWidthController.text))
+                                .toStringAsFixed(2);
                           }
                         });
                         widget.reRenderFunction();
@@ -400,6 +406,8 @@ class _BodyPaperState extends State<BodyPaper> {
       return "--";
     }
     if (_paperConfig['content'].title == "None") {
+      // String widthValue = _paperSizeWidthController.text.trim();
+      // widthValue = widthValue.length>7 ? 
       return "${_paperSizeWidthController.text.trim()} x -- ${_paperConfig['content'].unit.value}";
     }
 

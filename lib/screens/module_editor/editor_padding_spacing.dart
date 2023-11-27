@@ -8,6 +8,7 @@ import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/models/project.dart';
+import 'package:photo_to_pdf/widgets/w_input.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 import 'package:photo_to_pdf/widgets/w_unit_selections.dart';
@@ -106,13 +107,43 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
     if (_placement != null) {
       double newHeight, newWidth, newRight, newBottom, newTop, newLeft;
       final minSize = convertUnit(POINT, newUnit, MIN_PLACEMENT_SIZE);
-      newWidth = double.parse(controllers[0].text.trim());
-      newHeight = double.parse(controllers[1].text.trim());
+      if (controllers[0].text.trim().isEmpty ||
+          double.parse(controllers[0].text.trim()) == 0.0) {
+        newWidth = minSize;
+      } else {
+        newWidth = double.parse(controllers[0].text.trim());
+      }
+      if (controllers[1].text.trim().isEmpty ||
+          double.parse(controllers[1].text.trim()) == 0.0) {
+        newHeight = minSize;
+      } else {
+        newHeight = double.parse(controllers[1].text.trim());
+      }
 
-      newTop = parseStringToDouble(controllers[2].text.trim());
-      newLeft = parseStringToDouble(controllers[3].text.trim());
-      newRight = parseStringToDouble(controllers[4].text.trim());
-      newBottom = parseStringToDouble(controllers[5].text.trim());
+      if (controllers[2].text.trim().isEmpty ||
+          double.parse(controllers[2].text.trim()) == 0.0) {
+        newTop = minSize;
+      } else {
+        newTop = parseStringToDouble(controllers[2].text.trim());
+      }
+      if (controllers[3].text.trim().isEmpty ||
+          double.parse(controllers[3].text.trim()) == 0.0) {
+        newLeft = minSize;
+      } else {
+        newLeft = parseStringToDouble(controllers[3].text.trim());
+      }
+      if (controllers[4].text.trim().isEmpty ||
+          double.parse(controllers[4].text.trim()) == 0.0) {
+        newRight = minSize;
+      } else {
+        newRight = parseStringToDouble(controllers[4].text.trim());
+      }
+      if (controllers[5].text.trim().isEmpty ||
+          double.parse(controllers[5].text.trim()) == 0.0) {
+        newBottom = minSize;
+      } else {
+        newBottom = parseStringToDouble(controllers[5].text.trim());
+      }
 
       // truong hop height hoac width = 0
       if (controllers[1].text.trim().isEmpty ||
@@ -251,6 +282,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
   }
 
   Widget _buildEditPlacementBody() {
+    print("controllers[0] ${controllers[0].text}");
     return Center(
       child: Container(
         height: _size.width * 0.8,
@@ -275,19 +307,26 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
               children: [
                 // top
                 SizedBox(
-                  width: _size.width * 0.27,
-                  child: _buildInput(
-                      controllers[2],
-                      (value) {
+                  child: WInputLayout(
+                      width: _size.width * 0.27,
+                      controller: controllers[2],
+                      unit: _unit,
+                      onChanged: (value) {
                         widget.onChanged(2, value);
+                        controllers[2].text = value;
+                        setState(() {});
                       },
-                      _selectedLabel == _labelInputs[2],
-                      _unit.title,
+                      isFocus: _selectedLabel == _labelInputs[2],
+                      onSubmitted: () {
+                        _onDone(_unit);
+                      },
+                      suffixValue: _unit.title,
                       onTap: () {
                         setState(() {
                           _selectedLabel = _labelInputs[2];
                         });
                       },
+                      isHaveSuffix: true,
                       autoFocus: true),
                 ),
                 // left and right
@@ -298,20 +337,27 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       SizedBox(
-                        width: _size.width * 0.27,
-                        child: _buildInput(
-                            controllers[3],
-                            (value) {
-                              widget.onChanged(3, value);
-                            },
-                            _selectedLabel == _labelInputs[3],
-                            _unit.title,
-                            onTap: () {
-                              setState(() {
-                                _selectedLabel = _labelInputs[3];
-                              });
-                            },
-                            autoFocus: false),
+                        child: WInputLayout(
+                          width: _size.width * 0.27,
+                          controller: controllers[3],
+                          onChanged: (value) {
+                            widget.onChanged(3, value);
+                            controllers[3].text = value;
+                            setState(() {});
+                          },
+                          unit: _unit,
+                          isFocus: _selectedLabel == _labelInputs[3],
+                          suffixValue: _unit.title,
+                          onTap: () {
+                            setState(() {
+                              _selectedLabel = _labelInputs[3];
+                            });
+                          },
+                          onSubmitted: () {
+                            _onDone(_unit);
+                          },
+                          isHaveSuffix: true,
+                        ),
                       ),
                       Container(
                         margin: const EdgeInsets.symmetric(
@@ -324,19 +370,26 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                         ),
                       ),
                       SizedBox(
-                        width: _size.width * 0.27,
-                        child: _buildInput(
-                            controllers[4],
-                            (value) {
+                        child: WInputLayout(
+                            width: _size.width * 0.27,
+                            controller: controllers[4],
+                            onChanged: (value) {
                               widget.onChanged(4, value);
+                              controllers[4].text = value;
+                              setState(() {});
                             },
-                            _selectedLabel == _labelInputs[4],
-                            _unit.title,
+                            unit: _unit,
+                            isFocus: _selectedLabel == _labelInputs[4],
+                            onSubmitted: () {
+                              _onDone(_unit);
+                            },
+                            suffixValue: _unit.title,
                             onTap: () {
                               setState(() {
                                 _selectedLabel = _labelInputs[4];
                               });
                             },
+                            isHaveSuffix: true,
                             autoFocus: false),
                       ),
                     ],
@@ -344,19 +397,26 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                 ),
                 // bottom
                 SizedBox(
-                  width: _size.width * 0.27,
-                  child: _buildInput(
-                      controllers[5],
-                      (value) {
+                  child: WInputLayout(
+                      width: _size.width * 0.27,
+                      controller: controllers[5],
+                      unit: _unit,
+                      onChanged: (value) {
                         widget.onChanged(5, value);
+                        controllers[5].text = value;
+                        setState(() {});
                       },
-                      _selectedLabel == _labelInputs[5],
-                      _unit.title,
+                      isFocus: _selectedLabel == _labelInputs[5],
+                      suffixValue: _unit.title,
+                      onSubmitted: () {
+                        _onDone(_unit);
+                      },
                       onTap: () {
                         setState(() {
                           _selectedLabel = _labelInputs[5];
                         });
                       },
+                      isHaveSuffix: true,
                       autoFocus: false),
                 ),
               ],
@@ -401,17 +461,20 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                 child: Column(
                   children: [
                     SizedBox(
-                      width: _size.width * 0.45,
-                      child: _buildInput(
-                          controllers[0],
-                          (value) {
+                      child: WInputLayout(
+                          width: _size.width * 0.45,
+                          controller: controllers[0],
+                          unit: _unit,
+                          onChanged: (value) {
                             widget.onChanged(0, value);
-                            if (value.isNotEmpty &&
-                                [TITLE_EDIT_PLACEMENT].contains(widget.title) &&
+                            controllers[0].text = value;
+                            if ([TITLE_EDIT_PLACEMENT].contains(widget.title) &&
                                 widget.paperAttribute != null) {
+                              double newValue =
+                                  value.isNotEmpty ? double.parse(value) : 0.0;
                               double bindingValue = widget
                                       .paperAttribute!.width -
-                                  double.parse(value) -
+                                  newValue -
                                   (double.parse(controllers[3].text.trim()));
                               if (bindingValue >= 0) {
                                 widget.onChanged(4, bindingValue.toString());
@@ -421,9 +484,14 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                                 controllers[4].text = '0.0';
                               }
                             }
+
+                            setState(() {});
                           },
-                          _selectedLabel == _labelInputs[0],
-                          _unit.title,
+                          isFocus: _selectedLabel == _labelInputs[0],
+                          onSubmitted: () {
+                            _onDone(_unit);
+                          },
+                          suffixValue: _unit.title,
                           onTap: () {
                             setState(() {
                               _selectedLabel = _labelInputs[0];
@@ -455,17 +523,20 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                 child: Column(
                   children: [
                     SizedBox(
-                      width: _size.width * 0.45,
-                      child: _buildInput(
-                          controllers[1],
-                          (value) {
+                      child: WInputLayout(
+                          width: _size.width * 0.45,
+                          controller: controllers[1],
+                          unit: _unit,
+                          onChanged: (value) {
                             widget.onChanged(1, value);
-                            if (value.isNotEmpty &&
-                                [TITLE_EDIT_PLACEMENT].contains(widget.title) &&
+                            controllers[1].text = value;
+                            if ([TITLE_EDIT_PLACEMENT].contains(widget.title) &&
                                 widget.paperAttribute != null) {
+                              double newValue =
+                                  value.isNotEmpty ? double.parse(value) : 0.0;
                               double bindingValue = widget
                                       .paperAttribute!.height -
-                                  double.parse(value) -
+                                  newValue -
                                   (double.parse(controllers[2].text.trim()));
                               if (bindingValue >= 0) {
                                 widget.onChanged(5, bindingValue.toString());
@@ -475,9 +546,13 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                                 controllers[5].text = '0.0';
                               }
                             }
+                            setState(() {});
                           },
-                          _selectedLabel == _labelInputs[1],
-                          _unit.title,
+                          isFocus: _selectedLabel == _labelInputs[1],
+                          suffixValue: _unit.title,
+                          onSubmitted: () {
+                            _onDone(_unit);
+                          },
                           onTap: () {
                             setState(() {
                               _selectedLabel = _labelInputs[1];
@@ -505,57 +580,5 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
         ),
       ),
     );
-  }
-
-  Widget _buildInput(TextEditingController controller,
-      void Function(String)? onChanged, bool isFocus, String suffixValue,
-      {void Function()? onTap, bool? autoFocus, bool? isHaveSuffix}) {
-    return Container(
-        height: 35,
-        alignment: Alignment.center,
-        child: CupertinoTextField(
-          onTap: () {
-            onTap != null ? onTap() : null;
-            controller.selection = TextSelection(
-                baseOffset: 0, extentOffset: controller.value.text.length);
-          },
-          onSubmitted: (value) {
-            _onDone(_unit);
-          },
-          onChanged: onChanged,
-          autofocus: autoFocus ?? false,
-          textAlign: TextAlign.center,
-          keyboardType: TextInputType.number,
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              // color:Colors.red,
-              color: Theme.of(context).scaffoldBackgroundColor,
-              border: Border.all(
-                  color: isFocus
-                      ? const Color.fromRGBO(98, 161, 255, 1)
-                      : transparent,
-                  width: 2)),
-          suffix: isHaveSuffix == true
-              ? Container(
-                  alignment: Alignment.centerLeft,
-                  margin: const EdgeInsets.only(right: 10),
-                  child: Text(suffixValue,
-                      style: TextStyle(
-                          color: Theme.of(context).textTheme.bodyMedium!.color,
-                          fontFamily: MY_CUSTOM_FONT,
-                          fontWeight: FontWeight.w700,
-                          height: 16.71 / 14,
-                          fontSize: 14)),
-                )
-              : const SizedBox(),
-          style: const TextStyle(
-            color: colorBlue,
-            height: 16.71 / 14,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            fontFamily: MY_CUSTOM_FONT,
-          ),
-          controller: controller,
-        ));
   }
 }

@@ -252,3 +252,19 @@ List<BoxShadow> SHADOWS = [
     offset: const Offset(0, 10),
   ),
 ];
+
+final List<Color> COLOR_SLIDERS = [
+  const HSVColor.fromAHSV(1.0, 0.0, 1.0, 1.0).toColor(),
+  const HSVColor.fromAHSV(1.0, 30.0, 1.0, 1.0).toColor(),
+  const HSVColor.fromAHSV(1.0, 60.0, 1.0, 1.0).toColor(),
+  const HSVColor.fromAHSV(1.0, 90.0, 1.0, 1.0).toColor(),
+  const HSVColor.fromAHSV(1.0, 120.0, 1.0, 1.0).toColor(),
+  const HSVColor.fromAHSV(1.0, 150.0, 1.0, 1.0).toColor(),
+  const HSVColor.fromAHSV(1.0, 180.0, 1.0, 1.0).toColor(),
+  const HSVColor.fromAHSV(1.0, 210.0, 1.0, 1.0).toColor(),
+  const HSVColor.fromAHSV(1.0, 240.0, 1.0, 1.0).toColor(),
+  const HSVColor.fromAHSV(1.0, 270.0, 1.0, 1.0).toColor(),
+  const HSVColor.fromAHSV(1.0, 300.0, 1.0, 1.0).toColor(),
+  const HSVColor.fromAHSV(1.0, 330.0, 1.0, 1.0).toColor(),
+  const HSVColor.fromAHSV(1.0, 360.0, 1.0, 1.0).toColor(),
+];

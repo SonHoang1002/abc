@@ -216,15 +216,19 @@ class _BodyLayoutState extends State<BodyLayout> {
         builder: (context) {
           return StatefulBuilder(builder: (context, setStatefull) {
             return BackgroundBody(
-              currentColor: _currentLayoutColor,
-              onColorChanged: (color) {
-                setState(() {
-                  _currentLayoutColor = color;
+                currentColor: _currentLayoutColor,
+                onColorChanged: (color) {
+                  setState(() {
+                    _currentLayoutColor = color;
+                  });
+                  setStatefull(() {});
+                  rerenderFunction != null ? rerenderFunction() : null;
+                },
+                reRenderFunction: () {
+                  setState(() {});
+                  setStatefull((){});
+                  rerenderFunction != null ? rerenderFunction() : null;
                 });
-                setStatefull(() {});
-                rerenderFunction != null ? rerenderFunction() : null;
-              },
-            );
           });
         },
         isScrollControlled: true,
