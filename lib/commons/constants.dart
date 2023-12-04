@@ -268,3 +268,6 @@ final List<Color> COLOR_SLIDERS = [
   const HSVColor.fromAHSV(1.0, 330.0, 1.0, 1.0).toColor(),
   const HSVColor.fromAHSV(1.0, 360.0, 1.0, 1.0).toColor(),
 ];
+
+
+const String PREFERENCE_SAVED_COLOR_KEY = "saved_color";

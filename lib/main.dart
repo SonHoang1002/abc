@@ -9,7 +9,6 @@ import 'package:photo_to_pdf/commons/themes.dart';
 import 'package:photo_to_pdf/helpers/firebase_helper.dart';
 import 'package:photo_to_pdf/material_with_them.dart';
 import 'package:photo_to_pdf/services/isar_project_service.dart';
-import 'package:photo_to_pdf/material_with_them.dart';
 import 'package:provider/provider.dart';
 
 void main() async {

@@ -177,7 +177,9 @@ class _BodyPaperState extends State<BodyPaper> {
                               if (_paperSizeWidthController.text.trim() !=
                                   _paperConfig['content'].width) {
                                 setState(() {
-                                  _paperConfig['content'] = LIST_PAGE_SIZE[8].copyWith(unit: _paperConfig['content'].unit);
+                                  _paperConfig['content'] = LIST_PAGE_SIZE[8]
+                                      .copyWith(
+                                          unit: _paperConfig['content'].unit);
                                 });
                               }
                             },
@@ -213,7 +215,9 @@ class _BodyPaperState extends State<BodyPaper> {
                                   }
                                   if (_paperSizeHeightController.text.trim() !=
                                       _paperConfig['content'].height) {
-                                    _paperConfig['content'] = LIST_PAGE_SIZE[8].copyWith(unit: _paperConfig['content'].unit);
+                                    _paperConfig['content'] = LIST_PAGE_SIZE[8]
+                                        .copyWith(
+                                            unit: _paperConfig['content'].unit);
                                   }
                                   setState(() {});
                                   widget.reRenderFunction();
@@ -281,6 +285,8 @@ class _BodyPaperState extends State<BodyPaper> {
                                   value: _renderPreviewContent(),
                                   textSize: 12,
                                   textLineHeight: 16.04,
+                                  textMaxLength: 2,
+                                  textAlign: TextAlign.center,
                                   textFontWeight: FontWeight.w600,
                                   textColor: const Color.fromRGBO(0, 0, 0, 0.5),
                                   textOverflow: TextOverflow.ellipsis,
@@ -336,7 +342,7 @@ class _BodyPaperState extends State<BodyPaper> {
                                 _paperConfig['content'].copyWith(
                               unit: value,
                             );
-                          } else {
+                          } else { 
                             _paperConfig['content'] =
                                 LIST_PAGE_SIZE[8].copyWith(
                               unit: value,
@@ -346,13 +352,13 @@ class _BodyPaperState extends State<BodyPaper> {
                                     value,
                                     double.parse(
                                         _paperSizeHeightController.text))
-                                .toStringAsFixed(2);
+                                .toStringAsFixed(7);
                             _paperSizeWidthController.text = convertUnit(
                                     oldUnit,
                                     value,
                                     double.parse(
                                         _paperSizeWidthController.text))
-                                .toStringAsFixed(2);
+                                .toStringAsFixed(7);
                           }
                         });
                         widget.reRenderFunction();
@@ -405,13 +411,20 @@ class _BodyPaperState extends State<BodyPaper> {
         _paperSizeHeightController.text.trim().isEmpty) {
       return "--";
     }
+    String widthValue = _paperSizeWidthController.text.trim();
+    String heightValue = _paperSizeHeightController.text.trim();
+    String unitValue = _paperConfig['content'].unit.value;
+    widthValue =
+        widthValue.length > 5 ? "${widthValue.substring(0, 5)}..." : widthValue;
+    heightValue = heightValue.length > 5
+        ? "${heightValue.substring(0, 5)}..."
+        : heightValue;
+
     if (_paperConfig['content'].title == "None") {
-      // String widthValue = _paperSizeWidthController.text.trim();
-      // widthValue = widthValue.length>7 ? 
-      return "${_paperSizeWidthController.text.trim()} x -- ${_paperConfig['content'].unit.value}";
+      return "$widthValue x -- $unitValue";
     }
 
-    return "${_paperSizeWidthController.text.trim()} x ${_paperSizeHeightController.text.trim()} ${_paperConfig['content'].unit.value}";
+    return "$widthValue x $heightValue $unitValue";
   }
 
   List<double> _getWidthAndHeight(double maxSize) {

@@ -162,17 +162,16 @@ Future<Uint8List> createPdfFile(
         double ratio = memImage.width! / memImage.height!;
         double widthPdf = ((_project.paper?.width) ?? (memImage.width) ?? 0) *
             (valueUnit ?? 0.0);
-        double heightPdf = widthPdf/ratio;
+        double heightPdf = widthPdf / ratio;
         var image = pw.Image(
           memImage,
-          // fit: pw.BoxFit.fill,
           width: widthPdf,
           height: heightPdf,
         );
         pdf.addPage(
           pw.Page(
             build: (ctx) {
-              return image;
+              return pw.Center(child: image);
             },
             pageTheme: pw.PageTheme(
               pageFormat: PdfPageFormat(widthPdf, heightPdf, marginAll: 0),
@@ -265,6 +264,7 @@ pw.Widget _buildCorePDFLayoutMedia(
   if (project.useAvailableLayout != true &&
       project.placements != null &&
       project.placements!.isNotEmpty) {
+    print("0000");
     return pw.Container(
         child: pw.Stack(
       children: layoutExtractList!.map((e) {
@@ -283,6 +283,7 @@ pw.Widget _buildCorePDFLayoutMedia(
       }).toList(),
     ));
   } else {
+    print("1111");
     final List<int> layoutSuggestion =
         LIST_LAYOUT_SUGGESTION[project.layoutIndex];
     List<pw.Widget> columnWidgets = [];
@@ -328,9 +329,8 @@ pw.Widget _buildImageWidget(Project project, dynamic imageData,
   if (imageData == null) {
     return pw.SizedBox();
   } else {
-    return pw.Container(
-        child: pw.Image(pw.MemoryImage(File(imageData.path).readAsBytesSync()),
-            fit: fit, width: width, height: height));
+    return pw.Image(pw.MemoryImage(File(imageData.path).readAsBytesSync()),
+        fit: fit, width: width, height: height);
   }
 }
 

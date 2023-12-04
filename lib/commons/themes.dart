@@ -63,8 +63,8 @@ class MyThemes {
       focusColor: Colors.transparent,
       iconTheme: const IconThemeData(color: Color.fromRGBO(0, 0, 0, 0.1)),
       dialogBackgroundColor: const Color.fromRGBO(34, 34, 34, 1),
-      dialogTheme: const DialogTheme(
-          backgroundColor: const Color.fromRGBO(34, 34, 34, 0.8)),
+      dialogTheme:
+          const DialogTheme(backgroundColor: Color.fromRGBO(34, 34, 34, 0.8)),
       // ignore: deprecated_member_use
       backgroundColor: Colors.white.withOpacity(0.1),
       tabBarTheme: const TabBarTheme(

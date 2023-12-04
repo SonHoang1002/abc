@@ -1,8 +1,8 @@
+import 'package:color_picker_android/screens/color_picker_1.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/models/placement.dart';
-import 'package:photo_to_pdf/screens/module_editor/bodies/body_background.dart';
 import 'package:photo_to_pdf/screens/module_editor/bodies/body_dialogs.dart';
 import 'package:photo_to_pdf/widgets/w_button.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +15,7 @@ import 'package:photo_to_pdf/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_layout_suggestion.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class BodyLayout extends StatefulWidget {
   final Project project;
@@ -210,25 +211,44 @@ class _BodyLayoutState extends State<BodyLayout> {
   }
 
   void _showBottomSheetBackground(
-      {required void Function()? rerenderFunction}) {
+      {required void Function()? rerenderFunction}) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> listColorString =
+        prefs.getStringList(PREFERENCE_SAVED_COLOR_KEY) ?? [];
+    List<Color> listSavedColor = listColorString
+        .map(
+            (e) => Color(int.parse(e.split('(0x')[1].split(')')[0], radix: 16)))
+        .toList();
+    // ignore: use_build_context_synchronously
     showModalBottomSheet(
         context: context,
         builder: (context) {
           return StatefulBuilder(builder: (context, setStatefull) {
-            return BackgroundBody(
-                currentColor: _currentLayoutColor,
-                onColorChanged: (color) {
-                  setState(() {
-                    _currentLayoutColor = color;
-                  });
-                  setStatefull(() {});
-                  rerenderFunction != null ? rerenderFunction() : null;
-                },
-                reRenderFunction: () {
-                  setState(() {});
-                  setStatefull((){});
-                  rerenderFunction != null ? rerenderFunction() : null;
+            return ColorPicker(
+              topicColor: const Color.fromRGBO(0, 0, 0, 0.05),
+              currentColor: _currentLayoutColor,
+              onDone: (color) {
+                setState(() {
+                  _currentLayoutColor = color;
                 });
+                setStatefull(() {});
+                rerenderFunction != null ? rerenderFunction() : null;
+                popNavigator(context);
+              },
+              listColorSaved: listSavedColor,
+              onColorSave: (Color color) async {
+                // kiem tra xem co mau do trong list chua
+                if (listSavedColor.contains(color)) {
+                  listSavedColor = List.from(listSavedColor
+                      .where((element) => element != color)
+                      .toList());
+                } else {
+                  listSavedColor = [color, ...List.from(listSavedColor)];
+                }
+                await prefs.setStringList(PREFERENCE_SAVED_COLOR_KEY,
+                    listSavedColor.map((e) => e.toString()).toList());
+              },
+            );
           });
         },
         isScrollControlled: true,

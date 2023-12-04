@@ -114,7 +114,7 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
               children: rows.map((childRow) {
                 final indexRow = rows.indexOf(childRow);
                 return Flexible(
-                  fit: FlexFit.tight,
+                  fit: FlexFit.loose,
                   child: Container(
                     margin: caculateSpacing(project, widthAndHeight,
                         project.spacingAttribute?.unit, project.paper?.unit),

@@ -14,6 +14,7 @@ class WDivider extends StatelessWidget {
       height: height,
       color: Theme.of(context).dividerTheme.color,
       margin: margin,
+      width: width,
     );
   }
 }
