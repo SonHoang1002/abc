@@ -150,13 +150,13 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
               width: MediaQuery.sizeOf(context).width * 0.6,
               backgroundColor: colorBlue,
               textColor: colorWhite,
-              boxShadow: const [
-                BoxShadow(
-                    color: Color.fromRGBO(28, 91, 255, 0.3),
-                    spreadRadius: 5,
-                    offset: Offset(0, 8),
-                    blurRadius: 40)
-              ],
+              // boxShadow: const [
+              //   BoxShadow(
+              //       color: Color.fromRGBO(28, 91, 255, 0.3), 
+              //       spreadRadius: 5,
+              //       offset: Offset(0, 8),
+              //       blurRadius: 40)
+              // ], 
               shadowColor: const Color.fromRGBO(28, 91, 255, 0.3),
               elevation: 10,
               borderRadius: 25,
