@@ -67,7 +67,7 @@ dependencies:
   #     ref: 6ead0cf989e3d3567c785ab2774737a4f8e7bcd7
   color_picker_android:
     git:
-      url: ssh://gitserver@git.tapuniverse.com:88/son/color_picker_android.git
+      url: ssh://gitserver@git.tapuniverse.com:88/son/color_picker_flutter.git
 
         
    
