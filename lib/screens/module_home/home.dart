@@ -150,16 +150,15 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
               width: MediaQuery.sizeOf(context).width * 0.6,
               backgroundColor: colorBlue,
               textColor: colorWhite,
-              // boxShadow: const [
-              //   BoxShadow(
-              //       color: Color.fromRGBO(28, 91, 255, 0.3), 
-              //       spreadRadius: 5,
-              //       offset: Offset(0, 8),
-              //       blurRadius: 40)
-              // ], 
-              shadowColor: const Color.fromRGBO(28, 91, 255, 0.3),
+              boxShadow: const [
+                BoxShadow(
+                    color: Color.fromRGBO(28, 91, 255, 0.3),
+                    spreadRadius: 5,
+                    offset: Offset(0, 8),
+                    blurRadius: 40)
+              ],
               elevation: 10,
-              borderRadius: 25,
+              borderRadius: 20,
               onPressed: () {
                 setState(() {
                   _currentProject =
@@ -180,7 +179,8 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
             shrinkWrap: true,
             crossAxisCount: 2,
             childAspectRatio: 9 / 10.5,
-            onReorder: (oldIndex, newIndex) {
+            onReorder: (oldIndex, newIndex) async {
+              final oldProject = _listProject[oldIndex];
               setState(() {
                 final tempListProject = _listProject;
                 final element = tempListProject.removeAt(oldIndex);
@@ -188,7 +188,10 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                 ref
                     .read(projectControllerProvider.notifier)
                     .setProject(tempListProject);
+                // update isar
               });
+              print("onReorder");
+              await IsarProjectService().reOrderList(oldProject, newIndex);
             },
             onDragStart: (dragIndex) {
               setState(() {
@@ -484,86 +487,93 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                         children: [
                           Stack(
                             children: [
-                              //fake shadow
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceEvenly,
                                 children: [
-                                  _buildFakeShadow(
-                                      const Color.fromRGBO(85, 238, 32, 0.05)),
-                                  _buildFakeShadow(
-                                    colorLightBlue.withOpacity(0.03),
+                                  Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      _buildFakeShadow(const Color.fromRGBO(
+                                          85, 238, 32, 0.15)),
+                                      WButtonFilled(
+                                        message: "Photos",
+                                        height: 76,
+                                        width:
+                                            MediaQuery.sizeOf(context).width *
+                                                0.45,
+                                        mediaSize: 25,
+                                        padding: const EdgeInsets.only(top: 7),
+                                        textColor: const Color.fromRGBO(
+                                            68, 178, 30, 1),
+                                        mediaColor: const Color.fromRGBO(
+                                            68, 178, 30, 1),
+                                        mediaValue:
+                                            "${PATH_PREFIX_ICON}icon_photos.png",
+                                        backgroundColor: const Color.fromRGBO(
+                                            85, 238, 32, 0.15),
+                                        onPressed: () async {
+                                          final result = await pickImage(
+                                              ImageSource.gallery, true);
+                                          if (result.isNotEmpty) {
+                                            _currentProject = _currentProject
+                                                .copyWith(listMedia: [
+                                              ..._currentProject.listMedia,
+                                              ...result.reversed
+                                            ]);
+                                          }
+                                          setState(() {});
+                                          setStatefull(() {});
+                                        },
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  WButtonFilled(
-                                    message: "Photos",
-                                    height: 76,
-                                    padding: const EdgeInsets.only(top: 2),
-                                    width:
-                                        MediaQuery.sizeOf(context).width * 0.45,
-                                    mediaSize: 25,
-                                    textColor:
-                                        const Color.fromRGBO(68, 178, 30, 1),
-                                    mediaColor:
-                                        const Color.fromRGBO(68, 178, 30, 1),
-                                    mediaValue:
-                                        "${PATH_PREFIX_ICON}icon_photos.png",
-                                    backgroundColor:
-                                        const Color.fromRGBO(85, 238, 32, 0.15),
-                                    onPressed: () async {
-                                      final result = await pickImage(
-                                          ImageSource.gallery, true);
-                                      if (result.isNotEmpty) {
-                                        _currentProject = _currentProject
-                                            .copyWith(listMedia: [
-                                          ..._currentProject.listMedia,
-                                          ...result.reversed
-                                        ]);
-                                      }
-                                      setState(() {});
-                                      setStatefull(() {});
-                                    },
+                                  Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      _buildFakeShadow(
+                                        const Color.fromRGBO(
+                                            22, 115, 255, 0.15),
+                                      ),
+                                      WButtonFilled(
+                                          message: "Scan",
+                                          height: 76,
+                                          width:
+                                              MediaQuery.sizeOf(context).width *
+                                                  0.45,
+                                          mediaSize: 25,
+                                          textColor: colorBlue,
+                                          mediaColor: colorBlue,
+                                          padding:
+                                              const EdgeInsets.only(top: 7),
+                                          mediaValue:
+                                              "${PATH_PREFIX_ICON}icon_scan.png",
+                                          backgroundColor:
+                                              colorBlue.withOpacity(0.15),
+                                          onPressed: () async {
+                                            List<String>? imagePaths =
+                                                await scanDocument();
+                                            //convert path image to pdf -> note.txt
+                                            if (imagePaths != null &&
+                                                imagePaths.isNotEmpty) {
+                                              final List<File> files =
+                                                  imagePaths
+                                                      .map((e) => File(e))
+                                                      .toList();
+                                              _currentProject = _currentProject
+                                                  .copyWith(listMedia: [
+                                                ..._currentProject.listMedia,
+                                                ...files.reversed
+                                              ]);
+                                            }
+                                            setState(() {});
+                                            setStatefull(() {});
+                                            // use document_scanner_flutter to capture image and parse origin image to binary image
+                                            // File? scannedDoc = await DocumentScannerFlutter.launch(context);
+                                          }),
+                                    ],
                                   ),
-                                  WButtonFilled(
-                                      message: "Scan",
-                                      height: 76,
-                                      width: MediaQuery.sizeOf(context).width *
-                                          0.45,
-                                      mediaSize: 25,
-                                      padding: const EdgeInsets.only(top: 2),
-                                      textColor: colorBlue,
-                                      mediaColor: colorBlue,
-                                      mediaValue:
-                                          "${PATH_PREFIX_ICON}icon_scan.png",
-                                      backgroundColor:
-                                          colorBlue.withOpacity(0.15),
-                                      onPressed: () async {
-                                        List<String>? imagePaths =
-                                            await scanDocument();
-                                        //convert path image to pdf -> note.txt
-                                        if (imagePaths != null &&
-                                            imagePaths.isNotEmpty) {
-                                          final List<File> files = imagePaths
-                                              .map((e) => File(e))
-                                              .toList();
-                                          _currentProject = _currentProject
-                                              .copyWith(listMedia: [
-                                            ..._currentProject.listMedia,
-                                            ...files.reversed
-                                          ]);
-                                        }
-                                        setState(() {});
-                                        setStatefull(() {});
-                                        // use document_scanner_flutter to capture image and parse origin image to binary image
-                                        // File? scannedDoc = await DocumentScannerFlutter.launch(context);
-                                      }),
                                 ],
                               ),
                             ],
@@ -577,6 +587,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                             width: MediaQuery.sizeOf(context).width * 0.85,
                             backgroundColor: colorBlue,
                             textColor: colorWhite,
+                            borderRadius: 20,
                             onPressed: () async {
                               _currentProject = _currentProject.copyWith(
                                 paper: LIST_PAGE_SIZE[0],
@@ -629,13 +640,18 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
   Widget _buildFakeShadow(Color color) {
     return Container(
         margin: const EdgeInsets.only(top: 10),
-        height: 76,
-        width: MediaQuery.sizeOf(context).width * 0.45,
+        height: 55,
+        width: MediaQuery.sizeOf(context).width * 0.45 - 30,
         child: Container(
           decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(25),
-          ),
+              borderRadius: BorderRadius.circular(25),
+              boxShadow: [
+                BoxShadow(
+                    color: color,
+                    spreadRadius: 10,
+                    blurRadius: 10,
+                    offset: const Offset(0, 2))
+              ]),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(25),
             child: BackdropFilter(

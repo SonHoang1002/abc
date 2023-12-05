@@ -39,7 +39,7 @@ class WProjectItemHomeBottom extends StatelessWidget {
                   Container(
                     width: MediaQuery.sizeOf(context).width * 0.29,
                     height: MediaQuery.sizeOf(context).width * 0.29,
-                    padding:EdgeInsets.all(6),
+                    padding: const EdgeInsets.all(6),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: project.listMedia[index] is File
@@ -57,21 +57,18 @@ class WProjectItemHomeBottom extends StatelessWidget {
                   ),
                   isFocusByLongPress
                       ? Positioned(
-                          top: -13,
-                          left: -13,
+                          top: -10,
+                          left: -10,
                           child: GestureDetector(
                             onTap: () {
                               onRemove(project.listMedia[index]);
                             },
-                            child: Container(
-                              alignment: Alignment.topLeft,
-                              child: Image.asset(
-                                Provider.of<ThemeManager>(context).isDarkMode
-                                    ? "${PATH_PREFIX_ICON}icon_remove_dark.png"
-                                    : "${PATH_PREFIX_ICON}icon_remove_light.png",
-                                width: 40,
-                                height: 40,
-                              ),
+                            child: Image.asset(
+                              Provider.of<ThemeManager>(context).isDarkMode
+                                  ? "${PATH_PREFIX_ICON}icon_remove_dark.png"
+                                  : "${PATH_PREFIX_ICON}icon_remove_light.png",
+                              width: 40,
+                              height: 40,
                             ),
                           ))
                       : const SizedBox()

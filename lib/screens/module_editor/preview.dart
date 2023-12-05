@@ -99,10 +99,10 @@ class _PreviewState extends ConsumerState<PreviewProject>
 
   Widget _buildTitleCarouselItem(int currentIndex) {
     String value = "";
-    if(_project.coverPhoto?.frontPhoto != null){
+    if (_project.coverPhoto?.frontPhoto != null) {
       value = "Page ${currentIndex}";
-    }else{
-      value = "Page ${currentIndex+1}";
+    } else {
+      value = "Page ${currentIndex + 1}";
     }
     if (_project.coverPhoto?.frontPhoto != null && currentIndex == 0 ||
         _project.coverPhoto?.backPhoto != null &&
@@ -210,6 +210,7 @@ class _PreviewState extends ConsumerState<PreviewProject>
                       message: "Close",
                       textColor: colorBlue,
                       height: 60,
+                      padding: EdgeInsets.zero,
                       backgroundColor: colorWhite,
                       onPressed: () {
                         /// data binding 2 chiều ??
@@ -276,6 +277,18 @@ class _PreviewState extends ConsumerState<PreviewProject>
     if (_project.useAvailableLayout != true &&
         _project.placements != null &&
         _project.placements!.isNotEmpty) {
+      if (_project.listMedia.isEmpty) {
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 10),
+          child: WProjectItemPreview(
+            project: _project,
+            indexImage: 0,
+            title: "",
+            ratioTarget: ratioTarget,
+            ratioWHImages: _listRatioWHImage,
+          ),
+        );
+      }
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 10),
         child: WProjectItemPreview(

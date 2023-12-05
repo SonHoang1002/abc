@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 
+import '../commons/colors.dart';
+
 class WButtonElevated extends StatelessWidget {
   final String message;
   final double? width;
@@ -101,136 +103,106 @@ class WButtonFilled extends StatelessWidget {
   final double? textSize;
   final double? textLineHeight;
   final double? borderRadius;
-  final bool? isVerticalAlignment;
+  // final bool? isVerticalAlignment;
 
   /// [mediaValue] can be IconData, assets String ( include icon or image )
   final dynamic mediaValue;
   final Color? mediaColor;
   final double? mediaSize;
-  final EdgeInsets padding;
+  final EdgeInsets? padding;
   final double? elevation;
-  final Color? shadowColor;
   final List<BoxShadow>? boxShadow;
 
-  const WButtonFilled(
-      {super.key,
-      this.mediaValue,
-      required this.message,
-      this.onPressed,
-      this.width,
-      this.height,
-      this.backgroundColor,
-      this.mediaColor,
-      this.mediaSize,
-      this.textColor,
-      this.borderRadius,
-      this.textSize = 15,
-      this.textLineHeight = 34,
-      this.padding = const EdgeInsets.only(bottom: 10),
-      this.elevation,
-      this.shadowColor,
-      this.boxShadow,
-      this.isVerticalAlignment = true});
+  const WButtonFilled({
+    super.key,
+    this.mediaValue,
+    required this.message,
+    this.onPressed,
+    this.width,
+    this.height,
+    this.backgroundColor,
+    this.mediaColor,
+    this.mediaSize,
+    this.textColor,
+    this.borderRadius,
+    this.textSize = 15,
+    this.textLineHeight = 34,
+    this.padding = const EdgeInsets.only(bottom: 10),
+    this.elevation,
+    this.boxShadow,
+    // this.isVerticalAlignment = true
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        FilledButton(
-            style: FilledButton.styleFrom(
-                padding: padding,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(borderRadius ?? 25)),
-                backgroundColor: backgroundColor,
-                elevation: elevation,
-                shadowColor: shadowColor),
-            onPressed: onPressed,
-            child: Container(
-              decoration: BoxDecoration(
-                boxShadow: boxShadow,
-              ),
-              width: width, // 255
-              height: height, //60
-              child: Center(
-                child: mediaValue != null
-                    ? isVerticalAlignment!
-                        ? Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Container(
-                                // padding: const EdgeInsets.only(top: 10),
-                                child: mediaValue is IconData
-                                    ? Icon(
-                                        mediaValue,
-                                        color: mediaColor,
-                                        size: mediaSize,
-                                      )
-                                    : Image.asset(
-                                        mediaValue,
-                                        color: mediaColor,
-                                        height: mediaSize,
-                                        width: mediaSize,
-                                      ),
-                              ),
-                              WSpacer(height: 5,),
-                              Text(
-                                message,
-                                style: TextStyle(
-                                  fontSize: textSize,
-                                  // height: textLineHeight,
-                                  fontWeight: FontWeight.w700,
-                                  color: textColor,
-                                ),
+    return GestureDetector(
+        onTap: onPressed,
+        child: Container(
+          decoration: BoxDecoration(
+              boxShadow: boxShadow,
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(borderRadius ?? 25)),
+          padding: padding,
+          alignment: Alignment.center,
+          width: width, // 255
+          height: height, //60
+          child: mediaValue != null
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    if (mediaValue != null)
+                      Container(
+                        decoration: BoxDecoration(boxShadow: [
+                          BoxShadow(
+                              color: textColor!.withOpacity(0.1),
+                              blurRadius: 10,
+                              spreadRadius: 1,
+                              offset: const Offset(0, 4))
+                        ]),
+                        child: mediaValue is IconData
+                            ? Icon(
+                                mediaValue,
+                                color: mediaColor,
+                                size: mediaSize,
                               )
-                              // WTextContent(
-                              //   value: message,
-                              //   textSize: textSize,
-                              //   textLineHeight: textLineHeight,
-                              //   textColor: textColor,
-                              // )
-                            ],
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(top: 10),
-                                child: mediaValue is IconData
-                                    ? Icon(
-                                        mediaValue,
-                                        color: mediaColor,
-                                        size: mediaSize,
-                                      )
-                                    : Image.asset(
-                                        mediaValue,
-                                        color: mediaColor,
-                                        height: mediaSize,
-                                        width: mediaSize,
-                                      ),
+                            : Image.asset(
+                                mediaValue,
+                                color: mediaColor,
+                                height: mediaSize,
+                                width: mediaSize,
                               ),
-                              WSpacer(
-                                width: 10,
-                              ),
-                              WTextContent(
-                                value: message,
-                                textSize: textSize,
-                                textLineHeight: textLineHeight,
-                                textColor: textColor,
-                              )
-                            ],
-                          )
-                    : WTextContent(
+                      ),
+                    if (mediaValue != null)
+                      const SizedBox(
+                        height: 5,
+                      ),
+                    Container(
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                              color: textColor!.withOpacity(0.1),
+                              blurRadius: 10,
+                              spreadRadius: 1,
+                              offset: const Offset(0, 4))
+                        ],
+                      ),
+                      child: WTextContent(
                         value: message,
                         textSize: textSize,
-                        textLineHeight: textLineHeight,
                         textColor: textColor,
-                        textAlign: TextAlign.center,
+                        textFontWeight: FontWeight.w700,
                       ),
-              ),
-            )),
-      ],
-    );
+                    )
+                  ],
+                )
+              : WTextContent(
+                  value: message,
+                  textSize: textSize,
+                  textLineHeight: textLineHeight,
+                  textColor: textColor,
+                  textAlign: TextAlign.center,
+                ),
+        ));
   }
 }

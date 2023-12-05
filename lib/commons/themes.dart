@@ -38,11 +38,14 @@ class MyThemes {
   static final darkTheme = ThemeData(
       sliderTheme: const SliderThemeData(),
       scaffoldBackgroundColor: const Color.fromRGBO(34, 34, 34, 1),
+      // input back ground
+      bannerTheme: const MaterialBannerThemeData(
+          shadowColor: Color.fromRGBO(0, 0, 0, 1)),
+      canvasColor: const Color.fromRGBO(0, 0, 0, 0.1),
       // mau nen cac nut
       cardColor: const Color.fromRGBO(255, 255, 255, 0.1),
       // mau nen block navigator
-      canvasColor: const Color.fromRGBO(0, 0, 0, 0.1),
-      dividerTheme: const DividerThemeData(color: Colors.black),
+      dividerTheme: DividerThemeData(color: Colors.grey.shade800),
       primaryColor: Colors.grey.withOpacity(0.6),
       appBarTheme: AppBarTheme(backgroundColor: Colors.grey.shade900),
       textTheme: const TextTheme(
@@ -63,8 +66,7 @@ class MyThemes {
       focusColor: Colors.transparent,
       iconTheme: const IconThemeData(color: Color.fromRGBO(0, 0, 0, 0.1)),
       dialogBackgroundColor: const Color.fromRGBO(34, 34, 34, 1),
-      dialogTheme:
-          const DialogTheme(backgroundColor: Color.fromRGBO(34, 34, 34, 0.8)),
+      dialogTheme: DialogTheme(backgroundColor: Colors.grey.shade900),
       // ignore: deprecated_member_use
       backgroundColor: Colors.white.withOpacity(0.1),
       tabBarTheme: const TabBarTheme(
@@ -76,9 +78,11 @@ class MyThemes {
 
   static final lightTheme = ThemeData(
       scaffoldBackgroundColor: colorWhite,
+      // input back ground
+      bannerTheme: const MaterialBannerThemeData(shadowColor: colorWhite),
       cardColor: const Color.fromRGBO(0, 0, 0, 0.03),
       canvasColor: const Color.fromRGBO(250, 250, 250, 1),
-      dividerTheme: DividerThemeData(color: Colors.grey.shade200),
+      dividerTheme: DividerThemeData(color: Colors.grey.shade300),
       primaryColor: colorWhite,
       appBarTheme: const AppBarTheme(backgroundColor: colorWhite),
       textTheme: const TextTheme(

@@ -281,8 +281,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
     return double.parse(value);
   }
 
-  Widget _buildEditPlacementBody() {
-    print("controllers[0] ${controllers[0].text}");
+  Widget _buildEditPlacementBody() { 
     return Center(
       child: Container(
         height: _size.width * 0.8,

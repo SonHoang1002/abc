@@ -461,16 +461,13 @@ class _BodyLayoutState extends State<BodyLayout> {
                         context: context,
                         newScreen: BodyDialogCustom(
                           offset: widgetPosition,
-                          dialogWidget: buildDialogResizeMode(
-                            context,
-                            (value) {
-                              setState(() {
-                                _resizeModeSelectedValue = value;
-                              });
-                              widget.reRenderFunction();
-                              popNavigator(context);
-                            },
-                          ),
+                          dialogWidget: buildDialogResizeMode(context, (value) {
+                            setState(() {
+                              _resizeModeSelectedValue = value;
+                            });
+                            widget.reRenderFunction();
+                            popNavigator(context);
+                          }, _size.width * 0.3),
                           scaleAlignment: Alignment.bottomLeft,
                         ),
                       );
@@ -674,6 +671,7 @@ class _BodyLayoutState extends State<BodyLayout> {
                       textLineHeight: 14.32,
                       textSize: 12,
                       height: 30,
+                      padding: EdgeInsets.zero,
                       backgroundColor: const Color.fromRGBO(22, 115, 255, 0.08),
                       onPressed: () {
                         setState(() {
@@ -686,7 +684,6 @@ class _BodyLayoutState extends State<BodyLayout> {
                         });
                         widget.reRenderFunction();
                       },
-                      padding: EdgeInsets.zero,
                     ),
                   ),
                   _selectedPlacement != null
@@ -701,13 +698,14 @@ class _BodyLayoutState extends State<BodyLayout> {
                             message: "Edit",
                             height: 30,
                             textColor: colorBlue,
+                            padding: EdgeInsets.zero,
                             textLineHeight: 14.32,
                             textSize: 12,
                             backgroundColor:
                                 const Color.fromRGBO(22, 115, 255, 0.08),
-                            padding: EdgeInsets.zero,
                             onPressed: () {
-                              _selectedPlacement = _saveDataSelectedPlacement;
+                              _selectedPlacement = _saveDataSelectedPlacement ??
+                                  _selectedPlacement;
                               final convertHeight = convertUnit(
                                   _project.paper!.unit!,
                                   _selectedPlacement!.placementAttribute!.unit!,

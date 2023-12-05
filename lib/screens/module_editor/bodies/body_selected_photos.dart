@@ -47,11 +47,18 @@ class _BodySelectedPhotosState extends State<BodySelectedPhotos> {
   void initState() {
     super.initState();
     _isFocusProject = false;
-    _project = widget.project;
+    _project = widget.project.copyWith(
+        compression: widget.project.compression + 0.00000000000000001);
     _sizeOfFileValue = widget.sizeOfFileValue;
     _sliderValue = widget.sliderCompressionLevelValue;
-    _listGlobalKeyForImages =
-        _project.listMedia.map((e) => GlobalKey()).toList();
+    _listGlobalKeyForImages = _project.listMedia
+        .map((e) => GlobalKey(debugLabel: _splitPath(e.path)))
+        .toList();
+  }
+
+  String _splitPath(String filePath) {
+    List<String> pathParts = filePath.split('/');
+    return pathParts.isNotEmpty ? pathParts.last : '';
   }
 
   _pickImages() async {
@@ -66,10 +73,11 @@ class _BodySelectedPhotosState extends State<BodySelectedPhotos> {
   }
 
   _updateListMedia(List files) {
-    _project = _project.copyWith(listMedia: [..._project.listMedia, ...files]);
+    _project = _project
+        .copyWith(listMedia: [...List.from(_project.listMedia), ...files]);
     _listGlobalKeyForImages = [
       ..._listGlobalKeyForImages,
-      ...files.map((e) => GlobalKey()).toList()
+      ...files.map((e) => GlobalKey(debugLabel: _splitPath(e.path))).toList()
     ];
     setState(() {});
     widget.reRenderFunction();
@@ -115,6 +123,7 @@ class _BodySelectedPhotosState extends State<BodySelectedPhotos> {
 
   @override
   Widget build(BuildContext context) {
+    print("_project BodySelectedPhotos ${_project.listMedia}");
     final size = MediaQuery.sizeOf(context);
     return Container(
       height: size.height * 0.95,
@@ -183,7 +192,7 @@ class _BodySelectedPhotosState extends State<BodySelectedPhotos> {
                   crossAxisCount: 3,
                   onReorder: (oldIndex, newIndex) {
                     setState(() {
-                      final tempListProject = _project.listMedia;
+                      final tempListProject = List.from(_project.listMedia);
                       final element = tempListProject.removeAt(oldIndex);
                       tempListProject.insert(newIndex, element);
                       _project = _project.copyWith(listMedia: tempListProject);

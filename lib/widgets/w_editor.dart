@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -78,15 +79,16 @@ Widget buildPageSizePreset(
                         textSize: 14,
                         textLineHeight: 19.09,
                       ),
-                      index != LIST_PAGE_SIZE.length - 1
-                          ? WDivider(
-                              color: const Color.fromRGBO(0, 0, 0, 0.3),
-                              width:
-                                  200 / 390 * MediaQuery.sizeOf(context).width,
-                              height: 1,
-                              margin: EdgeInsets.zero,
-                            )
-                          : const SizedBox()
+                      if (index != LIST_PAGE_SIZE.length - 1)
+                        WDivider(
+                          color:
+                              (pv.Provider.of<ThemeManager>(context).isDarkMode)
+                                  ? colorGrey.withOpacity(0.3)
+                                  : null,
+                          width: width,
+                          height: 1,
+                          margin: EdgeInsets.zero,
+                        )
                     ],
                   ));
             }).toList(),
@@ -169,7 +171,7 @@ Widget buildFileNameInput(BuildContext context, Project project,
   TextStyle buildTextStyleInputFileName(Color textColor) {
     return TextStyle(
         color: textColor,
-        fontFamily: MY_CUSTOM_FONT,
+        fontFamily: FONT_GOOGLESANS,
         fontWeight: FontWeight.w700,
         height: 19.09 / 16,
         fontSize: 16);
@@ -243,14 +245,24 @@ Widget buildSelection(BuildContext context, Map<String, dynamic> mediaSrc,
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  WTextContent(
-                    value: title,
-                    textLineHeight: 14.32,
-                    textFontWeight: FontWeight.w600,
-                    textSize: 12,
-                    textOverflow: TextOverflow.ellipsis,
-                    textColor: Theme.of(context).textTheme.bodySmall!.color,
+                  AutoSizeText(
+                    title,
+                    maxLines: 1,
+                    minFontSize: 5,
+                    maxFontSize: 12,
+                    style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).textTheme.bodySmall!.color,
+                        fontFamily: FONT_GOOGLESANS),
                   ),
+                  // WTextContent(
+                  //   value: title,
+                  //   textLineHeight: 14.32,
+                  //   textFontWeight: FontWeight.w600,
+                  //   textSize: 12,
+                  //   textOverflow: TextOverflow.ellipsis,
+                  //   textColor: Theme.of(context).textTheme.bodySmall!.color,
+                  // ),
                   WSpacer(
                     height: 5,
                   ),
@@ -275,6 +287,7 @@ Widget buildBottomButton(
     {required BuildContext context,
     required void Function() onApply,
     String? titleApply,
+    String? titleCancel,
     void Function()? onCancel}) {
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
@@ -283,7 +296,7 @@ Widget buildBottomButton(
       children: [
         Flexible(
             child: WButtonFilled(
-                message: "Cancel",
+                message: titleCancel ?? "Cancel",
                 backgroundColor: Theme.of(context).cardColor,
                 textColor: colorBlue,
                 height: 60,
@@ -367,13 +380,23 @@ Widget buildLayoutConfigItem(
           color: Theme.of(context).cardColor),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       child: Column(children: [
-        WTextContent(
-          value: title,
-          textSize: 12,
-          textLineHeight: 14.32,
-          textFontWeight: FontWeight.w600,
-          textColor: Theme.of(context).textTheme.bodyMedium!.color,
+        AutoSizeText(
+          title,
+          maxLines: 1,
+          minFontSize: 7,
+          maxFontSize: 12,
+          style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).textTheme.bodyMedium!.color,
+              fontFamily: FONT_GOOGLESANS),
         ),
+        // WTextContent(
+        //   value: title,
+        //   textSize: 12,
+        //   textLineHeight: 14.32,
+        //   textFontWeight: FontWeight.w600,
+        //   textColor: Theme.of(context).textTheme.bodyMedium!.color,
+        // ),
         WSpacer(
           height: 10,
         ),
@@ -403,12 +426,22 @@ Widget buildLayoutConfigItem(
                 ],
               )
             : Center(
-                child: WTextContent(
-                  value: content,
-                  textSize: 14,
-                  textLineHeight: 16.71,
-                  textColor: const Color.fromRGBO(10, 132, 255, 1),
+                child: AutoSizeText(
+                  content,
+                  maxLines: 1,
+                  minFontSize: 9,
+                  maxFontSize: 14,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Color.fromRGBO(10, 132, 255, 1),
+                      fontFamily: FONT_GOOGLESANS),
                 ),
+                // WTextContent(
+                //   value: content,
+                //   textSize: 14,
+                //   textLineHeight: 16.71,
+                //   textColor: const Color.fromRGBO(10, 132, 255, 1),
+                // ),
               ),
       ]),
     ),
@@ -426,7 +459,8 @@ void showLayoutDialogWithOffset(
 }
 
 Widget buildDialogResizeMode(
-    BuildContext context, Function(dynamic value) onSelected) {
+    BuildContext context, Function(dynamic value) onSelected, double width) {
+  final rWidth = MediaQuery.sizeOf(context).width * (200 / 390);
   return Column(children: [
     _buildDialogInformationItem(
       context,
@@ -440,10 +474,10 @@ Widget buildDialogResizeMode(
         color: Theme.of(context).dialogTheme.backgroundColor,
       ),
     ),
-    const WDivider(
-        height: 1,
-        // color: Color.fromRGBO(0, 0, 0, 0.1),
-        color: Colors.black),
+    WDivider(
+      height: 1.5,
+      width: rWidth,
+    ),
     _buildDialogInformationItem(
         context,
         LIST_RESIZE_MODE[1].mediaSrc,
@@ -453,7 +487,10 @@ Widget buildDialogResizeMode(
             ),
         boxDecoration: BoxDecoration(
             color: Theme.of(context).dialogTheme.backgroundColor)),
-    const WDivider(height: 1, color: Colors.black),
+    WDivider(
+      height: 1.5,
+      width: rWidth,
+    ),
     _buildDialogInformationItem(
       context,
       LIST_RESIZE_MODE[2].mediaSrc,
@@ -470,14 +507,14 @@ Widget buildDialogResizeMode(
 }
 
 Widget buildDialogAlignment(BuildContext context, List<dynamic> datas,
-    {Function(int index, dynamic value)? onSelected}) {
-  // final size = MediaQuery.sizeOf(context);
+    {Function(int index, dynamic value)? onSelected,
+    double? borderRadius = 20}) {
   return Container(
     height: 200,
     width: 200,
     padding: const EdgeInsets.all(10),
     decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(borderRadius!),
         color: Theme.of(context).dialogTheme.backgroundColor),
     child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -656,7 +693,7 @@ Widget _buildPaddingInput(
           height: 16.71 / 14,
           fontSize: 14,
           fontWeight: FontWeight.w700,
-          fontFamily: MY_CUSTOM_FONT,
+          fontFamily: FONT_GOOGLESANS,
         ),
         controller: controller,
       ));

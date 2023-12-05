@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:photo_to_pdf/commons/constants.dart';
 
 // ignore: must_be_immutable
 class WTextContent extends StatelessWidget {
@@ -11,6 +12,7 @@ class WTextContent extends StatelessWidget {
   TextOverflow? textOverflow;
   int? textMaxLength;
   String? textFontFamily;
+  List<Shadow>? shadows;
   void Function()? onTap;
   WTextContent(
       {required this.value,
@@ -23,6 +25,7 @@ class WTextContent extends StatelessWidget {
       this.textOverflow,
       this.textMaxLength,
       this.textFontFamily,
+      this.shadows,
       this.onTap});
 
   @override
@@ -40,7 +43,8 @@ class WTextContent extends StatelessWidget {
                       textColor ?? Theme.of(context).textTheme.bodySmall!.color,
                   decoration: TextDecoration.none,
                   fontWeight: textFontWeight,
-                  // fontFamily: MY_CUSTOM_FONT,
+                  shadows: shadows,
+                  fontFamily: textFontFamily ?? FONT_GOOGLESANS,
                   overflow: textOverflow,
                   height: textLineHeight != null && textSize != null
                       ? (textLineHeight! / textSize!)
@@ -54,12 +58,12 @@ class WTextContent extends StatelessWidget {
             style: TextStyle(
                 decoration: TextDecoration.none,
                 fontSize: (textSize! + 1.0),
+                shadows: shadows,
                 color:
                     textColor ?? Theme.of(context).textTheme.bodySmall!.color,
                 fontWeight: textFontWeight,
-                // fontFamily: MY_CUSTOM_FONT,
+                fontFamily: textFontFamily ?? FONT_GOOGLESANS,
                 overflow: textOverflow,
-                
                 height: textLineHeight != null && textSize != null
                     ? (textLineHeight! / textSize!)
                     : null),

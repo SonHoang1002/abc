@@ -247,23 +247,21 @@ class WProjectItemEditor extends ConsumerWidget {
                           width: 30,
                           height: 30,
                         ),
-                        isFocusByLongPress &&
-                                project.paper?.title != LIST_PAGE_SIZE[0].title
-                            ? Positioned.fill(
-                                top: -10,
-                                left: -10,
-                                child: GestureDetector(
-                                  onTap: onRemove,
-                                  child: Image.asset(
-                                    pv.Provider.of<ThemeManager>(context)
-                                            .isDarkMode
-                                        ? "${PATH_PREFIX_ICON}icon_remove_dark.png"
-                                        : "${PATH_PREFIX_ICON}icon_remove_light.png",
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              )
-                            : const SizedBox(),
+                        if (isFocusByLongPress &&
+                            project.paper?.title != LIST_PAGE_SIZE[0].title)
+                          Positioned.fill(
+                            top: -10,
+                            left: -10,
+                            child: GestureDetector(
+                              onTap: onRemove,
+                              child: Image.asset(
+                                pv.Provider.of<ThemeManager>(context).isDarkMode
+                                    ? "${PATH_PREFIX_ICON}icon_remove_dark.png"
+                                    : "${PATH_PREFIX_ICON}icon_remove_light.png",
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
                       ],
                     ))
               ],

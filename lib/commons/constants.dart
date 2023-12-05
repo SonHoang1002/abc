@@ -6,7 +6,8 @@ import 'package:photo_to_pdf/models/placement.dart';
 
 const String PATH_PREFIX_ICON = "assets/icons/";
 const String PATH_PREFIX_IMAGE = "assets/images/";
-const String MY_CUSTOM_FONT = "FontsFree-Net-SFProDisplay-Regular";
+const String FONT_SFPRODISPLAY = "FontsFree-Net-SFProDisplay-Regular";
+const String FONT_GOOGLESANS = "GoogleSans";
 const String BLANK_PAGE = "${PATH_PREFIX_IMAGE}blank_page.png";
 // ignore: non_constant_identifier_names
 List<PaperAttribute> LIST_PAGE_SIZE = [

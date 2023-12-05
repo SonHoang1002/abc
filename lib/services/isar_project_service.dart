@@ -18,6 +18,28 @@ class IsarProjectService {
     }
   }
 
+  // reorder
+  Future<void> reOrderList(Project project, int index) async {
+    // danh sách hiển thị ngược so với danh sách được lưu trong isar
+    final instance = await IsarService.instance;
+    List<ProjectIsar> listIsarProject =
+        await instance.projectIsars.where().findAll();
+    List<Project> listProject = listIsarProject
+        .map((e) => Project.fromJson(jsonDecode(e.projectData!)))
+        .toList()
+        .reversed
+        .toList();
+    final indexOfDeleteProject =
+        listProject.map((e) => e.id).toList().indexOf(project.id);
+    listProject.removeAt(indexOfDeleteProject);
+    listProject.insert(index, project);
+    final listResult = List.from(listProject.reversed.toList());
+    await resetProject();
+    for (var element in listResult) {
+      await addProject(element);
+    }
+  }
+
   //add
   Future<void> addProject(Project project) async {
     final instance = await IsarService.instance;

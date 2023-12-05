@@ -208,7 +208,6 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
         final currentGlobalkey = widget.listGlobalKey[indexOfSelectedRect];
         listCheckRectangle.removeAt(indexOfSelectedRect);
         listCheckRectangle.add(_selectedRectangle1!);
-
         listCheckGlobalkey.removeAt(indexOfSelectedRect);
         listCheckGlobalkey.add(currentGlobalkey);
       }
@@ -485,10 +484,19 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
     return GestureDetector(
       key: _gestureKey,
       onTapUp: (details) {
+        _listVerticalPosition.clear();
+        _listHorizontalPosition.clear();
+        print("000");
         _onFocusRectangle(details.globalPosition);
       },
       onPanUpdate: _onPanUpdate,
       onPanStart: _onPanStart,
+      onPanEnd: (details) {
+        setState(() {
+                _listVerticalPosition.clear();
+      _listHorizontalPosition.clear();
+        });
+      },
       child: Stack(
         key: _drawAreaKey,
         alignment: Alignment.center,

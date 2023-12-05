@@ -2,8 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/commons/themes.dart';
 import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/models/project.dart';
+import 'package:provider/provider.dart';
 
 class WInputPaper extends StatefulWidget {
   final double inputWidth;
@@ -46,11 +48,12 @@ class _WInputPaperState extends State<WInputPaper> {
   Size _preffixContainerSize = const Size(30, 30);
 
   TextStyle textStyleInput = const TextStyle(
-      color: colorBlue,
-      height: 16.71 / 14,
-      fontSize: 14,
-      fontWeight: FontWeight.w700,
-      fontFamily: MY_CUSTOM_FONT);
+    color: colorBlue,
+    height: 16.71 / 14,
+    fontSize: 14,
+    fontWeight: FontWeight.w700,
+    fontFamily: FONT_GOOGLESANS,
+  );
   TextStyle suffixTextStyle = const TextStyle(
       color: colorBlue,
       fontWeight: FontWeight.w700,
@@ -267,7 +270,7 @@ class _WInputLayoutState extends State<WInputLayout> {
   Widget build(BuildContext context) {
     final TextStyle suffixTextStyle = TextStyle(
         color: Theme.of(context).textTheme.bodyMedium!.color,
-        fontFamily: MY_CUSTOM_FONT,
+        fontFamily: FONT_GOOGLESANS,
         fontWeight: FontWeight.w700,
         height: 16.71 / 14,
         fontSize: 14);
@@ -299,7 +302,9 @@ class _WInputLayoutState extends State<WInputLayout> {
           keyboardType: TextInputType.number,
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              color: Theme.of(context).scaffoldBackgroundColor,
+              color: Provider.of<ThemeManager>(context).isDarkMode
+                  ? colorBlack
+                  : Theme.of(context).scaffoldBackgroundColor,
               border: Border.all(
                   color: widget.isFocus
                       ? const Color.fromRGBO(98, 161, 255, 1)
@@ -322,7 +327,7 @@ class _WInputLayoutState extends State<WInputLayout> {
             height: 16.71 / 14,
             fontSize: 14,
             fontWeight: FontWeight.w700,
-            fontFamily: MY_CUSTOM_FONT,
+            fontFamily: FONT_GOOGLESANS,
           ),
           controller: _controller,
         ));

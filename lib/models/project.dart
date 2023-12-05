@@ -39,6 +39,7 @@ class Project {
       this.coverPhoto,
       this.placements,
       this.useAvailableLayout = true});
+  
   Project copyWith(
       {String? title,
       List<dynamic>? listMedia,
@@ -54,7 +55,7 @@ class Project {
       List<Placement>? placements,
       bool? useAvailableLayout}) {
     return Project(
-        id: this.id,
+        id: id,
         title: title ?? this.title,
         listMedia: listMedia ?? this.listMedia,
         paper: paper ?? this.paper,
@@ -170,7 +171,7 @@ class Project {
     final alignmentAttribute =
         "alignmentAttribute: ${this.alignmentAttribute},";
     final coverPhoto = "coverPhoto: ${this.coverPhoto},";
-    final placementAttribute = "placements: ${this.placements},";
+    final placementAttribute = "placements: ${placements},";
     final useAvailableLayout = "useAvailableLayout: ${this.useAvailableLayout}";
     print(id +
         title +
@@ -219,8 +220,8 @@ class PaddingAttribute {
       unit: json['unit'] != null ? Unit.fromJson(json['unit']) : null,
     );
   }
-    String getInfor() {
-    return "PaddingAttribute verticalPadding: ${this.verticalPadding}, PaddingAttribute horizontalPadding: ${this.horizontalPadding}, PaddingAttribute unit: ${this.unit?.getInfor()},";
+  String getInfor() {
+    return "PaddingAttribute verticalPadding: ${verticalPadding}, PaddingAttribute horizontalPadding: ${horizontalPadding}, PaddingAttribute unit: ${unit?.getInfor()},";
   }
 }
 
@@ -337,7 +338,7 @@ class PaperAttribute {
   }
 
   String getInfor() {
-    return "PaperAttribute title: ${this.title}, PaperAttribute width: ${this.width}, PaperAttribute height: ${this.height},PaperAttribute isPortrait: ${this.isPortrait}, PaperAttribute unit: ${this.unit?.getInfor()},";
+    return "PaperAttribute title: ${title}, PaperAttribute width: ${width}, PaperAttribute height: ${height},PaperAttribute isPortrait: ${isPortrait}, PaperAttribute unit: ${unit?.getInfor()},";
   }
 
   Map<String, dynamic> toJson() {
@@ -366,7 +367,7 @@ class Unit {
   final String value;
   Unit({this.title = "", this.value = ""});
   String getInfor() {
-    return "Unit title: ${this.title}, Unit value: ${this.value}";
+    return "Unit title: ${title}, Unit value: ${value}";
   }
 
   Map<String, dynamic> toJson() {

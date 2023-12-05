@@ -71,6 +71,7 @@ class _BodyDialogCustomState extends State<BodyDialogCustom>
               child: Stack(
                 children: [
                   ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
                       child: widget.dialogWidget,

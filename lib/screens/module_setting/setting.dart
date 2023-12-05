@@ -4,6 +4,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/commons/themes.dart';
+import 'package:photo_to_pdf/helpers/navigator_route.dart';
+import 'package:photo_to_pdf/screens/module_editor/bodies/body_dialogs.dart';
+import 'package:photo_to_pdf/screens/module_editor/editor_padding_spacing.dart';
+import 'package:photo_to_pdf/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 import 'package:provider/provider.dart';
@@ -50,7 +54,6 @@ class Setting extends StatelessWidget {
                 textAlign: TextAlign.start,
               ),
               // const SizedBox()
-
               GestureDetector(
                   onTap: () {
                     bool isDarkMode =
@@ -79,7 +82,6 @@ class Setting extends StatelessWidget {
                               .textTheme
                               .displayLarge!
                               .color))),
-            
             ],
           ),
         ),
@@ -148,6 +150,45 @@ class Setting extends StatelessWidget {
         ),
         GestureDetector(
           onTap: _onAccessSetting,
+          child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color.fromRGBO(20, 20, 20, 0.05),
+                    spreadRadius: 5,
+                    blurRadius: 40,
+                    offset: Offset(0, 10),
+                  ),
+                ],
+                color: Theme.of(context).canvasColor,
+                border: Border.all(
+                  width: 1,
+                  color: const Color.fromRGBO(0, 0, 0, 0.05),
+                ),
+              ),
+              child: _buildSettingItem(
+                context: context,
+                prefixMediaSrc: "${PATH_PREFIX_ICON}icon_access_setting.png",
+                title: "Photo Access Settings",
+              )),
+        ),
+        GestureDetector(
+          onTap: () {
+            pushCustomVerticalMaterialPageRoute(
+                context,
+                EditorPaddingSpacing(
+                    unit: CENTIMET,
+                    paddingAttribute: PADDING_OPTIONS,
+                    title: TITLE_PADDING,
+                    inputValues: [
+                      "2.3","3.4"
+                    ],
+                    onChanged: (index, value) {},
+                    onDone: (newPaddingAttribute) {}));
+          },
           child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
               margin: const EdgeInsets.symmetric(horizontal: 20),
