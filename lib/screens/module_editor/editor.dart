@@ -1,11 +1,9 @@
 import 'dart:typed_data';
 import 'dart:ui';
-
 import 'package:photo_to_pdf/helpers/firebase_helper.dart';
 import 'package:photo_to_pdf/helpers/share_pdf.dart';
 import 'package:photo_to_pdf/helpers/show_popup_review.dart';
 import 'package:photo_to_pdf/providers/ratio_images_provider.dart';
-import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/helpers/pdf/create_pdf.dart';
@@ -208,14 +206,14 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     return oldRatioTarget;
   }
 
-  void _onCancel() async { 
+  void _onCancel() async {
     ref.read(projectControllerProvider.notifier).updateProject(_project);
     popNavigator(context);
     await IsarProjectService().updateProject(_project);
   }
 
   @override
-  Widget build(BuildContext context) { 
+  Widget build(BuildContext context) {
     _size = MediaQuery.sizeOf(context);
     return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -229,197 +227,205 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                Container(
-                  padding:   EdgeInsets.only(top: 10,bottom:MediaQuery.of(context).padding.bottom),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      // input
-                      buildFileNameInput(
-                        context,
-                        _project,
-                        _fileNameController,
-                        (value) async {
-                          _project = _project.copyWith(title: value.trim());
-                          ref
-                              .read(projectControllerProvider.notifier)
-                              .updateProject(_project);
-                          await IsarProjectService().updateProject(_project);
-                        },
-                        autofocus: _autofocusFileName,
-                        onTap: () {
-                          _onTapFileNameInput();
-                        },
-                      ),
-
-                      WSpacer(
-                        height: 10,
-                      ),
-                      // list image
-                      Expanded(
-                          child: Container(
-                              width: _size.width * 0.9,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color: Theme.of(context).cardColor,
-                              ),
-                              child: _buildPreviewProjectBody())),
-                      // page size and bottom buttons
-                      SizedBox(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(children: [
-                              WSpacer(height: 10),
-                              // information
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  WTextContent(
-                                    value: "$_lengthOfProjectList Pages",
-                                    textColor: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium!
-                                        .color,
-                                    textLineHeight: 14.32,
-                                    textSize: 12,
-                                    textFontWeight: FontWeight.w600,
-                                  ),
-                                  WDivider(
-                                      width: 2,
-                                      height: 14,
-                                      color: Theme.of(context).cardColor,
-                                      margin: const EdgeInsets.symmetric(
-                                          horizontal: 10)),
-                                  WTextContent(
-                                    value: "File Size: $_sizeOfFile",
-                                    textColor: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium!
-                                        .color,
-                                    textLineHeight: 14.32,
-                                    textSize: 12,
-                                    textFontWeight: FontWeight.w600,
-                                  ),
-                                ],
-                              ),
-                              //
-                              WSpacer(
-                                height: 20,
-                              ),
-                              // selections
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  buildSelection(
-                                    context,
-                                    _paperConfig['mediaSrc'],
-                                    _paperConfig['title'],
-                                    _paperConfig['content'].title,
-                                    onTap: () {
-                                      _showBottomSheetPaperSize();
-                                    },
-                                  ),
-                                  WSpacer(
-                                    width: 10,
-                                  ),
-                                  buildSelection(
-                                    context,
-                                    _layoutConfig['mediaSrc'],
-                                    _layoutConfig['title'],
-                                    _layoutConfig['content'],
-                                    onTap: () {
-                                      if (_paperConfig['content'].title ==
-                                          "None") {
-                                        _showDialogWarningSelectPaperSize();
-                                        return;
-                                      }
-                                      _showBottomSheetLayout();
-                                    },
-                                  ),
-                                ],
-                              ),
-                              WSpacer(
-                                height: 10,
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  buildSelection(
-                                    context,
-                                    _photosConfig['mediaSrc'],
-                                    _photosConfig['title'],
-                                    _photosConfig['content'],
-                                    onTap: () {
-                                      _showBottomSheetSelectedPhotos(
-                                        context: context,
-                                        size: _size,
-                                        project: _project,
-                                        onSliderChanged: (value) {
-                                          setState(() {
-                                            _sliderCompressionValue = value;
-                                          });
-                                        },
-                                        sliderCompressionLevelValue:
-                                            _sliderCompressionValue,
-                                      );
-                                    },
-                                  ),
-                                  WSpacer(
-                                    width: 10,
-                                  ),
-                                  buildSelection(
-                                    context,
-                                    _coverConfig['mediaSrc'],
-                                    _coverConfig['title'],
-                                    _coverConfig['content'],
-                                    onTap: () {
-                                      _showBottomSheetCoveredPhotos(
-                                        context: context,
-                                        size: _size,
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ]),
-                            buildBottomButton(
-                                context: context,
-                                titleCancel: "Close",
-                                onApply: () async {
-                                  setState(() {
-                                    _isLoading = true;
-                                  });
-                                  Uint8List data = await createPdfFile(_project,
-                                      context, _getRatioProject(LIST_RATIO_PDF),
-                                      compressValue: _sliderCompressionValue,
-                                      ratioWHImages: ref
-                                          .watch(
-                                              ratioWHImagesControllerProvider)
-                                          .listRatioWH);
-                                  final result = await savePdf(data,
-                                      title: _project.title);
-                                  setState(() {
-                                    _isLoading = false;
-                                  });
-                                  sharePdf([
-                                    XFile(result["data"].path),
-                                  ]);
-                                  var isRating = await checkRating();
-                                  // check xem da danh gia hay chua
-                                  if (!isRating) {
-                                    await ShowPopupReview.showPopupReview();
-                                    await updateRating();
-                                  }
-                                },
-                                onCancel: () async {
-                                  _onCancel();
-                                },
-                                titleApply: "Save to...")
-                          ],
+                GestureDetector(
+                  onTap: () {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                  },
+                  child: Container(
+                    color: transparent,
+                    padding: EdgeInsets.only(
+                        top: 10, bottom: MediaQuery.of(context).padding.bottom),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        // input
+                        buildFileNameInput(
+                          context,
+                          _project,
+                          _fileNameController,
+                          (value) async {
+                            _project = _project.copyWith(title: value.trim());
+                            ref
+                                .read(projectControllerProvider.notifier)
+                                .updateProject(_project);
+                            await IsarProjectService().updateProject(_project);
+                          },
+                          autofocus: _autofocusFileName,
+                          onTap: () {
+                            _onTapFileNameInput();
+                          },
                         ),
-                      )
-                    ],
+                        WSpacer(
+                          height: 10,
+                        ),
+                        // list image
+                        Expanded(
+                            child: Container(
+                                width: _size.width * 0.9,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: Theme.of(context).cardColor,
+                                ),
+                                child: _buildPreviewProjectBody())),
+                        // page size and bottom buttons
+                        SizedBox(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(children: [
+                                WSpacer(height: 10),
+                                // information
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    WTextContent(
+                                      value: "$_lengthOfProjectList Pages",
+                                      textColor: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium!
+                                          .color,
+                                      textLineHeight: 14.32,
+                                      textSize: 12,
+                                      textFontWeight: FontWeight.w600,
+                                    ),
+                                    WDivider(
+                                        width: 2,
+                                        height: 14,
+                                        color: Theme.of(context).cardColor,
+                                        margin: const EdgeInsets.symmetric(
+                                            horizontal: 10)),
+                                    WTextContent(
+                                      value: "File Size: $_sizeOfFile",
+                                      textColor: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium!
+                                          .color,
+                                      textLineHeight: 14.32,
+                                      textSize: 12,
+                                      textFontWeight: FontWeight.w600,
+                                    ),
+                                  ],
+                                ),
+                                //
+                                WSpacer(
+                                  height: 20,
+                                ),
+                                // selections
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    buildSelection(
+                                      context,
+                                      _paperConfig['mediaSrc'],
+                                      _paperConfig['title'],
+                                      _paperConfig['content'].title,
+                                      onTap: () {
+                                        _showBottomSheetPaperSize();
+                                      },
+                                    ),
+                                    WSpacer(
+                                      width: 10,
+                                    ),
+                                    buildSelection(
+                                      context,
+                                      _layoutConfig['mediaSrc'],
+                                      _layoutConfig['title'],
+                                      _layoutConfig['content'],
+                                      onTap: () {
+                                        if (_paperConfig['content'].title ==
+                                            "None") {
+                                          _showDialogWarningSelectPaperSize();
+                                          return;
+                                        }
+                                        _showBottomSheetLayout();
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                WSpacer(
+                                  height: 10,
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    buildSelection(
+                                      context,
+                                      _photosConfig['mediaSrc'],
+                                      _photosConfig['title'],
+                                      _photosConfig['content'],
+                                      onTap: () {
+                                        _showBottomSheetSelectedPhotos(
+                                          context: context,
+                                          size: _size,
+                                          project: _project,
+                                          onSliderChanged: (value) {
+                                            setState(() {
+                                              _sliderCompressionValue = value;
+                                            });
+                                          },
+                                          sliderCompressionLevelValue:
+                                              _sliderCompressionValue,
+                                        );
+                                      },
+                                    ),
+                                    WSpacer(
+                                      width: 10,
+                                    ),
+                                    buildSelection(
+                                      context,
+                                      _coverConfig['mediaSrc'],
+                                      _coverConfig['title'],
+                                      _coverConfig['content'],
+                                      onTap: () {
+                                        _showBottomSheetCoveredPhotos(
+                                          context: context,
+                                          size: _size,
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ]),
+                              buildBottomButton(
+                                  context: context,
+                                  titleCancel: "Close",
+                                  onApply: () async {
+                                    setState(() {
+                                      _isLoading = true;
+                                    });
+                                    Uint8List data = await createPdfFile(
+                                        _project,
+                                        context,
+                                        _getRatioProject(LIST_RATIO_PDF),
+                                        compressValue: _sliderCompressionValue,
+                                        ratioWHImages: ref
+                                            .watch(
+                                                ratioWHImagesControllerProvider)
+                                            .listRatioWH);
+                                    final result = await savePdf(data,
+                                        title: _project.title);
+                                    setState(() {
+                                      _isLoading = false;
+                                    });
+                                    sharePdf([
+                                      XFile(result["data"].path),
+                                    ]);
+                                    var isRating = await checkRating();
+                                    // check xem da danh gia hay chua
+                                    if (!isRating) {
+                                      await ShowPopupReview.showPopupReview();
+                                      await updateRating();
+                                    }
+                                  },
+                                  onCancel: () async {
+                                    _onCancel();
+                                  },
+                                  titleApply: "Save to...")
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
                   ),
                 ),
                 _isShowPreview

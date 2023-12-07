@@ -245,6 +245,17 @@ class _PreviewState extends ConsumerState<PreviewProject>
         _previewExtractList[currentIndex] is! File &&
         _previewExtractList[currentIndex] is! String &&
         _previewExtractList[currentIndex]?['front_cover'] != null) {
+      if (project.paper?.title == LIST_PAGE_SIZE[0].title) {
+        return Container(
+          constraints: const BoxConstraints(maxHeight: 400),
+          alignment: Alignment.center,
+          child: Image.file(
+            _previewExtractList[currentIndex]?['front_cover'],
+            fit: BoxFit.fill,
+            filterQuality: FilterQuality.high,
+          ),
+        );
+      }
       return WProjectItemPreview(
         project: _project,
         indexImage: 0,
@@ -257,6 +268,17 @@ class _PreviewState extends ConsumerState<PreviewProject>
         _previewExtractList[currentIndex] is! File &&
         _previewExtractList[currentIndex] is! String &&
         _previewExtractList[currentIndex]?['back_cover'] != null) {
+      if (project.paper?.title == LIST_PAGE_SIZE[0].title) {
+        return Container(
+          constraints: const BoxConstraints(maxHeight: 400),
+          alignment: Alignment.center,
+          child: Image.file(
+            _previewExtractList[currentIndex]?['back_cover'],
+            fit: BoxFit.fill,
+            filterQuality: FilterQuality.high,
+          ),
+        );
+      }
       return WProjectItemPreview(
         project: _project,
         indexImage: 0,
@@ -387,83 +409,86 @@ class WProjectItemPreview extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Stack(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(3),
-          child: Column(
-            children: [
-              Stack(
-                children: [
-                  (project.paper?.title == LIST_PAGE_SIZE[0].title &&
-                          layoutExtractList != null)
-                      ? 1 / ratioWHImages[indexImage] > INFINITY_NUMBER
-                          ? Image.file(
-                              layoutExtractList![0][0],
-                              fit: BoxFit.fill,
-                              width: _getRealWH(context)[0],
-                              filterQuality: FilterQuality.high,
-                            )
-                          : Container(
-                              constraints: const BoxConstraints(maxHeight: 400),
-                              alignment: Alignment.center,
-                              child: AspectRatio(
-                                aspectRatio: ratioWHImages[indexImage],
-                                child: Image.file(
-                                  layoutExtractList![0][0],
-                                  fit: BoxFit.fill,
-                                  filterQuality: FilterQuality.high,
+    return Container(
+    padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
+      child: Stack(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(3),
+            child: Column(
+              children: [
+                Stack(
+                  children: [
+                    (project.paper?.title == LIST_PAGE_SIZE[0].title &&
+                            layoutExtractList != null)
+                        ? 1 / ratioWHImages[indexImage] > INFINITY_NUMBER
+                            ? Image.file(
+                                layoutExtractList![0][0],
+                                fit: BoxFit.fill,
+                                width: _getRealWH(context)[0],
+                                filterQuality: FilterQuality.high,
+                              )
+                            : Container(
+                                constraints: const BoxConstraints(maxHeight: 400),
+                                alignment: Alignment.center,
+                                child: AspectRatio(
+                                  aspectRatio: ratioWHImages[indexImage],
+                                  child: Image.file(
+                                    layoutExtractList![0][0],
+                                    fit: BoxFit.fill,
+                                    filterQuality: FilterQuality.high,
+                                  ),
                                 ),
-                              ),
-                            )
-                      : Container(
-                          width: _getRealWH(context)[0],
-                          height: _getRealWH(context)[1],
-                          decoration: BoxDecoration(
-                              color: project.backgroundColor,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
-                                  spreadRadius: 0.5,
-                                  blurRadius: 5,
-                                  offset: const Offset(0, 1),
-                                ),
-                              ]),
-                          child: coverFile != null
-                              ? const SizedBox()
-                              : LayoutMedia(
-                                  indexImage: indexImage,
-                                  project: project,
-                                  layoutExtractList: layoutExtractList,
-                                  widthAndHeight: _getRealWH(context),
-                                  listWH: _getRealWH(context),
-                                )),
-                  coverFile != null
-                      ? Positioned.fill(
-                          child: Image.file(
-                          coverFile!,
-                          fit: project.paper?.title == LIST_PAGE_SIZE[0].title
-                              ? BoxFit.fitWidth
-                              : BoxFit.cover,
-                          filterQuality: FilterQuality.high,
-                        ))
-                      : const SizedBox()
-                ],
-              ),
-              WSpacer(
-                height: 10,
-              ),
-              WTextContent(
-                value: title ?? "",
-                textFontWeight: FontWeight.w600,
-                textLineHeight: 14.32,
-                textSize: 12,
-                textColor: Theme.of(context).textTheme.bodyMedium!.color,
-              ),
-            ],
+                              )
+                        : Container(
+                            width: _getRealWH(context)[0],
+                            height: _getRealWH(context)[1],
+                            decoration: BoxDecoration(
+                                color: project.backgroundColor,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    spreadRadius: 0.5,
+                                    blurRadius: 5,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ]),
+                            child: coverFile != null
+                                ? const SizedBox()
+                                : LayoutMedia(
+                                    indexImage: indexImage,
+                                    project: project,
+                                    layoutExtractList: layoutExtractList,
+                                    widthAndHeight: _getRealWH(context),
+                                    listWH: _getRealWH(context),
+                                  )),
+                    coverFile != null
+                        ? Positioned.fill(
+                            child: Image.file(
+                            coverFile!,
+                            fit: project.paper?.title == LIST_PAGE_SIZE[0].title
+                                ? BoxFit.fitWidth
+                                : BoxFit.cover,
+                            filterQuality: FilterQuality.high,
+                          ))
+                        : const SizedBox()
+                  ],
+                ),
+                WSpacer(
+                  height: 10,
+                ),
+                WTextContent(
+                  value: title ?? "",
+                  textFontWeight: FontWeight.w600,
+                  textLineHeight: 14.32,
+                  textSize: 12,
+                  textColor: Theme.of(context).textTheme.bodyMedium!.color,
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

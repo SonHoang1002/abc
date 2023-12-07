@@ -439,6 +439,7 @@ class _BodyLayoutState extends State<BodyLayout> {
               child: buildLayoutWidget(
                 context: context,
                 title: "Layout ${index + 1}",
+                project:_project,
                 isFocus: e['isFocus'],
                 backgroundColor: _currentLayoutColor,
                 layoutSuggestion: e["layout"],

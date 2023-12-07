@@ -168,11 +168,11 @@ Widget buildPageSizeOrientationItem(
 Widget buildFileNameInput(BuildContext context, Project project,
     TextEditingController controller, Function(String value) onChange,
     {bool autofocus = false, Function()? onTap}) {
-  TextStyle buildTextStyleInputFileName(Color textColor) {
+  TextStyle buildTextStyleInputFileName(Color textColor, {FontWeight? fontWeight}) {
     return TextStyle(
         color: textColor,
         fontFamily: FONT_GOOGLESANS,
-        fontWeight: FontWeight.w700,
+        fontWeight: fontWeight ?? FontWeight.w700,
         height: 19.09 / 16,
         fontSize: 16);
   }
@@ -193,7 +193,8 @@ Widget buildFileNameInput(BuildContext context, Project project,
       child: CupertinoTextField(
         onChanged: onChange,
         decoration: const BoxDecoration(),
-        style: const TextStyle(color: colorBlue),
+        style: buildTextStyleInputFileName(
+                  colorBlue,fontWeight: FontWeight.w600),
         controller: controller,
         onTap: onTap,
         prefix: Container(

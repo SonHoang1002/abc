@@ -241,16 +241,26 @@ class _BodyCoverState extends State<BodyCover> {
             ? Center(
                 key: key,
                 child: src is File
-                    ? Image.file(
-                        src,
-                        fit: _checkPaperTitleIsNone(project)
-                            ? BoxFit.fitWidth
-                            : BoxFit.cover,
-                        height: _checkPaperTitleIsNone(project)
-                            ? null
-                            : _getWidthAndHeight(project)[1],
-                        width: _getWidthAndHeight(project)[0],
-                      )
+                    ? (project.paper?.title == LIST_PAGE_SIZE[0].title)
+                        ? Container(
+                            constraints: const BoxConstraints(maxHeight: 140),
+                            alignment: Alignment.center,
+                            child: Image.file(
+                              src,
+                              fit: BoxFit.fill,
+                              filterQuality: FilterQuality.high,
+                            ),
+                          )
+                        : Image.file(
+                            src,
+                            fit: _checkPaperTitleIsNone(project)
+                                ? BoxFit.fitWidth
+                                : BoxFit.cover,
+                            height: _checkPaperTitleIsNone(project)
+                                ? null
+                                : _getWidthAndHeight(project)[1],
+                            width: _getWidthAndHeight(project)[0],
+                          )
                     : Image.asset(
                         src,
                         fit: _checkPaperTitleIsNone(project)
@@ -268,7 +278,7 @@ class _BodyCoverState extends State<BodyCover> {
                       ? 140
                       : _getWidthAndHeight(project)[1],
                   width: _checkPaperTitleIsNone(project)
-                      ? 90
+                      ? 140
                       : _getWidthAndHeight(project)[0],
                   decoration: const BoxDecoration(
                       color: Color.fromRGBO(22, 115, 255, 0.08)),

@@ -110,22 +110,22 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
     if (_placement != null) {
       _checkMinAndMaxValue();
       _placement = _placement?.copyWith(
-          ratioHeight: parseStringToDouble(controllers[1].text.trim()) /
+          ratioHeight: convertStringToDouble(controllers[1].text.trim()) /
               widget.paperAttribute!.height,
-          ratioWidth: parseStringToDouble(controllers[0].text.trim()) /
+          ratioWidth: convertStringToDouble(controllers[0].text.trim()) /
               widget.paperAttribute!.width,
           placementAttribute: PlacementAttribute(
-              top: parseStringToDouble(controllers[2].text.trim()),
-              left: parseStringToDouble(controllers[3].text.trim()),
-              right: parseStringToDouble(controllers[4].text.trim()),
-              bottom: parseStringToDouble(controllers[5].text.trim()),
+              top: convertStringToDouble(controllers[2].text.trim()),
+              left: convertStringToDouble(controllers[3].text.trim()),
+              right: convertStringToDouble(controllers[4].text.trim()),
+              bottom: convertStringToDouble(controllers[5].text.trim()),
               unit: newUnit));
       widget.onDone(_placement);
     } else if (_paddingAttribute != null) {
-      final horValue = parseStringToDouble(
+      final horValue = convertStringToDouble(
         controllers[0].text.trim(),
       );
-      final verValue = parseStringToDouble(
+      final verValue = convertStringToDouble(
         controllers[1].text.trim(),
       );
       _paddingAttribute = _paddingAttribute?.copyWith(
@@ -135,10 +135,10 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
       );
       widget.onDone(_paddingAttribute);
     } else if (_spacingAttribute != null) {
-      final horValue = parseStringToDouble(
+      final horValue = convertStringToDouble(
         controllers[0].text.trim(),
       );
-      final verValue = parseStringToDouble(
+      final verValue = convertStringToDouble(
         controllers[1].text.trim(),
       );
       _spacingAttribute = _spacingAttribute?.copyWith(
@@ -152,69 +152,75 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
   }
 
   void _checkMinAndMaxValue() {
-    print("_selectedLabel ${_selectedLabel}");
     if (_placement != null) {
       final minSize = convertUnit(POINT, _unit, MIN_PLACEMENT_SIZE);
       final maxHeight = convertUnit(
           widget.paperAttribute!.unit!, _unit, widget.paperAttribute!.height);
       final maxWidth = convertUnit(
           widget.paperAttribute!.unit!, _unit, widget.paperAttribute!.width);
+
+      String vWidth = controllers[0].text.trim();
+      String vHeight = controllers[1].text.trim();
+      String vTop = controllers[2].text.trim();
+      String vLeft = controllers[3].text.trim();
+      String vRight = controllers[4].text.trim();
+      String vBottom = controllers[5].text.trim();
+
+      double width = convertStringToDouble(vWidth);
+      double height = convertStringToDouble(vHeight);
+      double top = convertStringToDouble(vTop);
+      double left = convertStringToDouble(vLeft);
+      double right = convertStringToDouble(vRight);
+      double bottom = convertStringToDouble(vBottom);
+
+      String vNewWidth = vWidth;
+      String vNewHeight = vHeight;
+      String vNewTop = vTop;
+      String vNewLeft = vLeft;
+      String vNewRight = vRight;
+      String vNewBottom = vBottom;
+
       switch (_selectedLabel) {
         case "Width":
-          String vWidth = controllers[0].text.trim();
-          String vLeft = controllers[3].text.trim();
-          double width = parseStringToDouble(vWidth);
-          double left = parseStringToDouble(vLeft);
           if (vWidth.isEmpty || vWidth == '' || width < minSize) {
-            controllers[4].text =
-                (maxWidth - left - minSize).toStringAsFixed(3);
-            controllers[0].text = minSize.toStringAsFixed(3);
+            vNewRight = (maxWidth - left - minSize).toStringAsFixed(3);
+            vNewWidth = minSize.toStringAsFixed(3);
           } else if (width + left > maxWidth) {
-            controllers[0].text = _oldValue;
+            vNewWidth = _oldValue;
           } else {
-            controllers[4].text = (maxWidth - left - width).toStringAsFixed(3);
+            vNewRight = (maxWidth - left - width).toStringAsFixed(3);
           }
           break;
         case "Height":
-          String vHeight = controllers[1].text.trim();
-          double height = parseStringToDouble(vHeight);
-          double top = parseStringToDouble(controllers[2].text.trim());
           if (vHeight.isEmpty || vHeight == '' || height < minSize) {
-            controllers[5].text =
-                (maxHeight - top - minSize).toStringAsFixed(3);
-            controllers[1].text = minSize.toStringAsFixed(3);
+            vNewBottom = (maxHeight - top - minSize).toStringAsFixed(3);
+            vNewHeight = minSize.toStringAsFixed(3);
           } else if (height + top > maxHeight) {
-            controllers[1].text = _oldValue;
+            vNewHeight = _oldValue;
           } else {
-            controllers[5].text = (maxHeight - top - height).toStringAsFixed(3);
+            vNewBottom = (maxHeight - top - height).toStringAsFixed(3);
           }
           break;
         case "Top":
-          String vHeight = controllers[1].text.trim();
-          String vTop = controllers[2].text.trim();
-          double top = parseStringToDouble(vTop);
-          double bottom = parseStringToDouble(controllers[5].text.trim());
-          String vNewTop = vTop;
-          String vNewHeight = vHeight;
+        // truong hop rong -> set 0.0, thay doi height
           if (vTop.isEmpty || vTop == '') {
             vNewTop = '0.0';
             vNewHeight = (maxHeight - bottom).toStringAsFixed(3);
           } else if (top > maxHeight - bottom - minSize) {
+            // truong hop top qua lon ( lon hon bottom (present)+ min size (placement))
             vNewTop = _oldValue;
           } else {
             vNewTop = vTop;
-            vNewHeight = (maxHeight - bottom - top).toStringAsFixed(3);
+            // truong hop top + height < max -> set lai bottom, height giu nguyen
+            if (top + height <= maxHeight) {
+              vNewBottom = (maxHeight - height - top).toStringAsFixed(3);
+            } else {
+              // truong hop top top + height > max -> set gia tri ban dau, height giu nguyen
+              vNewTop = _oldValue;
+            }
           }
-          controllers[1].text = vNewHeight;
-          controllers[2].text = vNewTop;
           break;
         case "Left":
-          String vWidth = controllers[0].text.trim();
-          String vLeft = controllers[3].text.trim();
-          double left = parseStringToDouble(vLeft);
-          double right = parseStringToDouble(controllers[4].text.trim());
-          String vNewLeft = vLeft;
-          String vNewWidth = vWidth;
           if (vLeft.isEmpty || vLeft == '') {
             vNewLeft = '0.0';
             vNewWidth = (maxWidth - right).toStringAsFixed(3);
@@ -222,18 +228,15 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
             vNewLeft = _oldValue;
           } else {
             vNewLeft = vLeft;
-            vNewWidth = (maxWidth - left - right).toStringAsFixed(3);
+            if (left + width <= maxWidth) {
+              vNewRight = (maxWidth - left - width).toStringAsFixed(3);
+            } else {
+              vNewLeft = _oldValue;
+            }
           }
-          controllers[0].text = vNewWidth;
-          controllers[3].text = vNewLeft;
+
           break;
         case "Right":
-          String vWidth = controllers[0].text.trim();
-          String vRight = controllers[4].text.trim();
-          double right = parseStringToDouble(vRight);
-          double left = parseStringToDouble(controllers[3].text.trim());
-          String vNewRight = vRight;
-          String vNewWidth = vWidth;
           if (vRight.isEmpty || vRight == '') {
             vNewRight = '0.0';
             vNewWidth = (maxWidth - left).toStringAsFixed(3);
@@ -241,18 +244,15 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
             vNewRight = _oldValue;
           } else {
             vNewRight = vRight;
-            vNewWidth = (maxWidth - left - right).toStringAsFixed(3);
+            if (width + right <= maxWidth) {
+              vNewLeft = (maxWidth - width - right).toStringAsFixed(3);
+            } else {
+              vNewRight = _oldValue;
+            }
           }
-          controllers[0].text = vNewWidth;
-          controllers[4].text = vNewRight;
+
           break;
         case "Bottom":
-          String vHeight = controllers[1].text.trim();
-          String vBottom = controllers[5].text.trim();
-          double bottom = parseStringToDouble(vBottom);
-          double top = parseStringToDouble(controllers[2].text.trim());
-          String vNewBottom = vBottom;
-          String vNewHeight = vHeight;
           if (vBottom.isEmpty || vBottom == '') {
             vNewBottom = '0.0';
             vNewHeight = (maxHeight - top).toStringAsFixed(3);
@@ -260,24 +260,27 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
             vNewBottom = _oldValue;
           } else {
             vNewBottom = vBottom;
-            vNewHeight = (maxHeight - bottom - top).toStringAsFixed(3);
+            if (bottom + height <= maxHeight) {
+              vNewTop = (maxHeight - bottom - height).toStringAsFixed(3);
+            } else {
+              vNewBottom = _oldValue;
+            }
           }
-          controllers[1].text = vNewHeight;
-          controllers[5].text = vNewBottom;
           break;
         default:
           break;
       }
+      controllers[0].text = vNewWidth;
+      controllers[1].text = vNewHeight;
+      controllers[2].text = vNewTop;
+      controllers[3].text = vNewLeft;
+      controllers[4].text = vNewRight;
+      controllers[5].text = vNewBottom;
     }
   }
-
-  List<String> _getData() {
-    return controllers.map((e) => e.text.trim()).toList();
-  }
-
   @override
   Widget build(BuildContext context) {
-    _size = MediaQuery.sizeOf(context); 
+    _size = MediaQuery.sizeOf(context);
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
       child: Scaffold(
@@ -344,15 +347,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
     );
   }
 
-  double parseStringToDouble(String value) {
-    if (value == "" || value.isEmpty) {
-      return 0.0;
-    }
-    return double.parse(value);
-  }
-
   Widget _buildEditPlacementBody() {
-     
     return Center(
       child: Container(
         height: 320,

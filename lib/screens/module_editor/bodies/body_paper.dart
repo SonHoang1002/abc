@@ -434,14 +434,14 @@ class _BodyPaperState extends State<BodyPaper> {
     double width = maxWidth, height = maxHeight;
     if (heightPaper > widthPaper) {
       height = maxWidth * heightPaper / widthPaper;
-      if (height > maxWidth * 0.85) {
-        height = maxWidth * 0.85;
+      if (height > maxWidth ) {
+        height = maxWidth ;
         width = height * widthPaper / heightPaper;
       }
     } else if (heightPaper < widthPaper) {
       width = maxHeight * widthPaper / heightPaper;
-      if (width > maxHeight * 0.85) {
-        width = maxHeight * 0.85;
+      if (width > maxHeight ) {
+        width = maxHeight ;
         height = width * heightPaper / widthPaper;
       }
     }

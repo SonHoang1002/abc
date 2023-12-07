@@ -120,6 +120,12 @@ Rectangle1? convertPlacementToRectangle(Placement? pl, List<double> ratios) {
 }
 
 
+  double convertStringToDouble(String value) {
+    if (value == "" || value.isEmpty) {
+      return 0.0;
+    }
+    return double.parse(value);
+  }
 Future<Uint8List> convertImageUint8ListToPdfUint8List(
   String name,
   List<String> paths,

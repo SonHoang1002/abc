@@ -182,7 +182,7 @@ class WProjectItemEditor extends ConsumerWidget {
         return Image.file(
           mediaValue,
           key: imageKey,
-          fit: BoxFit.fitWidth,
+          fit: BoxFit.fill,
           filterQuality: FilterQuality.high,
           // width: _getRealWH(context)[0],
         );

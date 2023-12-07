@@ -1,24 +1,41 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 
 Widget buildLayoutWidget({
   required BuildContext context,
   required String title,
+  required Project project,
   required Color backgroundColor,
   required bool isFocus,
   required Function() onTap,
   required List<int> layoutSuggestion,
 }) {
+  final maxWidth = MediaQuery.sizeOf(context).width * 0.35;
+  final maxHeight = MediaQuery.sizeOf(context).width * 0.35 * 1.3;
+  double realHeight = maxHeight, realWidth = maxWidth;
+  final paperHeight = project.paper?.height;
+  final paperWidth = project.paper?.width;
+
+  if (project.paper != null && paperHeight != 0 && paperWidth != 0) {
+    // double ratioWH = paperWidth! / paperHeight!;
+    double realRatio = max(paperHeight! / maxHeight, paperWidth! / maxWidth);
+    realWidth = maxWidth * realRatio*5;
+    realHeight = maxHeight * realRatio*5;
+    x
+  }
   return Column(
     children: [
       GestureDetector(
         onTap: onTap,
         child: Container(
-            width: MediaQuery.sizeOf(context).width * 0.35,
-            height: MediaQuery.sizeOf(context).width * 0.35 * 1.3,
+            width: realWidth,
+            height: realHeight,
             decoration: BoxDecoration(
                 border: Border.all(
                     width: 2,
