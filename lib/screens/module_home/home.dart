@@ -145,10 +145,10 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                 textLineHeight: 16.71),
             WSpacer(height: 20),
             WButtonFilled(
-              message: "Select Photos",
-              height: 60,
+            message:  "Select Photos",
               width: MediaQuery.sizeOf(context).width * 0.6,
               backgroundColor: colorBlue,
+              height: 60,
               textColor: colorWhite,
               boxShadow: const [
                 BoxShadow(
@@ -157,7 +157,6 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                     offset: Offset(0, 8),
                     blurRadius: 40)
               ],
-              elevation: 10,
               borderRadius: 20,
               onPressed: () {
                 setState(() {
@@ -189,8 +188,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                     .read(projectControllerProvider.notifier)
                     .setProject(tempListProject);
                 // update isar
-              });
-              print("onReorder");
+              }); 
               await IsarProjectService().reOrderList(oldProject, newIndex);
             },
             onDragStart: (dragIndex) {
@@ -662,5 +660,35 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
             ),
           ),
         ));
+  }
+
+  Widget _buildFillButton(
+    String message, {
+    Function()? onPressed,
+    List<BoxShadow>? boxShadow,
+    double? width, 
+    Color? backgroundColor,
+    Color? textColor,
+    double? textSize,
+    double? borderRadius,
+  }) {
+    return GestureDetector(
+        onTap: onPressed,
+        child: Container(
+          decoration: BoxDecoration(
+              boxShadow: boxShadow,
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(borderRadius ?? 25)),
+          alignment: Alignment.center,
+          width: width, 
+          height: 60, 
+          child: WTextContent(
+            value: message,
+            textSize: textSize,
+            textColor: textColor,
+            textAlign: TextAlign.center,
+          ),
+        ));
+
   }
 }

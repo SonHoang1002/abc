@@ -127,21 +127,45 @@ Future<Uint8List> createPdfFile(
     } else {
       compressFrontPhoto = _project.coverPhoto?.frontPhoto;
     }
-    pdf.addPage(pw.Page(
-      build: (ctx) {
-        return pw.Container(
-            color: convertColorToPdfColor(_project.backgroundColor),
-            child: pw.Image(
-                pw.MemoryImage(File(compressFrontPhoto.path).readAsBytesSync()),
-                fit: project.paper?.title == LIST_PAGE_SIZE[0].title
-                    ? pw.BoxFit.fitWidth
-                    : pw.BoxFit.cover));
-      },
-      pageTheme: pw.PageTheme(
-        pageFormat: pdfPageFormat,
-        margin: pw.EdgeInsets.zero,
-      ),
-    ));
+    if (_project.paper?.title == "None") {
+      var imageFile = File(_project.coverPhoto?.frontPhoto.path);
+      var memImage = pw.MemoryImage(imageFile.readAsBytesSync());
+      double ratio = memImage.width! / memImage.height!;
+      double widthPdf = ((_project.paper?.width) ?? (memImage.width) ?? 0) *
+          (valueUnit ?? 0.0);
+      double heightPdf = widthPdf / ratio;
+      var image = pw.Image(
+        memImage,
+        width: widthPdf,
+        height: heightPdf,
+      );
+      pdf.addPage(
+        pw.Page(
+          build: (ctx) {
+            return pw.Center(child: image);
+          },
+          pageTheme: pw.PageTheme(
+            pageFormat: PdfPageFormat(widthPdf, heightPdf, marginAll: 0),
+            margin: pw.EdgeInsets.zero,
+          ),
+        ),
+      );
+    } else {
+      pdf.addPage(pw.Page(
+        build: (ctx) {
+          return pw.Container(
+              color: convertColorToPdfColor(_project.backgroundColor),
+              child: pw.Image(
+                  pw.MemoryImage(
+                      File(compressFrontPhoto.path).readAsBytesSync()),
+                  fit: pw.BoxFit.cover));
+        },
+        pageTheme: pw.PageTheme(
+          pageFormat: pdfPageFormat,
+          margin: pw.EdgeInsets.zero,
+        ),
+      ));
+    }
   }
 
   // add body page
@@ -221,22 +245,48 @@ Future<Uint8List> createPdfFile(
     } else {
       compressBackPhoto = _project.coverPhoto?.backPhoto;
     }
-    pdf.addPage(pw.Page(
-      build: (ctx) {
-        return pw.Container(
-            child: pw.Center(
-                child: pw.Image(
-                    pw.MemoryImage(
-                        File(compressBackPhoto.path).readAsBytesSync()),
-                    fit: _project.paper?.title == LIST_PAGE_SIZE[0].title
-                        ? pw.BoxFit.fitWidth
-                        : pw.BoxFit.cover)));
-      },
-      pageTheme: pw.PageTheme(
-        pageFormat: pdfPageFormat,
-        margin: pw.EdgeInsets.zero,
-      ),
-    ));
+
+    if (_project.paper?.title == "None") {
+      var imageFile = File(_project.coverPhoto?.backPhoto.path);
+      var memImage = pw.MemoryImage(imageFile.readAsBytesSync());
+      double ratio = memImage.width! / memImage.height!;
+      double widthPdf = ((_project.paper?.width) ?? (memImage.width) ?? 0) *
+          (valueUnit ?? 0.0);
+      double heightPdf = widthPdf / ratio;
+      var image = pw.Image(
+        memImage,
+        width: widthPdf,
+        height: heightPdf,
+      );
+      pdf.addPage(
+        pw.Page(
+          build: (ctx) {
+            return pw.Center(child: image);
+          },
+          pageTheme: pw.PageTheme(
+            pageFormat: PdfPageFormat(widthPdf, heightPdf, marginAll: 0),
+            margin: pw.EdgeInsets.zero,
+          ),
+        ),
+      );
+    } else {
+      pdf.addPage(pw.Page(
+        build: (ctx) {
+          return pw.Container(
+              child: pw.Center(
+                  child: pw.Image(
+                      pw.MemoryImage(
+                          File(compressBackPhoto.path).readAsBytesSync()),
+                      fit: _project.paper?.title == LIST_PAGE_SIZE[0].title
+                          ? pw.BoxFit.fitWidth
+                          : pw.BoxFit.cover)));
+        },
+        pageTheme: pw.PageTheme(
+          pageFormat: pdfPageFormat,
+          margin: pw.EdgeInsets.zero,
+        ),
+      ));
+    }
   }
   // return result
   final result = await pdf.save();
@@ -264,7 +314,6 @@ pw.Widget _buildCorePDFLayoutMedia(
   if (project.useAvailableLayout != true &&
       project.placements != null &&
       project.placements!.isNotEmpty) {
-    print("0000");
     return pw.Container(
         child: pw.Stack(
       children: layoutExtractList!.map((e) {
@@ -283,7 +332,6 @@ pw.Widget _buildCorePDFLayoutMedia(
       }).toList(),
     ));
   } else {
-    print("1111");
     final List<int> layoutSuggestion =
         LIST_LAYOUT_SUGGESTION[project.layoutIndex];
     List<pw.Widget> columnWidgets = [];

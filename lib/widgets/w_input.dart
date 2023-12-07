@@ -159,7 +159,7 @@ class _WInputPaperState extends State<WInputPaper> {
         keyboardType: TextInputType.number,
         prefix: Container(
           key: _preffixKey,
-          constraints: const BoxConstraints(minWidth: 47),
+          constraints: const BoxConstraints(minWidth: 52),
           margin: EdgeInsets.only(left: marginPreffix),
           child: Text(widget.title, style: preffixTextStyle),
         ),
@@ -278,8 +278,14 @@ class _WInputLayoutState extends State<WInputLayout> {
     if (_unit.title != widget.unit.title) {
       _controller.text =
           convertUnit(_unit, widget.unit, double.parse(_controller.text.trim()))
-              .toStringAsFixed(2);
+              .toStringAsFixed(3);
       _unit = widget.unit;
+    } else {
+      if (_controller.text.trim() != widget.controller.text.trim()) {
+        _controller.text = widget.controller.text.trim();
+        _controller.selection =
+            TextSelection(baseOffset: 0, extentOffset: _controller.text.length);
+      }
     }
 
     return SizedBox(
@@ -315,7 +321,8 @@ class _WInputLayoutState extends State<WInputLayout> {
                   constraints: BoxConstraints(
                       minWidth:
                           _textSize(widget.suffixValue, suffixTextStyle).width +
-                              inputPadding,
+                              inputPadding -
+                              5,
                       maxWidth: widget.width / 2 - inputPadding + 5),
                   width:
                       widget.width / 2 - widthContentInput + inputPadding / 2,

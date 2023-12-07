@@ -84,9 +84,9 @@ class Placement {
 }
 
 class PlacementAttribute {
-  double   top, left, right, bottom;
+  double top, left, right, bottom;
   Unit? unit;
-  PlacementAttribute({ 
+  PlacementAttribute({
     this.top = 0.0,
     this.left = 0.0,
     this.right = 0.0,
@@ -101,7 +101,7 @@ class PlacementAttribute {
     double? bottom,
     Unit? unit,
   }) {
-    return PlacementAttribute( 
+    return PlacementAttribute(
       top: top ?? this.top,
       left: left ?? this.left,
       right: right ?? this.right,
@@ -111,7 +111,7 @@ class PlacementAttribute {
   }
 
   Map<String, dynamic> toJson() {
-    return { 
+    return {
       'top': top,
       'left': left,
       'right': right,
@@ -121,7 +121,7 @@ class PlacementAttribute {
   }
 
   factory PlacementAttribute.fromJson(Map<String, dynamic> json) {
-    return PlacementAttribute( 
+    return PlacementAttribute(
       top: json['top'],
       left: json['left'],
       right: json['right'],

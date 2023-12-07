@@ -142,7 +142,7 @@ class WButtonFilled extends StatelessWidget {
               boxShadow: boxShadow,
               color: backgroundColor,
               borderRadius: BorderRadius.circular(borderRadius ?? 25)),
-          padding: padding,
+          // padding: padding,
           alignment: Alignment.center,
           width: width, // 255
           height: height, //60
@@ -196,13 +196,13 @@ class WButtonFilled extends StatelessWidget {
                     )
                   ],
                 )
-              : WTextContent(
+              : Center(
+                child: WTextContent(
                   value: message,
                   textSize: textSize,
-                  textLineHeight: textLineHeight,
                   textColor: textColor,
-                  textAlign: TextAlign.center,
                 ),
+              ),
         ));
   }
 }

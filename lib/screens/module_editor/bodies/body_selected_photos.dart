@@ -123,7 +123,6 @@ class _BodySelectedPhotosState extends State<BodySelectedPhotos> {
 
   @override
   Widget build(BuildContext context) {
-    print("_project BodySelectedPhotos ${_project.listMedia}");
     final size = MediaQuery.sizeOf(context);
     return Container(
       height: size.height * 0.95,
@@ -134,6 +133,7 @@ class _BodySelectedPhotosState extends State<BodySelectedPhotos> {
           topRight: Radius.circular(20.0),
         ),
       ),
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
       child: Column(
         children: [
           Stack(

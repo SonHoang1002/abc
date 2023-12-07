@@ -42,7 +42,9 @@ class _BodyPaperState extends State<BodyPaper> {
   late bool _pageSizeIsPortrait = true;
 
   late double widthEdit;
-  late double sizeOfPreview;
+  double _paddingPreview = 10;
+  // late double sizeOfPreview;
+  late Size _size;
   @override
   void dispose() {
     super.dispose();
@@ -80,15 +82,13 @@ class _BodyPaperState extends State<BodyPaper> {
 
   @override
   Widget build(BuildContext context) {
-    final _size = MediaQuery.sizeOf(context);
+    _size = MediaQuery.sizeOf(context);
     double heightOfScreen = _size.height * 0.55;
     if (heightOfScreen < 400) {
       heightOfScreen += 50;
       widthEdit = 250;
-      sizeOfPreview = 80;
     } else {
       widthEdit = 250;
-      sizeOfPreview = 120;
     }
     return Container(
       height: heightOfScreen,
@@ -99,6 +99,7 @@ class _BodyPaperState extends State<BodyPaper> {
           topRight: Radius.circular(20.0),
         ),
       ),
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
       child: Stack(
         children: [
           Column(
@@ -242,41 +243,33 @@ class _BodyPaperState extends State<BodyPaper> {
                   // page size preview
                   Expanded(
                     child: Container(
-                      padding:
-                          const EdgeInsets.only(right: 15, left: 15, top: 20),
+                      padding: EdgeInsets.only(
+                          right: _paddingPreview,
+                          left: _paddingPreview,
+                          top: 20),
                       alignment: Alignment.topCenter,
                       child: Stack(
                         alignment: Alignment.topCenter,
                         children: [
-                          SizedBox(
-                            height: sizeOfPreview,
-                            width: sizeOfPreview,
-                            child: Center(
-                              child: AnimatedContainer(
-                                alignment: Alignment.topCenter,
-                                duration: const Duration(milliseconds: 400),
-                                constraints: BoxConstraints(
-                                    maxHeight: sizeOfPreview,
-                                    maxWidth: sizeOfPreview),
-                                height: _paperConfig['content'].title == "None"
-                                    ? null
-                                    : _getWidthAndHeight(sizeOfPreview)[1],
-                                width: _getWidthAndHeight(sizeOfPreview)[0],
-                                decoration: BoxDecoration(
-                                    color: colorWhite,
-                                    border:
-                                        _paperConfig['content'].title != "None"
-                                            ? Border.all(
-                                                color: borderPreview.color,
-                                                width: borderPreview.width)
-                                            : Border(
-                                                top: borderPreview,
-                                                left: borderPreview,
-                                                right: borderPreview,
-                                              )),
-                                padding: const EdgeInsets.all(10),
-                              ),
-                            ),
+                          AnimatedContainer(
+                            alignment: Alignment.topCenter,
+                            duration: const Duration(milliseconds: 400),
+                            height: _paperConfig['content'].title == "None"
+                                ? 120
+                                : _getWidthAndHeight()[1],
+                            width: _getWidthAndHeight()[0],
+                            decoration: BoxDecoration(
+                                color: colorWhite,
+                                border: _paperConfig['content'].title != "None"
+                                    ? Border.all(
+                                        color: borderPreview.color,
+                                        width: borderPreview.width)
+                                    : Border(
+                                        top: borderPreview,
+                                        left: borderPreview,
+                                        right: borderPreview,
+                                      )),
+                            padding: const EdgeInsets.all(10),
                           ),
                           Positioned.fill(
                             child: Container(
@@ -342,7 +335,13 @@ class _BodyPaperState extends State<BodyPaper> {
                                 _paperConfig['content'].copyWith(
                               unit: value,
                             );
-                          } else { 
+                            _paperSizeWidthController.text = convertUnit(
+                                    oldUnit,
+                                    value,
+                                    double.parse(
+                                        _paperSizeWidthController.text))
+                                .toStringAsFixed(4);
+                          } else {
                             _paperConfig['content'] =
                                 LIST_PAGE_SIZE[8].copyWith(
                               unit: value,
@@ -352,13 +351,13 @@ class _BodyPaperState extends State<BodyPaper> {
                                     value,
                                     double.parse(
                                         _paperSizeHeightController.text))
-                                .toStringAsFixed(7);
+                                .toStringAsFixed(4);
                             _paperSizeWidthController.text = convertUnit(
                                     oldUnit,
                                     value,
                                     double.parse(
                                         _paperSizeWidthController.text))
-                                .toStringAsFixed(7);
+                                .toStringAsFixed(4);
                           }
                         });
                         widget.reRenderFunction();
@@ -419,7 +418,7 @@ class _BodyPaperState extends State<BodyPaper> {
     heightValue = heightValue.length > 5
         ? "${heightValue.substring(0, 5)}..."
         : heightValue;
-
+    print("widthValue ${widthValue}");
     if (_paperConfig['content'].title == "None") {
       return "$widthValue x -- $unitValue";
     }
@@ -427,24 +426,22 @@ class _BodyPaperState extends State<BodyPaper> {
     return "$widthValue x $heightValue $unitValue";
   }
 
-  List<double> _getWidthAndHeight(double maxSize) {
-    double width = 150;
-    double height = 150;
+  List<double> _getWidthAndHeight() {
+    double maxWidth = _size.width - widthEdit - _paddingPreview * 2;
+    double maxHeight = maxWidth;
     double widthPaper = double.parse(_paperWidthValue);
     double heightPaper = double.parse(_paperHeightValue);
-    if (heightPaper < 0) {
-      return [width, -1];
-    }
+    double width = maxWidth, height = maxHeight;
     if (heightPaper > widthPaper) {
-      height = width * heightPaper / widthPaper;
-      if (height > 150) {
-        height = 150;
+      height = maxWidth * heightPaper / widthPaper;
+      if (height > maxWidth * 0.85) {
+        height = maxWidth * 0.85;
         width = height * widthPaper / heightPaper;
       }
     } else if (heightPaper < widthPaper) {
-      width = height * widthPaper / heightPaper;
-      if (width > 150) {
-        width = 150;
+      width = maxHeight * widthPaper / heightPaper;
+      if (width > maxHeight * 0.85) {
+        width = maxHeight * 0.85;
         height = width * heightPaper / widthPaper;
       }
     }

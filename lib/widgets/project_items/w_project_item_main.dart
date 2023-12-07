@@ -103,18 +103,13 @@ class WProjectItemEditor extends ConsumerWidget {
             // border: Border.all(color: grey.withOpacity(0.4), width: 0.4),
             color: project.backgroundColor,
             boxShadow: listShadow),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            LayoutMedia(
-                indexImage: indexImage,
-                project: project,
-                layoutExtractList: layoutExtractList,
-                widthAndHeight: _getRealWH(context),
-                useCoverPhoto: useCoverPhoto,
-                listWH: _getRealWH(context)),
-          ],
-        ),
+        child: LayoutMedia(
+            indexImage: indexImage,
+            project: project,
+            layoutExtractList: layoutExtractList,
+            widthAndHeight: _getRealWH(context),
+            useCoverPhoto: useCoverPhoto,
+            listWH: _getRealWH(context)),
       ),
     );
   }

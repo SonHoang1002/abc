@@ -1,5 +1,6 @@
 import 'package:color_picker_android/screens/color_picker_1.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
+import 'package:photo_to_pdf/commons/themes.dart';
 import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/helpers/random_number.dart';
 import 'package:photo_to_pdf/models/placement.dart';
@@ -15,6 +16,7 @@ import 'package:photo_to_pdf/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_layout_suggestion.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BodyLayout extends StatefulWidget {
@@ -225,7 +227,7 @@ class _BodyLayoutState extends State<BodyLayout> {
         builder: (context) {
           return StatefulBuilder(builder: (context, setStatefull) {
             return ColorPicker(
-              topicColor: const Color.fromRGBO(0, 0, 0, 0.05),
+              isLightMode: !Provider.of<ThemeManager>(context).isDarkMode,
               currentColor: _currentLayoutColor,
               onDone: (color) {
                 setState(() {
@@ -278,132 +280,150 @@ class _BodyLayoutState extends State<BodyLayout> {
   @override
   Widget build(BuildContext context) {
     _size = MediaQuery.sizeOf(context);
-    return Stack(
-      children: [
-        Column(
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 20),
-              child: WTextContent(
-                value: "Layout",
-                textSize: 14,
-                textLineHeight: 16.71,
-                textColor: Theme.of(context).textTheme.bodyMedium!.color,
-              ),
-            ),
-            WSpacer(
-              height: 20,
-            ),
-            buildSegmentControl(
-              context: context,
-              groupValue: _segmentCurrentIndex,
-              onValueChanged: (value) {
-                setState(() {
-                  _segmentCurrentIndex = value!;
-                });
-                widget.reRenderFunction();
-              },
-            ),
-            Expanded(
-              child: _segmentCurrentIndex == 0
-                  ? Container(
-                      height: _size.height * 404 / 791 * 0.9,
-                      decoration: BoxDecoration(
-                          color: Theme.of(context).cardColor,
-                          borderRadius: BorderRadius.circular(10)),
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 10),
-                      child: SingleChildScrollView(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 20, horizontal: 20),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              _buildLayoutSuggestion(0, 2),
-                              WSpacer(
-                                height: 20,
-                              ),
-                              _buildLayoutSuggestion(2, 4),
-                              WSpacer(
-                                height: 20,
-                              ),
-                              _buildLayoutSuggestion(
-                                  4, _listLayoutStatus.length),
-                            ],
-                          )))
-                  : _buildCustomArea(() {
+    return Container(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
+      child: Stack(
+        children: [
+          Positioned.fill(child: GestureDetector(
+            onTap: () {
+              _disablePlacement();
+            },
+          )),
+          GestureDetector(
+            onTap: () {
+              _disablePlacement();
+            },
+            child: Column(
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(top: 20),
+                  child: WTextContent(
+                    value: "Layout",
+                    textSize: 14,
+                    textLineHeight: 16.71,
+                    textColor: Theme.of(context).textTheme.bodyMedium!.color,
+                  ),
+                ),
+                WSpacer(
+                  height: 10,
+                ),
+                buildSegmentControl(
+                  context: context,
+                  groupValue: _segmentCurrentIndex,
+                  onValueChanged: (value) {
+                    if (_segmentCurrentIndex != value) {
+                      _segmentCurrentIndex = value!;
+                      _disablePlacement();
+                    } else {
+                      setState(() {
+                        _segmentCurrentIndex = value!;
+                      });
                       widget.reRenderFunction();
-                    }),
+                    }
+                  },
+                ),
+                Expanded(
+                  child: _segmentCurrentIndex == 0
+                      ? Container(
+                          height: _size.height * 404 / 791 * 0.9,
+                          decoration: BoxDecoration(
+                              color: Theme.of(context).cardColor,
+                              borderRadius: BorderRadius.circular(10)),
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 10),
+                          child: SingleChildScrollView(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 20, horizontal: 20),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  _buildLayoutSuggestion(0, 2),
+                                  WSpacer(
+                                    height: 20,
+                                  ),
+                                  _buildLayoutSuggestion(2, 4),
+                                  WSpacer(
+                                    height: 20,
+                                  ),
+                                  _buildLayoutSuggestion(
+                                      4, _listLayoutStatus.length),
+                                ],
+                              )))
+                      : _buildCustomArea(() {
+                          widget.reRenderFunction();
+                        }),
+                ),
+                _buildLayoutConfigs(() {
+                  widget.reRenderFunction();
+                }, _segmentCurrentIndex == 0),
+                buildBottomButton(
+                  context: context,
+                  onApply: () {
+                    if (_segmentCurrentIndex == 0 ||
+                        (_segmentCurrentIndex == 1 && _listPlacement.isEmpty)) {
+                      _project = _project.copyWith(
+                          layoutIndex: _listLayoutStatus.indexWhere(
+                              (element) => element['isFocus'] == true),
+                          resizeAttribute: _resizeModeSelectedValue,
+                          alignmentAttribute: _listAlignment
+                              .where((element) => element['isFocus'] == true)
+                              .toList()
+                              .first['alignment'],
+                          backgroundColor: _currentLayoutColor,
+                          paddingAttribute: _paddingOptions,
+                          spacingAttribute: _spacingOptions,
+                          placements: _listPlacement.map((e) => e).toList(),
+                          useAvailableLayout: true);
+                      widget.onApply(_project, _segmentCurrentIndex);
+                      return;
+                    }
+                    if (_segmentCurrentIndex == 1) {
+                      _project = _project.copyWith(
+                          layoutIndex: null,
+                          resizeAttribute: _resizeModeSelectedValue,
+                          alignmentAttribute: _listAlignment
+                              .where((element) => element['isFocus'] == true)
+                              .toList()
+                              .first['alignment'],
+                          backgroundColor: _currentLayoutColor,
+                          placements: _listPlacement.map((e) => e).toList(),
+                          useAvailableLayout: false);
+                      widget.onApply(_project, _segmentCurrentIndex);
+                      return;
+                    }
+                  },
+                  onCancel: () {
+                    popNavigator(context);
+                  },
+                )
+              ],
             ),
-            _buildLayoutConfigs(() {
-              widget.reRenderFunction();
-            }, _segmentCurrentIndex == 0),
-            buildBottomButton(
-              context: context,
-              onApply: () {
-                if (_segmentCurrentIndex == 0 ||
-                    (_segmentCurrentIndex == 1 && _listPlacement.isEmpty)) {
-                  _project = _project.copyWith(
-                      layoutIndex: _listLayoutStatus
-                          .indexWhere((element) => element['isFocus'] == true),
-                      resizeAttribute: _resizeModeSelectedValue,
-                      alignmentAttribute: _listAlignment
-                          .where((element) => element['isFocus'] == true)
-                          .toList()
-                          .first['alignment'],
-                      backgroundColor: _currentLayoutColor,
-                      paddingAttribute: _paddingOptions,
-                      spacingAttribute: _spacingOptions,
-                      placements: _listPlacement.map((e) => e).toList(),
-                      useAvailableLayout: true);
-                  widget.onApply(_project, _segmentCurrentIndex);
-                  return;
-                }
-                if (_segmentCurrentIndex == 1) {
-                  _project = _project.copyWith(
-                      layoutIndex: null,
-                      resizeAttribute: _resizeModeSelectedValue,
-                      alignmentAttribute: _listAlignment
-                          .where((element) => element['isFocus'] == true)
-                          .toList()
-                          .first['alignment'],
-                      backgroundColor: _currentLayoutColor,
-                      placements: _listPlacement.map((e) => e).toList(),
-                      useAvailableLayout: false);
-                  widget.onApply(_project, _segmentCurrentIndex);
-                  return;
-                }
-              },
-              onCancel: () {
-                popNavigator(context);
-              },
-            )
-          ],
-        ),
-        _isShowAlignmentDialog
-            ? BodyDialogCustom(
-                offset: Offset(_size.width * (1 - (200 / 390)) / 2,
-                    _alignmentDialogOffset.dy),
-                dialogWidget: buildDialogAlignment(context, _listAlignment,
-                    onSelected: (index, value) {
-                  setState(() {
-                    _listAlignment = LIST_ALIGNMENT.map((e) {
-                      return {'alignment': e, "isFocus": false};
-                    }).toList();
-                    _listAlignment[index]["isFocus"] = true;
-                  });
-                  widget.reRenderFunction();
-                }),
-                onTapBackground: () {
-                  setState(() {
-                    _isShowAlignmentDialog = false;
-                  });
-                  widget.reRenderFunction();
-                },
-              )
-            : const SizedBox()
-      ],
+          ),
+          _isShowAlignmentDialog
+              ? BodyDialogCustom(
+                  offset: Offset(_size.width * (1 - (200 / 390)) / 2,
+                      _alignmentDialogOffset.dy),
+                  dialogWidget: buildDialogAlignment(context, _listAlignment,
+                      onSelected: (index, value) {
+                    setState(() {
+                      _listAlignment = LIST_ALIGNMENT.map((e) {
+                        return {'alignment': e, "isFocus": false};
+                      }).toList();
+                      _listAlignment[index]["isFocus"] = true;
+                    });
+                    widget.reRenderFunction();
+                  }),
+                  onTapBackground: () {
+                    setState(() {
+                      _isShowAlignmentDialog = false;
+                    });
+                    widget.reRenderFunction();
+                  },
+                )
+              : const SizedBox()
+        ],
+      ),
     );
   }
 
@@ -509,86 +529,85 @@ class _BodyLayoutState extends State<BodyLayout> {
               ),
             ],
           ),
-          WSpacer(
-            height: 10,
-          ),
-          showPaddingAndSpacing
-              ? Flex(
-                  direction: Axis.horizontal,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Flexible(
-                        child: buildLayoutConfigItem(
-                      context: context,
-                      title: TITLE_PADDING,
-                      content: _renderPreviewPaddingOptions(),
-                      width: _size.width * 0.46,
-                      onTap: () {
-                        pushCustomVerticalMaterialPageRoute(
-                            context,
-                            EditorPaddingSpacing(
-                                unit: _paddingOptions.unit!,
-                                paddingAttribute: _paddingOptions,
-                                title: TITLE_PADDING,
-                                inputValues: [
-                                  _paddingOptions.horizontalPadding.toString(),
-                                  _paddingOptions.verticalPadding.toString()
-                                ],
-                                onChanged: (index, value) {},
-                                onDone: (newPaddingAttribute) {
-                                  setState(() {
-                                    _paddingOptions = newPaddingAttribute;
-                                  });
-                                  widget.reRenderFunction();
-                                }));
-                      },
-                    )),
-                    Flexible(
-                      child: buildLayoutConfigItem(
-                        context: context,
-                        title: TITLE_SPACING,
-                        content: _renderPreviewSpacingOptions(),
-                        width: _size.width * 0.46,
-                        onTap: () {
-                          pushCustomVerticalMaterialPageRoute(
-                              context,
-                              EditorPaddingSpacing(
-                                  unit: _spacingOptions.unit!,
-                                  title: TITLE_SPACING,
-                                  spacingAttribute: _spacingOptions,
-                                  inputValues: [
-                                    _spacingOptions.horizontalSpacing
-                                        .toString(),
-                                    _spacingOptions.verticalSpacing.toString(),
-                                  ],
-                                  onChanged: (index, value) {},
-                                  onDone: (newSpacingAttribute) {
-                                    setState(() {
-                                      _spacingOptions = newSpacingAttribute;
-                                    });
-                                    widget.reRenderFunction();
-                                  }));
-                        },
-                      ),
-                    ),
-                  ],
-                )
-              : const SizedBox(),
+          if (showPaddingAndSpacing)
+            WSpacer(
+              height: 10,
+            ),
+          if (showPaddingAndSpacing)
+            Flex(
+              direction: Axis.horizontal,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(
+                    child: buildLayoutConfigItem(
+                  context: context,
+                  title: TITLE_PADDING,
+                  content: _renderPreviewPaddingOptions(),
+                  width: _size.width * 0.46,
+                  onTap: () {
+                    pushCustomVerticalMaterialPageRoute(
+                        context,
+                        EditorPaddingSpacing(
+                            unit: _paddingOptions.unit!,
+                            paddingAttribute: _paddingOptions,
+                            title: TITLE_PADDING,
+                            inputValues: [
+                              _paddingOptions.horizontalPadding.toString(),
+                              _paddingOptions.verticalPadding.toString()
+                            ],
+                            onChanged: (index, value) {},
+                            onDone: (newPaddingAttribute) {
+                              setState(() {
+                                _paddingOptions = newPaddingAttribute;
+                              });
+                              widget.reRenderFunction();
+                            }));
+                  },
+                )),
+                Flexible(
+                  child: buildLayoutConfigItem(
+                    context: context,
+                    title: TITLE_SPACING,
+                    content: _renderPreviewSpacingOptions(),
+                    width: _size.width * 0.46,
+                    onTap: () {
+                      pushCustomVerticalMaterialPageRoute(
+                          context,
+                          EditorPaddingSpacing(
+                              unit: _spacingOptions.unit!,
+                              title: TITLE_SPACING,
+                              spacingAttribute: _spacingOptions,
+                              inputValues: [
+                                _spacingOptions.horizontalSpacing.toString(),
+                                _spacingOptions.verticalSpacing.toString(),
+                              ],
+                              onChanged: (index, value) {},
+                              onDone: (newSpacingAttribute) {
+                                setState(() {
+                                  _spacingOptions = newSpacingAttribute;
+                                });
+                                widget.reRenderFunction();
+                              }));
+                    },
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
     );
   }
 
+  void _disablePlacement() {
+    setState(() {
+      _selectedPlacement = null;
+    });
+    widget.reRenderFunction();
+  }
+
   Widget _buildCustomArea(
     Function rerenderFunction,
   ) {
-    void _disablePlacement() {
-      setState(() {
-        _selectedPlacement = null;
-      });
-      widget.reRenderFunction();
-    }
-
     return GestureDetector(
       onTap: () {
         _disablePlacement();
@@ -659,17 +678,17 @@ class _BodyLayoutState extends State<BodyLayout> {
             )),
             WSpacer(height: 10),
             SizedBox(
-              width: _size.width * 0.7,
+              width: _size.width * 0.75,
               child: Flex(
                 direction: Axis.horizontal,
                 children: [
                   Flexible(
-                    flex: 4,
+                    flex: 5,
                     child: WButtonFilled(
                       message: "Add Placement",
                       textColor: colorBlue,
                       textLineHeight: 14.32,
-                      textSize: 12,
+                      textSize: 11,
                       height: 30,
                       padding: EdgeInsets.zero,
                       backgroundColor: const Color.fromRGBO(22, 115, 255, 0.08),
@@ -681,6 +700,7 @@ class _BodyLayoutState extends State<BodyLayout> {
                           _listPlacement.add(newPlacement);
                           _listGlobalKey.add(GlobalKey());
                           _selectedPlacement = _listPlacement.last;
+                          _saveDataSelectedPlacement = _selectedPlacement;
                         });
                         widget.reRenderFunction();
                       },
@@ -700,7 +720,7 @@ class _BodyLayoutState extends State<BodyLayout> {
                             textColor: colorBlue,
                             padding: EdgeInsets.zero,
                             textLineHeight: 14.32,
-                            textSize: 12,
+                            textSize: 11,
                             backgroundColor:
                                 const Color.fromRGBO(22, 115, 255, 0.08),
                             onPressed: () {
@@ -739,22 +759,22 @@ class _BodyLayoutState extends State<BodyLayout> {
                                   convertHeight);
                               // Width
                               oldEditingPlacementList
-                                  .add(valueWidth.toStringAsFixed(2));
+                                  .add(valueWidth.toStringAsFixed(3));
                               // Height
                               oldEditingPlacementList
-                                  .add(valueHeight.toStringAsFixed(2));
+                                  .add(valueHeight.toStringAsFixed(3));
                               //top
                               oldEditingPlacementList
-                                  .add(valueTop.toStringAsFixed(2));
+                                  .add(valueTop.toStringAsFixed(3));
                               //left
                               oldEditingPlacementList
-                                  .add(valueLeft.toStringAsFixed(2));
+                                  .add(valueLeft.toStringAsFixed(3));
                               //right
                               oldEditingPlacementList
-                                  .add(vallueRight.toStringAsFixed(2));
+                                  .add(vallueRight.toStringAsFixed(3));
                               // bottom
                               oldEditingPlacementList
-                                  .add(valueBottom.toStringAsFixed(2));
+                                  .add(valueBottom.toStringAsFixed(3));
                               pushCustomVerticalMaterialPageRoute(
                                   context,
                                   EditorPaddingSpacing(
@@ -787,7 +807,7 @@ class _BodyLayoutState extends State<BodyLayout> {
                             height: 30,
                             textColor: const Color.fromRGBO(255, 63, 51, 1),
                             textLineHeight: 14.32,
-                            textSize: 12,
+                            textSize: 11,
                             backgroundColor:
                                 const Color.fromRGBO(255, 63, 51, 0.1),
                             padding: EdgeInsets.zero,

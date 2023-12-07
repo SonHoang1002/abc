@@ -43,7 +43,7 @@ Widget buildPageSizePreset(
             isExpanded: true,
             hint: Row(mainAxisAlignment: MainAxisAlignment.start, children: [
               Container(
-                constraints: const BoxConstraints(minWidth: 55),
+                constraints: const BoxConstraints(minWidth: 60),
                 child: WTextContent(
                   value: "Preset",
                   textSize: 14,
@@ -79,16 +79,16 @@ Widget buildPageSizePreset(
                         textSize: 14,
                         textLineHeight: 19.09,
                       ),
-                      if (index != LIST_PAGE_SIZE.length - 1)
-                        WDivider(
-                          color:
-                              (pv.Provider.of<ThemeManager>(context).isDarkMode)
-                                  ? colorGrey.withOpacity(0.3)
-                                  : null,
-                          width: width,
-                          height: 1,
-                          margin: EdgeInsets.zero,
-                        )
+                      WDivider(
+                        color: (index == LIST_PAGE_SIZE.length - 1)
+                            ? transparent
+                            : (pv.Provider.of<ThemeManager>(context).isDarkMode)
+                                ? colorGrey.withOpacity(0.3)
+                                : null,
+                        width: 185,
+                        height: 1,
+                        margin: EdgeInsets.zero,
+                      )
                     ],
                   ));
             }).toList(),
@@ -100,7 +100,7 @@ Widget buildPageSizePreset(
             },
             buttonStyleData: ButtonStyleData(
               height: 50,
-              width: 200 / 390 * MediaQuery.sizeOf(context).width,
+              width: width,
               padding: const EdgeInsets.only(left: 14, right: 14),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(14),
@@ -290,7 +290,7 @@ Widget buildBottomButton(
     String? titleCancel,
     void Function()? onCancel}) {
   return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
     child: Flex(
       direction: Axis.horizontal,
       children: [
@@ -398,7 +398,7 @@ Widget buildLayoutConfigItem(
         //   textColor: Theme.of(context).textTheme.bodyMedium!.color,
         // ),
         WSpacer(
-          height: 10,
+          height: 6,
         ),
         contentWidgetColor != null
             ? Row(
@@ -631,6 +631,7 @@ Widget buildDialogPadding(
 
 Widget buildDialogAddCover(
     BuildContext context, Function(dynamic value) onSelected) {
+  final size = MediaQuery.sizeOf(context);
   return Column(children: [
     _buildDialogInformationItem(
       context,
@@ -644,7 +645,7 @@ Widget buildDialogAddCover(
         color: Theme.of(context).dialogTheme.backgroundColor,
       ),
     ),
-    WDivider(height: 1, color: Theme.of(context).dividerColor),
+    WDivider(height: 1, width: (200 / 390) * size.width),
     _buildDialogInformationItem(
         context,
         LIST_ADD_COVER[1]['mediaSrc'],
@@ -654,7 +655,7 @@ Widget buildDialogAddCover(
             ),
         boxDecoration: BoxDecoration(
             color: Theme.of(context).dialogTheme.backgroundColor)),
-    WDivider(height: 1, color: Theme.of(context).dividerColor),
+    WDivider(height: 1.5, width: (200 / 390) * size.width),
     _buildDialogInformationItem(
       context,
       LIST_ADD_COVER[2]['mediaSrc'],

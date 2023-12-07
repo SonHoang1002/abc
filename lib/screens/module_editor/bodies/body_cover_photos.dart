@@ -264,8 +264,12 @@ class _BodyCoverState extends State<BodyCover> {
               )
             : Center(
                 child: Container(
-                  height: _getWidthAndHeight(project)[1],
-                  width: _getWidthAndHeight(project)[0],
+                  height: _checkPaperTitleIsNone(project)
+                      ? 140
+                      : _getWidthAndHeight(project)[1],
+                  width: _checkPaperTitleIsNone(project)
+                      ? 90
+                      : _getWidthAndHeight(project)[0],
                   decoration: const BoxDecoration(
                       color: Color.fromRGBO(22, 115, 255, 0.08)),
                   child: Center(

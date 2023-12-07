@@ -85,7 +85,7 @@ SpacingAttribute SPACING_OPTIONS = SpacingAttribute(
 
 // ignore: non_constant_identifier_names
 final PLACEMENT_ATTRIBUTE = PlacementAttribute(
-    top: 0.0, left: 0.0, right: 0.0, bottom: 0.0, unit: POINT);
+    top: 0.0, left: 0.0, right: 0.0, bottom: 0.0, unit: CENTIMET);
 // ignore: non_constant_identifier_names
 List<dynamic> LIST_ADD_COVER = [
   {
@@ -229,7 +229,7 @@ const String SHARE_APP_LINK =
 // ignore: constant_identifier_names
 const double DOT_SIZE = 11;
 // ignore: constant_identifier_names
-const double MIN_PLACEMENT_SIZE = 50;
+const double MIN_PLACEMENT_SIZE = 7.2;
 
 const String TITLE_LAYOUT_WARNING = "No Paper Size";
 const String CONTENT_LAYOUT_WARNING =

@@ -99,6 +99,7 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
     _size = MediaQuery.sizeOf(context);
     _maxHeight = _getWidthAndHeight()[1];
     _maxWidth = _getWidthAndHeight()[0];
+    print("_maxWidth ${_maxWidth}, ${_maxHeight}");
     _listRectangle1 = widget.listPlacement.map((pl) {
       return convertPlacementToRectangle(pl, [_maxWidth, _maxHeight])!;
     }).toList();
@@ -109,6 +110,8 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
       _dotTopLeft = _listRectangle1[index].getOffset.translate(
           _deltaPositionBoard.dx - DOT_SIZE / 2,
           _deltaPositionBoard.dy - DOT_SIZE / 2);
+    } else {
+      _dotTopLeft = null;
     }
     return _buildCustomArea();
   }
@@ -430,12 +433,14 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
         }
       }
       _listOverride = newListOverride;
+
       newRectangle1 = Rectangle1(
           id: _selectedRectangle1!.id,
           x: x,
           y: y,
           width: x1 - x,
           height: y1 - y);
+      print("newRectangle1 ${newRectangle1}");
       //gan
       _listRectangle1[index] = newRectangle1;
       _updatePlacement(selectedRectangle1: newRectangle1);
@@ -484,17 +489,14 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
     return GestureDetector(
       key: _gestureKey,
       onTapUp: (details) {
-        _listVerticalPosition.clear();
-        _listHorizontalPosition.clear();
-        print("000");
+        _listOverride = [[], []];
         _onFocusRectangle(details.globalPosition);
       },
       onPanUpdate: _onPanUpdate,
       onPanStart: _onPanStart,
       onPanEnd: (details) {
         setState(() {
-                _listVerticalPosition.clear();
-      _listHorizontalPosition.clear();
+          _listOverride = [[], []];
         });
       },
       child: Stack(

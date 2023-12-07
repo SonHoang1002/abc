@@ -31,7 +31,7 @@ String convertByteUnit(double input) {
 }
 
 ///
-/// convert [point], [inch] to cm
+/// convert [inputUnit] to [targetUnit]
 ///
 double convertUnit(Unit inputUnit, Unit targetUnit, double value) {
   const pointToCm = 0.0352777778;

@@ -230,7 +230,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: f37d4e5127dab34c4316086d3d591e379aca189a
+      resolved-ref: c6a01daa3c4a87af77d66117006a3d21b2c97f72
       url: "ssh://gitserver@git.tapuniverse.com:88/son/color_picker_flutter.git"
     source: git
     version: "1.0.0+1"

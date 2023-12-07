@@ -208,16 +208,14 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     return oldRatioTarget;
   }
 
-  void _onCancel() async {
-    print("_project onCancel ${_project.listMedia}");
+  void _onCancel() async { 
     ref.read(projectControllerProvider.notifier).updateProject(_project);
     popNavigator(context);
     await IsarProjectService().updateProject(_project);
   }
 
   @override
-  Widget build(BuildContext context) {
-    print("_project Editor ${_project.listMedia}");
+  Widget build(BuildContext context) { 
     _size = MediaQuery.sizeOf(context);
     return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -232,7 +230,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
               alignment: Alignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.only(top: 10),
+                  padding:   EdgeInsets.only(top: 10,bottom:MediaQuery.of(context).padding.bottom),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [

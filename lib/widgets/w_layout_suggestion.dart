@@ -76,7 +76,8 @@ Widget buildLayoutWidget({
             child: WTextContent(
               value: title,
               textLineHeight: 14.32,
-              textSize: 12,
+              textAlign: TextAlign.center,
+              textSize: 11.5,
               textColor: isFocus
                   ? colorWhite
                   : Theme.of(context).textTheme.bodyMedium!.color,
