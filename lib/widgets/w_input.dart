@@ -278,7 +278,7 @@ class _WInputLayoutState extends State<WInputLayout> {
     if (_unit.title != widget.unit.title) {
       _controller.text =
           convertUnit(_unit, widget.unit, double.parse(_controller.text.trim()))
-              .toStringAsFixed(3);
+              .toStringAsFixed(2);
       _unit = widget.unit;
     } else {
       if (_controller.text.trim() != widget.controller.text.trim()) {

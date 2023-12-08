@@ -1,34 +1,53 @@
 import 'dart:math';
 
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:photo_to_pdf/models/project.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
-import 'package:photo_to_pdf/models/project.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 
 Widget buildLayoutWidget({
   required BuildContext context,
   required String title,
-  required Project project,
   required Color backgroundColor,
   required bool isFocus,
+  required Project project,
   required Function() onTap,
   required List<int> layoutSuggestion,
 }) {
-  final maxWidth = MediaQuery.sizeOf(context).width * 0.35;
-  final maxHeight = MediaQuery.sizeOf(context).width * 0.35 * 1.3;
-  double realHeight = maxHeight, realWidth = maxWidth;
+  double maxWidth = MediaQuery.sizeOf(context).width * 0.35;
+  double maxHeight = MediaQuery.sizeOf(context).width * 0.35 * 1.3;
   final paperHeight = project.paper?.height;
   final paperWidth = project.paper?.width;
-
-  if (project.paper != null && paperHeight != 0 && paperWidth != 0) {
-    // double ratioWH = paperWidth! / paperHeight!;
-    double realRatio = max(paperHeight! / maxHeight, paperWidth! / maxWidth);
-    realWidth = maxWidth * realRatio*5;
-    realHeight = maxHeight * realRatio*5;
-    x
+  double realWidth = maxWidth, realHeight = maxHeight;
+  if (project.paper != null && paperWidth != 0.0 && paperHeight != 0.0) {
+    final ratioWH = paperWidth! / paperHeight!;
+    // width. height
+    if (ratioWH > 1) {
+      realWidth = maxWidth;
+      realHeight = realWidth * (1 / ratioWH);
+      if (realHeight > maxHeight) {
+        realHeight = maxHeight;
+        realWidth = realHeight * ratioWH;
+      }
+      //height> width
+    } else if (ratioWH < 1) {
+      realHeight = maxHeight;
+      realWidth = realHeight * ratioWH;
+      if (realWidth > maxWidth) {
+        realWidth = maxWidth;
+        realHeight = realWidth * (1 / ratioWH);
+      }
+    } else {
+      realHeight = realWidth = maxWidth;
+    }
   }
+  final padding = EdgeInsets.symmetric(
+      horizontal: 5 / maxWidth * realWidth,
+      vertical: 5 / maxHeight * realHeight);
+
   return Column(
     children: [
       GestureDetector(
@@ -43,8 +62,7 @@ Widget buildLayoutWidget({
                         ? const Color.fromRGBO(22, 115, 255, 1)
                         : transparent)),
             child: Container(
-              alignment: Alignment.center,
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 18),
+              padding: padding,
               decoration: BoxDecoration(color: backgroundColor, boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.2),
@@ -69,6 +87,8 @@ Widget buildLayoutWidget({
                                     child: Image.asset(
                                       "${PATH_PREFIX_ICON}icon_layout_1.png",
                                       fit: BoxFit.cover,
+                                      height: realHeight,
+                                      width: realWidth,
                                     ),
                                   ),
                                 ))
@@ -90,17 +110,16 @@ Widget buildLayoutWidget({
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           width: 80,
           child: Center(
-            child: WTextContent(
-              value: title,
-              textLineHeight: 14.32,
-              textAlign: TextAlign.center,
-              textSize: 11.5,
-              textColor: isFocus
-                  ? colorWhite
-                  : Theme.of(context).textTheme.bodyMedium!.color,
-              textFontWeight: FontWeight.w600,
-            ),
-          ),
+              child: AutoSizeText(
+            title,
+            maxFontSize: 12,
+            minFontSize: 8,
+            style: TextStyle(
+                color: isFocus
+                    ? colorWhite
+                    : Theme.of(context).textTheme.bodyMedium!.color,
+                fontWeight: FontWeight.w600),
+          )),
         ),
       )
     ],

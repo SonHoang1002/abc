@@ -56,21 +56,31 @@ class WProjectItemHomeBottom extends StatelessWidget {
                     ),
                   ),
                   isFocusByLongPress
-                      ? Positioned(
-                          top: -10,
-                          left: -10,
-                          child: GestureDetector(
-                            onTap: () {
-                              onRemove(project.listMedia[index]);
-                            },
-                            child: Image.asset(
-                              Provider.of<ThemeManager>(context).isDarkMode
-                                  ? "${PATH_PREFIX_ICON}icon_remove_dark.png"
-                                  : "${PATH_PREFIX_ICON}icon_remove_light.png",
-                              width: 40,
-                              height: 40,
-                            ),
-                          ))
+                      ? Stack(
+                          children: [
+                            const SizedBox(height: 20, width: 20),
+                            Positioned(
+                                child: GestureDetector(
+                              onTap: () {
+                                onRemove(project.listMedia[index]);
+                              },
+                              child: Container(
+                                decoration: const BoxDecoration(boxShadow: [
+                                  BoxShadow(
+                                    blurRadius: 16,
+                                    color: Color.fromRGBO(0, 0, 0, 0.1),
+                                  )
+                                ]),
+                                child: Image.asset(
+                                  Provider.of<ThemeManager>(context).isDarkMode
+                                      ? "${PATH_PREFIX_ICON}icon_remove_dark.png"
+                                      : "${PATH_PREFIX_ICON}icon_remove_light.png",
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            )),
+                          ],
+                        )
                       : const SizedBox()
                 ],
               ),

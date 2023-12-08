@@ -50,10 +50,6 @@ class WProjectItemEditor extends ConsumerWidget {
   List<BoxShadow> listShadow = [
     const BoxShadow(
         color: Color.fromRGBO(0, 0, 0, 0.3),
-        // color: colorRed,
-        // spreadRadius: -30,
-        // blurRadius: 40,
-        // offset: Offset(0, 7),
         spreadRadius: -20,
         blurRadius: 40,
         offset: Offset(0, 5),
@@ -95,7 +91,7 @@ class WProjectItemEditor extends ConsumerWidget {
 
   Widget _buildNormalLayoutMedia(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(7),
       child: Container(
         width: _getRealWH(context)[0],
         height: _getRealWH(context)[1],
@@ -143,20 +139,26 @@ class WProjectItemEditor extends ConsumerWidget {
               Stack(
                 children: [
                   const SizedBox(
-                    width: 30,
-                    height: 30,
+                    width: 20,
+                    height: 20,
                   ),
                   isFocusByLongPress
                       ? Positioned.fill(
-                          top: -10,
-                          left: -10,
                           child: GestureDetector(
                             onTap: onRemove,
-                            child: Image.asset(
-                              pv.Provider.of<ThemeManager>(context).isDarkMode
-                                  ? "${PATH_PREFIX_ICON}icon_remove_dark.png"
-                                  : "${PATH_PREFIX_ICON}icon_remove_light.png",
-                              fit: BoxFit.cover,
+                            child: Container(
+                              decoration: const BoxDecoration(boxShadow: [
+                                BoxShadow(
+                                  blurRadius: 16,
+                                  color: Color.fromRGBO(0, 0, 0, 0.1),
+                                )
+                              ]),
+                              child: Image.asset(
+                                pv.Provider.of<ThemeManager>(context).isDarkMode
+                                    ? "${PATH_PREFIX_ICON}icon_remove_dark.png"
+                                    : "${PATH_PREFIX_ICON}icon_remove_light.png",
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
                         )
@@ -216,8 +218,8 @@ class WProjectItemEditor extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     _size = MediaQuery.sizeOf(context);
-    maxHeight ??= _size.width * 0.415;
-    maxWidth ??= _size.width * 0.415;
+    maxHeight ??= _size.width * 0.405;
+    maxWidth ??= _size.width * 0.405;
     return GestureDetector(
       onTap: onTap,
       child: Align(
@@ -239,21 +241,28 @@ class WProjectItemEditor extends ConsumerWidget {
                     child: Stack(
                       children: [
                         const SizedBox(
-                          width: 30,
-                          height: 30,
+                          width: 20,
+                          height: 20,
                         ),
                         if (isFocusByLongPress &&
                             project.paper?.title != LIST_PAGE_SIZE[0].title)
                           Positioned.fill(
-                            top: -10,
-                            left: -10,
                             child: GestureDetector(
                               onTap: onRemove,
-                              child: Image.asset(
-                                pv.Provider.of<ThemeManager>(context).isDarkMode
-                                    ? "${PATH_PREFIX_ICON}icon_remove_dark.png"
-                                    : "${PATH_PREFIX_ICON}icon_remove_light.png",
-                                fit: BoxFit.cover,
+                              child: Container(
+                                decoration: const BoxDecoration(boxShadow: [
+                                  BoxShadow(
+                                    blurRadius: 16,
+                                    color: Color.fromRGBO(0, 0, 0, 0.1),
+                                  )
+                                ]),
+                                child: Image.asset(
+                                  pv.Provider.of<ThemeManager>(context)
+                                          .isDarkMode
+                                      ? "${PATH_PREFIX_ICON}icon_remove_dark.png"
+                                      : "${PATH_PREFIX_ICON}icon_remove_light.png",
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             ),
                           ),

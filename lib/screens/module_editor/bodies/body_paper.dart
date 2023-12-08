@@ -255,7 +255,7 @@ class _BodyPaperState extends State<BodyPaper> {
                             alignment: Alignment.topCenter,
                             duration: const Duration(milliseconds: 400),
                             height: _paperConfig['content'].title == "None"
-                                ? 120
+                                ? 150
                                 : _getWidthAndHeight()[1],
                             width: _getWidthAndHeight()[0],
                             decoration: BoxDecoration(
@@ -340,7 +340,7 @@ class _BodyPaperState extends State<BodyPaper> {
                                     value,
                                     double.parse(
                                         _paperSizeWidthController.text))
-                                .toStringAsFixed(4);
+                                .toStringAsFixed(2);
                           } else {
                             _paperConfig['content'] =
                                 LIST_PAGE_SIZE[8].copyWith(
@@ -351,13 +351,13 @@ class _BodyPaperState extends State<BodyPaper> {
                                     value,
                                     double.parse(
                                         _paperSizeHeightController.text))
-                                .toStringAsFixed(4);
+                                .toStringAsFixed(2);
                             _paperSizeWidthController.text = convertUnit(
                                     oldUnit,
                                     value,
                                     double.parse(
                                         _paperSizeWidthController.text))
-                                .toStringAsFixed(4);
+                                .toStringAsFixed(2);
                           }
                         });
                         widget.reRenderFunction();
@@ -428,23 +428,43 @@ class _BodyPaperState extends State<BodyPaper> {
 
   List<double> _getWidthAndHeight() {
     double maxWidth = _size.width - widthEdit - _paddingPreview * 2;
-    double maxHeight = maxWidth;
-    double widthPaper = double.parse(_paperWidthValue);
-    double heightPaper = double.parse(_paperHeightValue);
+    double maxHeight = maxWidth * 2;
+    double paperWidth = double.parse(_paperWidthValue);
+    double paperHeight = double.parse(_paperHeightValue);
     double width = maxWidth, height = maxHeight;
-    if (heightPaper > widthPaper) {
-      height = maxWidth * heightPaper / widthPaper;
-      if (height > maxWidth ) {
-        height = maxWidth ;
-        width = height * widthPaper / heightPaper;
+    final paperRatioWH = paperWidth / paperHeight;
+    if (paperHeight > paperWidth) {
+      height = maxHeight;
+      width = height * paperRatioWH;
+      if (width > maxWidth) {
+        width = maxWidth;
+        height = width * (1 / paperRatioWH);
       }
-    } else if (heightPaper < widthPaper) {
-      width = maxHeight * widthPaper / heightPaper;
-      if (width > maxHeight ) {
-        width = maxHeight ;
-        height = width * heightPaper / widthPaper;
+    } else if (paperWidth > paperHeight) {
+      width = maxWidth;
+      height = width * (1 / paperRatioWH);
+      if (height > maxHeight) {
+        height = maxHeight;
+        width = height * paperRatioWH;
       }
+    } else {
+      height = width;
     }
+    // if (paperHeight > paperWidth) {
+    //   height = maxWidth * (1 / paperRatioWH);
+    //   if (height > maxWidth) {
+    //     height = maxWidth * 1;
+    //     width = height * paperRatioWH;
+    //   }
+    // } else if (paperHeight < paperWidth) {
+    //   width = maxHeight * paperRatioWH;
+    //   if (width > maxHeight * 1) {
+    //     width = maxHeight * 1;
+    //     height = width * (1 / paperRatioWH);
+    //   }
+    // } else {
+    //   height = width;
+    // }
     return [width, height];
   }
 

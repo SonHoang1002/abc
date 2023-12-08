@@ -66,7 +66,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
     super.initState();
     for (var element in widget.inputValues) {
       if (double.parse(element) < 0) {
-        controllers.add(TextEditingController(text: "0.000"));
+        controllers.add(TextEditingController(text: "0.0"));
       } else {
         // check case -0.00
         controllers.add(TextEditingController(
@@ -179,75 +179,85 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
       String vNewLeft = vLeft;
       String vNewRight = vRight;
       String vNewBottom = vBottom;
+ 
 
       switch (_selectedLabel) {
         case "Width":
           if (vWidth.isEmpty || vWidth == '' || width < minSize) {
-            vNewRight = (maxWidth - left - minSize).toStringAsFixed(3);
-            vNewWidth = minSize.toStringAsFixed(3);
-          } else if (width + left > maxWidth) {
+            vNewRight = (maxWidth - left - minSize).toStringAsFixed(2);
+            vNewWidth = minSize.toStringAsFixed(2);
+          } else if (width + left >= maxWidth) {
             vNewWidth = _oldValue;
           } else {
-            vNewRight = (maxWidth - left - width).toStringAsFixed(3);
+            vNewRight = (maxWidth - left - width).toStringAsFixed(2);
           }
           break;
         case "Height":
           if (vHeight.isEmpty || vHeight == '' || height < minSize) {
-            vNewBottom = (maxHeight - top - minSize).toStringAsFixed(3);
-            vNewHeight = minSize.toStringAsFixed(3);
-          } else if (height + top > maxHeight) {
+            vNewBottom = (maxHeight - top - minSize).toStringAsFixed(2);
+            vNewHeight = minSize.toStringAsFixed(2);
+          } else if (height + top >= maxHeight) {
             vNewHeight = _oldValue;
           } else {
-            vNewBottom = (maxHeight - top - height).toStringAsFixed(3);
+            vNewBottom = (maxHeight - top - height).toStringAsFixed(2);
           }
           break;
         case "Top":
-        // truong hop rong -> set 0.0, thay doi height
+          // truong hop rong -> set 0.0, thay doi height
           if (vTop.isEmpty || vTop == '') {
             vNewTop = '0.0';
-            vNewHeight = (maxHeight - bottom).toStringAsFixed(3);
+            vNewHeight = (maxHeight - bottom).toStringAsFixed(2);
           } else if (top > maxHeight - bottom - minSize) {
             // truong hop top qua lon ( lon hon bottom (present)+ min size (placement))
             vNewTop = _oldValue;
           } else {
             vNewTop = vTop;
-            // truong hop top + height < max -> set lai bottom, height giu nguyen
-            if (top + height <= maxHeight) {
-              vNewBottom = (maxHeight - height - top).toStringAsFixed(3);
-            } else {
-              // truong hop top top + height > max -> set gia tri ban dau, height giu nguyen
+            if (top + height >= maxHeight) {
               vNewTop = _oldValue;
+            } else {
+              if (top + bottom >= maxHeight - height) {
+                vNewBottom = (maxHeight - height - top).toStringAsFixed(2);
+              } else {
+                vNewHeight = (maxHeight - top - bottom).toStringAsFixed(2);
+              }
             }
           }
           break;
         case "Left":
           if (vLeft.isEmpty || vLeft == '') {
             vNewLeft = '0.0';
-            vNewWidth = (maxWidth - right).toStringAsFixed(3);
+            vNewWidth = (maxWidth - right).toStringAsFixed(2);
           } else if (left > maxWidth - right - minSize) {
             vNewLeft = _oldValue;
           } else {
             vNewLeft = vLeft;
-            if (left + width <= maxWidth) {
-              vNewRight = (maxWidth - left - width).toStringAsFixed(3);
-            } else {
+            if (left + width > maxWidth) {
               vNewLeft = _oldValue;
+            } else {
+              if (left + right > maxWidth - width) {
+                vNewRight = (maxWidth - left - width).toStringAsFixed(2);
+              } else {
+                vNewWidth = (maxWidth - left - right).toStringAsFixed(2);
+              }
             }
           }
-
           break;
         case "Right":
           if (vRight.isEmpty || vRight == '') {
             vNewRight = '0.0';
-            vNewWidth = (maxWidth - left).toStringAsFixed(3);
+            vNewWidth = (maxWidth - left).toStringAsFixed(2);
           } else if (right > maxWidth - left - minSize) {
             vNewRight = _oldValue;
           } else {
             vNewRight = vRight;
-            if (width + right <= maxWidth) {
-              vNewLeft = (maxWidth - width - right).toStringAsFixed(3);
-            } else {
+            if (width + right >= maxWidth) {
               vNewRight = _oldValue;
+            } else {
+              if (left + right >= maxWidth - width) {
+                vNewLeft = (maxWidth - width - right).toStringAsFixed(2);
+              } else {
+                vNewWidth = (maxWidth - left - right).toStringAsFixed(2);
+              }
             }
           }
 
@@ -255,15 +265,19 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
         case "Bottom":
           if (vBottom.isEmpty || vBottom == '') {
             vNewBottom = '0.0';
-            vNewHeight = (maxHeight - top).toStringAsFixed(3);
+            vNewHeight = (maxHeight - top).toStringAsFixed(2);
           } else if (bottom > maxHeight - top - minSize) {
             vNewBottom = _oldValue;
           } else {
             vNewBottom = vBottom;
-            if (bottom + height <= maxHeight) {
-              vNewTop = (maxHeight - bottom - height).toStringAsFixed(3);
-            } else {
+            if (bottom + height >= maxHeight) {
               vNewBottom = _oldValue;
+            } else {
+              if (top + bottom > maxHeight - height) {
+                vNewTop = (maxHeight - bottom - height).toStringAsFixed(2);
+              } else {
+                vNewHeight = (maxHeight - top - bottom).toStringAsFixed(2);
+              }
             }
           }
           break;
@@ -278,6 +292,7 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
       controllers[5].text = vNewBottom;
     }
   }
+
   @override
   Widget build(BuildContext context) {
     _size = MediaQuery.sizeOf(context);
@@ -319,14 +334,14 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                                           value,
                                           double.parse(
                                               element.text.trim().isEmpty
-                                                  ? "0.000"
+                                                  ? "0.00"
                                                   : element.text.trim()))
-                                      .toStringAsFixed(3));
+                                      .toStringAsFixed(2));
                             },
                           ).toList();
                           final newOldValue =
                               convertUnit(_unit, value, double.parse(_oldValue))
-                                  .toStringAsFixed(3);
+                                  .toStringAsFixed(2);
                           setState(() {
                             _unit = value;
                             _oldValue = newOldValue;
@@ -334,7 +349,6 @@ class _EditorPaddingSpacingState extends State<EditorPaddingSpacing> {
                           });
                         },
                         onDone: (newUnit) {
-                          print("_size.width * 0.8, ${_size.width * 0.8}");
                           _onDone(newUnit);
                         },
                       )

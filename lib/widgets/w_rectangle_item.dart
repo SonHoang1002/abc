@@ -5,8 +5,9 @@ import 'package:photo_to_pdf/models/placement.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 
 Widget buildRectangle(Rectangle1? rectangle1, List<Rectangle1> listRectangle1,
-    List<GlobalKey> listGlobalKey) {
+    List<GlobalKey> listGlobalKey, List<Placement> oldEditingPlacementList) {
   int _index = 0;
+  // int _indexOld = listRectangle1.length;
   if (rectangle1 != null) {
     _index = listRectangle1
         .map(
@@ -14,10 +15,18 @@ Widget buildRectangle(Rectangle1? rectangle1, List<Rectangle1> listRectangle1,
         )
         .toList()
         .indexOf(rectangle1.id);
+    // final indexOld = oldEditingPlacementList
+    //     .map((e) => e.id)
+    //     .toList()
+    //     .indexOf(rectangle1.id);
+    // if (indexOld != -1) {
+    //   _indexOld = indexOld;
+    // }
   }
   if (_index == -1) {
     return const SizedBox();
   }
+
   return Stack(
     children: [
       Positioned(

@@ -69,6 +69,8 @@ class _BodyLayoutState extends State<BodyLayout> {
   late bool _isShowAlignmentDialog;
   late List<GlobalKey> _listGlobalKey = [];
 
+  late List<Placement> _oldEditingPlacementList;
+
   @override
   void initState() {
     super.initState();
@@ -110,6 +112,7 @@ class _BodyLayoutState extends State<BodyLayout> {
     }
     _listGlobalKey = _listPlacement.map((e) => GlobalKey()).toList();
     _isShowAlignmentDialog = false;
+    _oldEditingPlacementList = List.from(_project.placements ?? []);
   }
 
   @override
@@ -439,7 +442,7 @@ class _BodyLayoutState extends State<BodyLayout> {
               child: buildLayoutWidget(
                 context: context,
                 title: "Layout ${index + 1}",
-                project:_project,
+                project: _project,
                 isFocus: e['isFocus'],
                 backgroundColor: _currentLayoutColor,
                 layoutSuggestion: e["layout"],
@@ -634,6 +637,7 @@ class _BodyLayoutState extends State<BodyLayout> {
               rerenderFunction: () {
                 widget.reRenderFunction();
               },
+              oldEditingPlacementList: _project.placements ?? [],
               selectedPlacement: _selectedPlacement,
               paperAttribute: _project.paper,
               listPlacement: _listPlacement,
@@ -700,6 +704,7 @@ class _BodyLayoutState extends State<BodyLayout> {
                           final newPlacement = _createNewPlacement();
                           _listPlacement.add(newPlacement);
                           _listGlobalKey.add(GlobalKey());
+                          _oldEditingPlacementList.add(newPlacement);
                           _selectedPlacement = _listPlacement.last;
                           _saveDataSelectedPlacement = _selectedPlacement;
                         });
@@ -760,22 +765,22 @@ class _BodyLayoutState extends State<BodyLayout> {
                                   convertHeight);
                               // Width
                               oldEditingPlacementList
-                                  .add(valueWidth.toStringAsFixed(3));
+                                  .add(valueWidth.toStringAsFixed(2));
                               // Height
                               oldEditingPlacementList
-                                  .add(valueHeight.toStringAsFixed(3));
+                                  .add(valueHeight.toStringAsFixed(2));
                               //top
                               oldEditingPlacementList
-                                  .add(valueTop.toStringAsFixed(3));
+                                  .add(valueTop.toStringAsFixed(2));
                               //left
                               oldEditingPlacementList
-                                  .add(valueLeft.toStringAsFixed(3));
+                                  .add(valueLeft.toStringAsFixed(2));
                               //right
                               oldEditingPlacementList
-                                  .add(vallueRight.toStringAsFixed(3));
+                                  .add(vallueRight.toStringAsFixed(2));
                               // bottom
                               oldEditingPlacementList
-                                  .add(valueBottom.toStringAsFixed(3));
+                                  .add(valueBottom.toStringAsFixed(2));
                               pushCustomVerticalMaterialPageRoute(
                                   context,
                                   EditorPaddingSpacing(
@@ -821,6 +826,13 @@ class _BodyLayoutState extends State<BodyLayout> {
                                 _listPlacement.removeAt(index);
                                 _matrix4Notifiers.removeAt(index);
                                 _listGlobalKey.removeAt(index);
+                              }
+                              final indexOld = _oldEditingPlacementList
+                                  .map((e) => e.id)
+                                  .toList()
+                                  .indexOf(_selectedPlacement!.id);
+                              if (indexOld != -1) {
+                                _oldEditingPlacementList.removeAt(indexOld);
                               }
                               _selectedPlacement = null;
                               setState(() {});

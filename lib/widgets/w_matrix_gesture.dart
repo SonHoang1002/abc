@@ -267,6 +267,6 @@ class MatrixDecomposedValues {
 
   @override
   String toString() {
-    return 'MatrixDecomposedValues(translation: $translation, scale: ${scale.toStringAsFixed(3)}, rotation: ${rotation.toStringAsFixed(3)})';
+    return 'MatrixDecomposedValues(translation: $translation, scale: ${scale.toStringAsFixed(2)}, rotation: ${rotation.toStringAsFixed(2)})';
   }
 }

@@ -18,13 +18,12 @@ class WDragZoomImage extends StatefulWidget {
   final List<Placement> listPlacement;
   final List<GlobalKey> listGlobalKey;
   final List<ValueNotifier<Matrix4>> matrix4Notifiers;
+  final List<Placement> oldEditingPlacementList;
   final Placement? selectedPlacement;
   final PaperAttribute? paperAttribute;
   final Function(List<Rectangle1> rectangle1s, Rectangle1? focusRectangle1,
       List<double> ratios) onUpdatePlacement;
-  final Function(
-    Rectangle1 rectangle1,
-  )? onFocusRectangle;
+  final Function(Rectangle1 rectangle1)? onFocusRectangle;
   final void Function()? onCancelFocusRectangle1;
   final Function rerenderFunction;
   const WDragZoomImage(
@@ -34,6 +33,7 @@ class WDragZoomImage extends StatefulWidget {
       required this.listGlobalKey,
       required this.matrix4Notifiers,
       required this.onUpdatePlacement,
+      required this.oldEditingPlacementList,
       this.selectedPlacement,
       this.onFocusRectangle,
       this.paperAttribute,
@@ -67,13 +67,13 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
   late Offset _deltaPositionBoard;
   late Offset _gestureBoardOffset;
 
-  final double vung_cham = 50;
+  final double vung_cham = 50; 
 
   @override
   void initState() {
     super.initState();
     _deltaPositionBoard = Offset.zero;
-    _gestureBoardOffset = Offset.zero;
+    _gestureBoardOffset = Offset.zero; 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       Offset offsetRectangleBoard =
           (_childContainerKey.currentContext?.findRenderObject() as RenderBox)
@@ -99,7 +99,6 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
     _size = MediaQuery.sizeOf(context);
     _maxHeight = _getWidthAndHeight()[1];
     _maxWidth = _getWidthAndHeight()[0];
-    print("_maxWidth ${_maxWidth}, ${_maxHeight}");
     _listRectangle1 = widget.listPlacement.map((pl) {
       return convertPlacementToRectangle(pl, [_maxWidth, _maxHeight])!;
     }).toList();
@@ -440,7 +439,6 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
           y: y,
           width: x1 - x,
           height: y1 - y);
-      print("newRectangle1 ${newRectangle1}");
       //gan
       _listRectangle1[index] = newRectangle1;
       _updatePlacement(selectedRectangle1: newRectangle1);
@@ -527,13 +525,13 @@ class _WDragZoomImageState extends State<WDragZoomImage> {
                       .toList()
                       .map<Widget>(
                     (e) {
-                      return buildRectangle(
-                          e, _listRectangle1, widget.listGlobalKey);
+                      return buildRectangle(e, _listRectangle1,
+                          widget.listGlobalKey, widget.oldEditingPlacementList);
                     },
                   ).toList(),
                   if (_selectedRectangle1 != null)
                     buildRectangle(_selectedRectangle1!, _listRectangle1,
-                        widget.listGlobalKey),
+                        widget.listGlobalKey, widget.oldEditingPlacementList),
                 ],
               ),
             ),

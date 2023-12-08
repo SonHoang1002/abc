@@ -39,7 +39,7 @@ class _PreviewState extends ConsumerState<PreviewProject>
 
   late int _indexCurrentCarousel;
   List<double> _listRatioWHImage = [];
-
+  late Size _size;
   @override
   void initState() {
     _project = widget.project;
@@ -121,7 +121,7 @@ class _PreviewState extends ConsumerState<PreviewProject>
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
+    _size = MediaQuery.sizeOf(context);
     return Stack(
       children: [
         BackdropFilter(
@@ -150,7 +150,7 @@ class _PreviewState extends ConsumerState<PreviewProject>
                     alignment: Alignment.center,
                     children: [
                       Container(
-                        height: size.height * (589 / 844) * 0.95,
+                        height: _size.height * (589 / 844) * 0.95,
                         decoration: BoxDecoration(
                             color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(10)),
@@ -185,8 +185,8 @@ class _PreviewState extends ConsumerState<PreviewProject>
                           );
                         },
                         options: CarouselOptions(
-                          height: size.height * (589 / 844) * 0.95,
-                          aspectRatio: size.height / size.width + 1,
+                          height: _size.height * (589 / 844) * 0.95,
+                          aspectRatio: _size.height / _size.width + 1,
                           initialPage: _indexCurrentCarousel,
                           scrollPhysics: const BouncingScrollPhysics(),
                           enableInfiniteScroll: false,
@@ -205,7 +205,7 @@ class _PreviewState extends ConsumerState<PreviewProject>
                   const SizedBox(),
                   Container(
                     margin: const EdgeInsets.only(bottom: 30),
-                    width: size.width * 0.8,
+                    width: _size.width * 0.8,
                     child: WButtonFilled(
                       message: "Close",
                       textColor: colorBlue,
@@ -247,7 +247,8 @@ class _PreviewState extends ConsumerState<PreviewProject>
         _previewExtractList[currentIndex]?['front_cover'] != null) {
       if (project.paper?.title == LIST_PAGE_SIZE[0].title) {
         return Container(
-          constraints: const BoxConstraints(maxHeight: 400),
+          margin: const EdgeInsets.only(bottom: 15),
+          constraints: BoxConstraints(maxHeight: _size.height * 0.45),
           alignment: Alignment.center,
           child: Image.file(
             _previewExtractList[currentIndex]?['front_cover'],
@@ -270,7 +271,8 @@ class _PreviewState extends ConsumerState<PreviewProject>
         _previewExtractList[currentIndex]?['back_cover'] != null) {
       if (project.paper?.title == LIST_PAGE_SIZE[0].title) {
         return Container(
-          constraints: const BoxConstraints(maxHeight: 400),
+          margin: const EdgeInsets.only(bottom: 15),
+          constraints: BoxConstraints(maxHeight: _size.height * 0.45),
           alignment: Alignment.center,
           child: Image.file(
             _previewExtractList[currentIndex]?['back_cover'],
@@ -351,6 +353,7 @@ class _PreviewState extends ConsumerState<PreviewProject>
   }
 }
 
+// ignore: must_be_immutable
 class WProjectItemPreview extends ConsumerWidget {
   final Project project;
 
@@ -364,7 +367,7 @@ class WProjectItemPreview extends ConsumerWidget {
   final List<double> ratioTarget;
   final List<double> ratioWHImages;
 
-  const WProjectItemPreview(
+  WProjectItemPreview(
       {super.key,
       required this.project,
       required this.indexImage,
@@ -374,7 +377,7 @@ class WProjectItemPreview extends ConsumerWidget {
       this.layoutExtractList,
       this.coverFile,
       required this.ratioTarget});
-
+  late Size _size;
   List<double> _getRealWH(BuildContext context) {
     final MAXWIDTH = MediaQuery.sizeOf(context).width * 0.6;
     final MAXHEIGHT = MediaQuery.sizeOf(context).height * 0.55;
@@ -409,8 +412,9 @@ class WProjectItemPreview extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    _size = MediaQuery.sizeOf(context);
     return Container(
-    padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
       child: Stack(
         children: [
           Container(
@@ -429,7 +433,8 @@ class WProjectItemPreview extends ConsumerWidget {
                                 filterQuality: FilterQuality.high,
                               )
                             : Container(
-                                constraints: const BoxConstraints(maxHeight: 400),
+                                constraints: BoxConstraints(
+                                    maxHeight: _size.height * 0.45),
                                 alignment: Alignment.center,
                                 child: AspectRatio(
                                   aspectRatio: ratioWHImages[indexImage],
