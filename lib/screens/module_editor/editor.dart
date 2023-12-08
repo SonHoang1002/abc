@@ -218,7 +218,10 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         resizeToAvoidBottomInset: false,
-        body: SafeArea(
+        body: Container(
+          padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top,
+              bottom: MediaQuery.of(context).padding.bottom),
           child: WillPopScope(
             onWillPop: () async {
               _onCancel();
@@ -233,8 +236,8 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                   },
                   child: Container(
                     color: transparent,
-                    padding: EdgeInsets.only(
-                        top: 10, bottom: MediaQuery.of(context).padding.bottom),
+                    // padding: EdgeInsets.only(
+                    //     top: 10, bottom: MediaQuery.of(context).padding.bottom),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
