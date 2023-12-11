@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/caculate_padding.dart';
 import 'package:photo_to_pdf/helpers/caculate_spacing.dart';
@@ -61,6 +63,7 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
             project.spacingAttribute?.unit, project.paper?.unit),
         padding: caculatePadding(widget.project, widget.widthAndHeight,
             widget.project.paddingAttribute?.unit, widget.project.paper?.unit),
+        alignment: project.alignmentAttribute?.alignmentMode,
         child: _buildImageWidget(
           project,
           (layoutExtractList?[0]) ?? BLANK_PAGE,
@@ -88,7 +91,10 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
           return Positioned(
             top: getPositionWithTop(indexExtract, widthAndHeight[1]),
             left: getPositionWithLeft(indexExtract, widthAndHeight[0]),
+            height: getRealHeight(indexExtract, widthAndHeight[1]),
+            width: getRealWidth(indexExtract, widthAndHeight[0]),
             child: Container(
+              alignment: project.alignmentAttribute?.alignmentMode,
               child: _buildImageWidget(
                 project,
                 layoutExtractList[indexExtract],
@@ -100,6 +106,7 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
         }).toList(),
       );
     } else {
+      // use layout suggestions
       final List<int> layoutSuggestion =
           LIST_LAYOUT_SUGGESTION[project.layoutIndex];
       List<Widget> widgetColumn = [];
@@ -111,19 +118,43 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
         widgetColumn.add(Flexible(
           child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: rows.map((childRow) {
                 final indexRow = rows.indexOf(childRow);
+                // tinh width and height tung anh 1
+                double newWidth = widthAndHeight[0];
+                double newHeight = widthAndHeight[1];
+                if (project.resizeAttribute?.title ==
+                    LIST_RESIZE_MODE[1].title) {
+
+                      // chuyen sang don vi point
+                  newWidth = newWidth / rows.length -
+                      2 *
+                          (project.paddingAttribute?.horizontalPadding ??
+                              0 +
+                                  rows.length *
+                                      (project.spacingAttribute
+                                              ?.horizontalSpacing ??
+                                          0));
+                  newHeight = newHeight / layoutSuggestion.length -
+                      2 *
+                          (project.paddingAttribute?.verticalPadding ??
+                              0 +
+                                  rows.length *
+                                      (project.spacingAttribute
+                                              ?.verticalSpacing ??
+                                          0));
+                }
                 return Flexible(
-                  fit: FlexFit.loose,
                   child: Container(
                     margin: caculateSpacing(project, widthAndHeight,
                         project.spacingAttribute?.unit, project.paper?.unit),
+                    alignment: project.alignmentAttribute?.alignmentMode,
+                    color: colorRed,
                     child: _buildImageWidget(
                       project,
                       layoutExtractList?[indexColumn]![indexRow],
-                      width: double.infinity,
-                      height: double.infinity,
+                      height: newHeight,
+                      width: newWidth,
                     ),
                   ),
                 );
@@ -133,45 +164,81 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
       return Container(
         padding: caculatePadding(widget.project, widget.widthAndHeight,
             widget.project.paddingAttribute?.unit, widget.project.paper?.unit),
+        alignment: project.alignmentAttribute?.alignmentMode,
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: widgetColumn,
         ),
       );
     }
   }
 
+  List<double?>? _getImageWHLayoutSuggetions(
+      {double? width, double? height, required Project project}) {
+    if (project.resizeAttribute?.title == LIST_RESIZE_MODE[0].title) {
+      // fit - > giu nguyen ti le anh
+      return null;
+    } else if (project.resizeAttribute?.title == LIST_RESIZE_MODE[1].title) {
+      // fill -> khong giu nguyen ti le anh
+      final result = min(width!, height!);
+      return [result, result];
+    } else {
+      // stretch
+      return [double.infinity, double.infinity];
+    }
+  }
+
+  List<double?>? _getImageWHPlacement(
+      {double? width, double? height, required Project project}) {
+    if (project.resizeAttribute?.title == LIST_RESIZE_MODE[0].title) {
+      // fit - > giu nguyen ti le anh
+      return null;
+    } else if (project.resizeAttribute?.title == LIST_RESIZE_MODE[1].title) {
+      // fill -> khong giu nguyen ti le anh
+      final result = min(width!, height!);
+      return [result, result];
+    } else {
+      // stretch
+      return [width, height];
+    }
+  }
+
   Widget _buildImageWidget(Project project, dynamic imageData,
       {double? width, double? height, Color? color}) {
     final fit = renderImageBoxfit(project.resizeAttribute);
+    double? _height;
+    double? _width;
+    if (project.useAvailableLayout) {
+      final listWHLayoutSuggetions = _getImageWHLayoutSuggetions(
+          width: width, height: height, project: project);
+      _width = listWHLayoutSuggetions?[0];
+      _height = listWHLayoutSuggetions?[1];
+    } else {
+      final listWHPlacement =
+          _getImageWHPlacement(width: width, height: height, project: project);
+      _width = listWHPlacement?[0];
+      _height = listWHPlacement?[1];
+    }
     if (imageData == null) {
       return Container();
     } else {
       if (imageData is File) {
-        return Container(
-          alignment: Alignment.center,
-          child: Image.file(
-            imageData,
-            fit: fit,
-            height: height,
-            width: width,
-            color: color,
-            filterQuality: FilterQuality.high,
-          ),
+        return Image.file(
+          imageData,
+          fit: fit,
+          height: _height,
+          width: _width,
+          color: color,
+          filterQuality: FilterQuality.high,
         );
       } else {
         if (imageData is String) {
-          return Container(
-            alignment: Alignment.center,
-            child: Image.asset(
-              imageData,
-              fit: fit,
-              height: height,
-              color: color,
-              width: width,
-              filterQuality: FilterQuality.high,
-            ),
+          return Image.asset(
+            imageData,
+            fit: fit,
+            height: _height,
+            width: _width,
+            color: color,
+            filterQuality: FilterQuality.high,
           );
         } else {
           return const SizedBox();

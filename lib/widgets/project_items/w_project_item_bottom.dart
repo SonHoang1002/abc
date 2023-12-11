@@ -76,6 +76,8 @@ class WProjectItemHomeBottom extends StatelessWidget {
                                       ? "${PATH_PREFIX_ICON}icon_remove_dark.png"
                                       : "${PATH_PREFIX_ICON}icon_remove_light.png",
                                   fit: BoxFit.cover,
+                                  height: 20,
+                                  width: 20,
                                 ),
                               ),
                             )),

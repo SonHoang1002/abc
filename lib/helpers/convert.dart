@@ -33,11 +33,14 @@ String convertByteUnit(double input) {
 ///
 /// convert [inputUnit] to [targetUnit]
 ///
-double convertUnit(Unit inputUnit, Unit targetUnit, double value) {
+double convertUnit(Unit? inputUnit, Unit? targetUnit, double value) {
   const pointToCm = 0.0352777778;
   const inchToCm = 2.54;
   const pointToInch = pointToCm / inchToCm;
   var result = value;
+  if (inputUnit == null || targetUnit == null) {
+    return value;
+  }
   // inch
   if (inputUnit.title == INCH.title) {
     if (targetUnit.title == POINT.title) {
@@ -119,13 +122,13 @@ Rectangle1? convertPlacementToRectangle(Placement? pl, List<double> ratios) {
       height: pl.ratioHeight * ratios[1]);
 }
 
-
-  double convertStringToDouble(String value) {
-    if (value == "" || value.isEmpty) {
-      return 0.0;
-    }
-    return double.parse(value);
+double convertStringToDouble(String value) {
+  if (value == "" || value.isEmpty) {
+    return 0.0;
   }
+  return double.parse(value);
+}
+
 Future<Uint8List> convertImageUint8ListToPdfUint8List(
   String name,
   List<String> paths,

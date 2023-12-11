@@ -158,6 +158,8 @@ class WProjectItemEditor extends ConsumerWidget {
                                     ? "${PATH_PREFIX_ICON}icon_remove_dark.png"
                                     : "${PATH_PREFIX_ICON}icon_remove_light.png",
                                 fit: BoxFit.cover,
+                                width: 20,
+                                height: 20,
                               ),
                             ),
                           ),

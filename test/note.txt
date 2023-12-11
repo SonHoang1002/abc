@@ -1,11 +1,9 @@
 
-- button fill lech content, dark mode shadow bi loang mau
-- button photos, scan sua shadow(sahdow nut, shadow icon, title)
-- font Goo Sans
-- icon app
-- color picker dark mode
-- dialog pape resize mode bo goc, opacity trong duong vien( preset )
-- dialog padding, space background van co opacity
-- tran text doi voi may nho, vd: Selected Photos(Editior), Add Placement, Delete placement,...
+
+fill :
 
 
+fit :
+
+
+stretch :
