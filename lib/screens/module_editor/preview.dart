@@ -135,7 +135,8 @@ class _PreviewState extends ConsumerState<PreviewProject>
           child: Column(
             children: [
               Container(
-                margin: const EdgeInsets.only(top: 20),
+                margin: EdgeInsets.only(
+                    top: 20 + MediaQuery.of(context).padding.top),
                 child: WTextContent(
                   value: "Preview",
                   textSize: 16,
@@ -204,7 +205,8 @@ class _PreviewState extends ConsumerState<PreviewProject>
                 children: [
                   const SizedBox(),
                   Container(
-                    margin: const EdgeInsets.only(bottom: 30),
+                    margin: EdgeInsets.only(
+                        bottom: 30 + MediaQuery.of(context).padding.bottom),
                     width: _size.width * 0.8,
                     child: WButtonFilled(
                       message: "Close",

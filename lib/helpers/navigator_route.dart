@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 popNavigator(BuildContext context) {
-  Navigator.pop(context);
+  Navigator.of(context).pop();
 }
 
 pushNavigator(BuildContext context, Widget newScreen) {
