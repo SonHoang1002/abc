@@ -145,7 +145,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                 textLineHeight: 16.71),
             WSpacer(height: 20),
             WButtonFilled(
-            message:  "Select Photos",
+              message: "Select Photos",
               width: MediaQuery.sizeOf(context).width * 0.6,
               backgroundColor: colorBlue,
               height: 60,
@@ -188,7 +188,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                     .read(projectControllerProvider.notifier)
                     .setProject(tempListProject);
                 // update isar
-              }); 
+              });
               await IsarProjectService().reOrderList(oldProject, newIndex);
             },
             onDragStart: (dragIndex) {
@@ -666,7 +666,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
     String message, {
     Function()? onPressed,
     List<BoxShadow>? boxShadow,
-    double? width, 
+    double? width,
     Color? backgroundColor,
     Color? textColor,
     double? textSize,
@@ -680,8 +680,8 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
               color: backgroundColor,
               borderRadius: BorderRadius.circular(borderRadius ?? 25)),
           alignment: Alignment.center,
-          width: width, 
-          height: 60, 
+          width: width,
+          height: 60,
           child: WTextContent(
             value: message,
             textSize: textSize,
@@ -689,6 +689,5 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
             textAlign: TextAlign.center,
           ),
         ));
-
   }
 }
