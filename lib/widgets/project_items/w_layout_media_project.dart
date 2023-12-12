@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
@@ -95,6 +96,7 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
             width: getRealWidth(indexExtract, widthAndHeight[0]),
             child: Container(
               alignment: project.alignmentAttribute?.alignmentMode,
+              // color: colorRed,
               child: _buildImageWidget(
                 project,
                 layoutExtractList[indexExtract],
@@ -117,7 +119,7 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
             List.generate(layoutSuggestion[indexColumn], (index) => index);
         widgetColumn.add(Flexible(
           child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              // mainAxisAlignment: MainAxisAlignment.center,
               children: rows.map((childRow) {
                 final indexRow = rows.indexOf(childRow);
                 // tinh width and height tung anh 1
@@ -125,31 +127,46 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
                 double newHeight = widthAndHeight[1];
                 if (project.resizeAttribute?.title ==
                     LIST_RESIZE_MODE[1].title) {
+                  // chuyen sang don vi point
+                  final paddingHeight = (convertUnit(
+                          project.paddingAttribute?.unit,
+                          project.paper?.unit,
+                          project.paddingAttribute?.verticalPadding ?? 0)) /
+                      (project.paper?.height ?? 1) *
+                      widthAndHeight[1];
+                  final spaceHeight = (convertUnit(
+                          project.spacingAttribute?.unit,
+                          project.paper?.unit,
+                          project.spacingAttribute?.verticalSpacing ?? 0)) /
+                      (project.paper?.height ?? 1) *
+                      widthAndHeight[1];
+                  final paddingWidth = (convertUnit(
+                          project.paddingAttribute?.unit,
+                          project.paper?.unit,
+                          project.paddingAttribute?.verticalPadding ?? 0)) /
+                      (project.paper?.width ?? 1) *
+                      widthAndHeight[0];
+                  final spaceWidth = (convertUnit(
+                          project.spacingAttribute?.unit,
+                          project.paper?.unit,
+                          project.spacingAttribute?.horizontalSpacing ?? 0)) /
+                      (project.paper?.width ?? 1) *
+                      widthAndHeight[0];
 
-                      // chuyen sang don vi point
-                  newWidth = newWidth / rows.length -
-                      2 *
-                          (project.paddingAttribute?.horizontalPadding ??
-                              0 +
-                                  rows.length *
-                                      (project.spacingAttribute
-                                              ?.horizontalSpacing ??
-                                          0));
-                  newHeight = newHeight / layoutSuggestion.length -
-                      2 *
-                          (project.paddingAttribute?.verticalPadding ??
-                              0 +
-                                  rows.length *
-                                      (project.spacingAttribute
-                                              ?.verticalSpacing ??
-                                          0));
+                  newWidth = (widthAndHeight[0] -
+                          2 * paddingWidth -
+                          (rows.length - 0.5) * spaceWidth) /
+                      rows.length;
+                  newHeight = (widthAndHeight[1] -
+                          (2 * paddingHeight) -
+                          (layoutSuggestion.length - 0.5) * spaceHeight) /
+                      layoutSuggestion.length;
                 }
                 return Flexible(
                   child: Container(
                     margin: caculateSpacing(project, widthAndHeight,
                         project.spacingAttribute?.unit, project.paper?.unit),
                     alignment: project.alignmentAttribute?.alignmentMode,
-                    color: colorRed,
                     child: _buildImageWidget(
                       project,
                       layoutExtractList?[indexColumn]![indexRow],

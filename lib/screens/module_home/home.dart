@@ -591,6 +591,7 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                                 paper: LIST_PAGE_SIZE[0],
                                 paddingAttribute: PADDING_OPTIONS,
                                 spacingAttribute: SPACING_OPTIONS,
+                                alignmentAttribute: AlignmentAttribute()
                               );
                               ref
                                   .read(projectControllerProvider.notifier)

@@ -231,7 +231,7 @@ class _BodyLayoutState extends State<BodyLayout> {
           return StatefulBuilder(builder: (context, setStatefull) {
             return ColorPicker(
               isLightMode: !Provider.of<ThemeManager>(context).isDarkMode,
-              currentColor: _currentLayoutColor,
+             currentColor: _currentLayoutColor,
               onDone: (color) {
                 setState(() {
                   _currentLayoutColor = color;

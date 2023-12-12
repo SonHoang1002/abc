@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:photo_to_pdf/commons/constants.dart';
-import 'package:photo_to_pdf/commons/themes.dart';
+import 'package:photo_to_pdf/commons/constants.dart'; 
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
-import 'package:photo_to_pdf/widgets/w_text_content.dart';
-import 'package:provider/provider.dart';
+import 'package:photo_to_pdf/widgets/w_text_content.dart'; 
 import 'package:share_plus/share_plus.dart';
 
 class Setting extends StatelessWidget {
@@ -62,7 +60,9 @@ class Setting extends StatelessWidget {
               //       //   Provider.of<ThemeManager>(context, listen: false)
               //       //       .toggleTheme("dark");
               //       // }
-              //       // await  GallerySaver.saveImage("https://st.quantrimang.com/photos/image/2015/09/18/Facebook-dimension-total.jpg");
+              //       // const path =
+              //       //     "https://www.vietnamfineart.com.vn/wp-content/uploads/2023/03/45e189c91326557552f165eb6cd4f43c.jpg";
+              //       // final result = await GallerySaver.saveImage(path);
               //     },
               //     child: Container(
               //         height: 30,
@@ -79,7 +79,6 @@ class Setting extends StatelessWidget {
               //                 .textTheme
               //                 .displayLarge!
               //                 .color))),
-           
             ],
           ),
         ),

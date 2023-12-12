@@ -15,15 +15,14 @@ EdgeInsets? caculateSpacing(Project project, List<double> widthAndHeight,
   final verticalValue = 1 /
       2 *
       convertVerticalSpacing *
-      widthAndHeight[1] /
-      project.paper!.height;
+      (widthAndHeight[1] / project.paper!.height);
+  final horizontalValue = 1 /
+      2 *
+      convertHorizontalSpacing *
+      (widthAndHeight[0] / project.paper!.width);
   return EdgeInsets.symmetric(
-    vertical: verticalValue > 0 ? verticalValue : 0,
-    horizontal: 1 /
-        2 *
-        convertHorizontalSpacing *
-        widthAndHeight[0] /
-        project.paper!.width,
+    vertical: verticalValue,
+    horizontal: horizontalValue,
   );
 }
 
@@ -39,14 +38,13 @@ pw.EdgeInsets? caculatePdfSpacing(Project project, List<double> widthAndHeight,
   final verticalValue = 1 /
       2 *
       convertVerticalSpacing *
-      widthAndHeight[1] /
-      project.paper!.height;
+      (widthAndHeight[1] / project.paper!.height);
+  final horizontalValue = 1 /
+      2 *
+      convertHorizontalSpacing *
+      (widthAndHeight[0] / project.paper!.width);
   return pw.EdgeInsets.symmetric(
-    vertical: verticalValue > 0 ? verticalValue : 0,
-    horizontal: 1 /
-        2 *
-        convertHorizontalSpacing *
-        widthAndHeight[0] /
-        project.paper!.width,
+    vertical: verticalValue,
+    horizontal: horizontalValue,
   );
 }

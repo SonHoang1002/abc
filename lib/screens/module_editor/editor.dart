@@ -408,6 +408,9 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                         setState(() {
                                           _isLoading = true;
                                         });
+                                        // createAndPreviewPdf(_project, context,
+                                        //     _getRatioProject(LIST_RATIO_PDF));
+
                                         Uint8List data = await createPdfFile(
                                             _project,
                                             context,
