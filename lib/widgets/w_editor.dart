@@ -212,7 +212,7 @@ Widget buildFileNameInput(BuildContext context, Project project,
   );
 }
 
-Widget buildSelection(BuildContext context, Map<String, dynamic> mediaSrc,
+Widget buildEditorSelection(BuildContext context, Map<String, dynamic> mediaSrc,
     String title, String content,
     {Function()? onTap}) {
   final size = MediaQuery.sizeOf(context);

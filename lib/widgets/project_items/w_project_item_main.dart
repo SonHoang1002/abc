@@ -1,7 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/commons/themes.dart';
 import 'package:photo_to_pdf/models/project.dart';
@@ -29,19 +30,29 @@ class WProjectItemEditor extends ConsumerWidget {
   final GlobalKey? imageKey;
   final List<double>? ratioWHImages;
 
-  WProjectItemEditor(
-      {super.key,
-      required this.project,
-      required this.indexImage,
-      this.isFocusByLongPress = false,
-      this.title,
-      this.onRemove,
-      this.layoutExtractList,
-      this.onTap,
-      this.useCoverPhoto,
-      this.imageKey,
-      this.ratioWHImages,
-      this.ratioTarget = LIST_RATIO_PROJECT_ITEM});
+  final FontWeight? textFontWeight;
+  final double? textLineHeight;
+  final double? textSize;
+  final Color? textColor;
+
+  WProjectItemEditor({
+    super.key,
+    required this.project,
+    required this.indexImage,
+    this.isFocusByLongPress = false,
+    this.title,
+    this.onRemove,
+    this.layoutExtractList,
+    this.onTap,
+    this.useCoverPhoto,
+    this.imageKey,
+    this.ratioWHImages,
+    this.ratioTarget = LIST_RATIO_PROJECT_ITEM,
+    this.textSize = 12,
+    this.textFontWeight = FontWeight.w600,
+    this.textLineHeight = 14.32,
+    this.textColor,
+  });
 
   double? maxHeight;
   double? maxWidth;
@@ -276,10 +287,11 @@ class WProjectItemEditor extends ConsumerWidget {
             ),
             WTextContent(
               value: title ?? "",
-              textFontWeight: FontWeight.w600,
-              textLineHeight: 14.32,
-              textSize: 12,
-              textColor: Theme.of(context).textTheme.bodyMedium!.color,
+              textFontWeight: textFontWeight,
+              textLineHeight: textLineHeight,
+              textSize: textSize,
+              textColor:
+                  textColor ?? Theme.of(context).textTheme.bodyMedium!.color,
             ),
           ],
         ),

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:photo_to_pdf/commons/constants.dart'; 
+import 'package:photo_to_pdf/commons/constants.dart';
+import 'package:photo_to_pdf/commons/themes.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
-import 'package:photo_to_pdf/widgets/w_text_content.dart'; 
+import 'package:photo_to_pdf/widgets/w_text_content.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 class Setting extends StatelessWidget {
@@ -30,6 +34,27 @@ class Setting extends StatelessWidget {
     await openAppSettings();
   }
 
+  void _saveAssetFile(BuildContext context, String path) async {
+    // ByteData data = await rootBundle.load(path);
+    // Uint8List bytes = data.buffer.asUint8List();
+    // final result = await ImageGallerySaver.saveImage(Uint8List.fromList(bytes));
+    // if (result['isSuccess']) {
+    //   // ignore: use_build_context_synchronously
+    //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+    //     content: Text('Image saved to gallery successfully!'),
+    //   ));
+    // } else {
+    //   // ignore: use_build_context_synchronously
+    //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+    //     content: Text('Failed to save image to gallery.'),
+    //   ));
+    // }
+  }
+  void _saveInternetLink(String link) async {
+    // final result = await GallerySaver.saveImage(link);
+    // print("result save Inter Link: $result");
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -47,38 +72,39 @@ class Setting extends StatelessWidget {
                 textColor: Theme.of(context).textTheme.displayLarge!.color,
                 textAlign: TextAlign.start,
               ),
-              const SizedBox()
-              // GestureDetector(
-              //     onTap: () async {
-              //       // bool isDarkMode =
-              //       //     Provider.of<ThemeManager>(context, listen: false)
-              //       //         .isDarkMode;
-              //       // if (isDarkMode) {
-              //       //   Provider.of<ThemeManager>(context, listen: false)
-              //       //       .toggleTheme("light");
-              //       // } else {
-              //       //   Provider.of<ThemeManager>(context, listen: false)
-              //       //       .toggleTheme("dark");
-              //       // }
-              //       // const path =
-              //       //     "https://www.vietnamfineart.com.vn/wp-content/uploads/2023/03/45e189c91326557552f165eb6cd4f43c.jpg";
-              //       // final result = await GallerySaver.saveImage(path);
-              //     },
-              //     child: Container(
-              //         height: 30,
-              //         width: 30,
-              //         decoration: BoxDecoration(
-              //             borderRadius: BorderRadius.circular(15),
-              //             color: Theme.of(context).canvasColor),
-              //         child: Icon(
-              //             Provider.of<ThemeManager>(context).isDarkMode
-              //                 ? FontAwesomeIcons.sun
-              //                 : FontAwesomeIcons.moon,
-              //             size: 15,
-              //             color: Theme.of(context)
-              //                 .textTheme
-              //                 .displayLarge!
-              //                 .color))),
+              // const SizedBox()
+
+              GestureDetector(
+                  onTap: () async {
+                    bool isDarkMode =
+                        Provider.of<ThemeManager>(context, listen: false)
+                            .isDarkMode;
+                    if (isDarkMode) {
+                      Provider.of<ThemeManager>(context, listen: false)
+                          .toggleTheme("light");
+                    } else {
+                      Provider.of<ThemeManager>(context, listen: false)
+                          .toggleTheme("dark");
+                    }
+
+                    // _saveInternetLink("https://www.vietnamfineart.com.vn/wp-content/uploads/2023/03/45e189c91326557552f165eb6cd4f43c.jpg");
+                    // _saveAssetFile(context, "${PATH_PREFIX_IMAGE}abc.jpg");
+                  },
+                  child: Container(
+                      height: 30,
+                      width: 30,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          color: Theme.of(context).canvasColor),
+                      child: Icon(
+                          Provider.of<ThemeManager>(context).isDarkMode
+                              ? FontAwesomeIcons.sun
+                              : FontAwesomeIcons.moon,
+                          size: 15,
+                          color: Theme.of(context)
+                              .textTheme
+                              .displayLarge!
+                              .color))),
             ],
           ),
         ),

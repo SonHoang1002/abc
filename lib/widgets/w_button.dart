@@ -103,7 +103,7 @@ class WButtonFilled extends StatelessWidget {
   final double? textSize;
   final double? textLineHeight;
   final double? borderRadius;
-  // final bool? isVerticalAlignment;
+  final bool? isVerticalAlignment;
 
   /// [mediaValue] can be IconData, assets String ( include icon or image )
   final dynamic mediaValue;
@@ -112,26 +112,26 @@ class WButtonFilled extends StatelessWidget {
   final EdgeInsets? padding;
   final double? elevation;
   final List<BoxShadow>? boxShadow;
-
-  const WButtonFilled({
-    super.key,
-    this.mediaValue,
-    required this.message,
-    this.onPressed,
-    this.width,
-    this.height,
-    this.backgroundColor,
-    this.mediaColor,
-    this.mediaSize,
-    this.textColor,
-    this.borderRadius,
-    this.textSize = 15,
-    this.textLineHeight = 34,
-    this.padding = const EdgeInsets.only(bottom: 10),
-    this.elevation,
-    this.boxShadow,
-    // this.isVerticalAlignment = true
-  });
+  final bool? isHaveTextShadow;
+  const WButtonFilled(
+      {super.key,
+      this.mediaValue,
+      required this.message,
+      this.onPressed,
+      this.width,
+      this.height,
+      this.backgroundColor,
+      this.mediaColor,
+      this.mediaSize,
+      this.textColor = colorBlack,
+      this.borderRadius,
+      this.textSize = 15,
+      this.textLineHeight = 34,
+      this.padding = const EdgeInsets.only(bottom: 10),
+      this.elevation,
+      this.boxShadow,
+      this.isVerticalAlignment = true,
+      this.isHaveTextShadow = true});
 
   @override
   Widget build(BuildContext context) {
@@ -147,62 +147,116 @@ class WButtonFilled extends StatelessWidget {
           width: width, // 255
           height: height, //60
           child: mediaValue != null
-              ? Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    if (mediaValue != null)
-                      Container(
-                        decoration: BoxDecoration(boxShadow: [
-                          BoxShadow(
-                              color: textColor!.withOpacity(0.1),
-                              blurRadius: 10,
-                              spreadRadius: 1,
-                              offset: const Offset(0, 4))
-                        ]),
-                        child: mediaValue is IconData
-                            ? Icon(
-                                mediaValue,
-                                color: mediaColor,
-                                size: mediaSize,
-                              )
-                            : Image.asset(
-                                mediaValue,
-                                color: mediaColor,
-                                height: mediaSize,
-                                width: mediaSize,
-                              ),
-                      ),
-                    if (mediaValue != null)
-                      const SizedBox(
-                        height: 5,
-                      ),
-                    Container(
-                      decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                              color: textColor!.withOpacity(0.1),
-                              blurRadius: 10,
-                              spreadRadius: 1,
-                              offset: const Offset(0, 4))
-                        ],
-                      ),
-                      child: WTextContent(
-                        value: message,
-                        textSize: textSize,
-                        textColor: textColor,
-                        textFontWeight: FontWeight.w700,
-                      ),
+              ? isVerticalAlignment!
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        if (mediaValue != null)
+                          Container(
+                            decoration: BoxDecoration(boxShadow: [
+                              if (textColor != null)
+                                BoxShadow(
+                                    color: textColor!.withOpacity(0.1),
+                                    blurRadius: 10,
+                                    spreadRadius: 1,
+                                    offset: const Offset(0, 4))
+                            ]),
+                            child: mediaValue is IconData
+                                ? Icon(
+                                    mediaValue,
+                                    color: mediaColor,
+                                    size: mediaSize,
+                                  )
+                                : Image.asset(
+                                    mediaValue,
+                                    color: mediaColor,
+                                    height: mediaSize,
+                                    width: mediaSize,
+                                  ),
+                          ),
+                        if (mediaValue != null)
+                          const SizedBox(
+                            height: 5,
+                          ),
+                        Container(
+                          decoration: BoxDecoration(
+                            boxShadow: [
+                              if (textColor != null)
+                                BoxShadow(
+                                    color: textColor!.withOpacity(0.1),
+                                    blurRadius: 10,
+                                    spreadRadius: 1,
+                                    offset: const Offset(0, 4))
+                            ],
+                          ),
+                          child: WTextContent(
+                            value: message,
+                            textSize: textSize,
+                            textColor: textColor,
+                            textFontWeight: FontWeight.w700,
+                          ),
+                        )
+                      ],
                     )
-                  ],
-                )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        if (mediaValue != null)
+                          Container(
+                            decoration: BoxDecoration(boxShadow: [
+                              if (isHaveTextShadow!)
+                                BoxShadow(
+                                    color: textColor!.withOpacity(0.1),
+                                    blurRadius: 10,
+                                    spreadRadius: 1,
+                                    offset: const Offset(0, 4))
+                            ]),
+                            child: mediaValue is IconData
+                                ? Icon(
+                                    mediaValue,
+                                    color: mediaColor,
+                                    size: mediaSize,
+                                  )
+                                : Image.asset(
+                                    mediaValue,
+                                    color: mediaColor,
+                                    height: mediaSize,
+                                    width: mediaSize,
+                                  ),
+                          ),
+                        if (mediaValue != null)
+                          const SizedBox(
+                            height: 5,
+                          ),
+                        Container(
+                          decoration: BoxDecoration(
+                            boxShadow: [
+                              if (isHaveTextShadow!)
+                                BoxShadow(
+                                    color: textColor!.withOpacity(0.1),
+                                    blurRadius: 10,
+                                    spreadRadius: 1,
+                                    offset: const Offset(0, 4))
+                            ],
+                          ),
+                          child: WTextContent(
+                            value: message,
+                            textSize: textSize,
+                            textColor: textColor,
+                            textFontWeight: FontWeight.w700,
+                          ),
+                        )
+                      ],
+                    )
               : Center(
-                child: WTextContent(
-                  value: message,
-                  textSize: textSize,
-                  textColor: textColor,
+                  child: WTextContent(
+                    value: message,
+                    textSize: textSize,
+                    textColor: textColor,
+                  ),
                 ),
-              ),
         ));
   }
 }

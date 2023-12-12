@@ -1,9 +1,17 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:photo_to_pdf/helpers/firebase_helper.dart';
+import 'package:photo_to_pdf/helpers/pdf_1/create_pdf.dart';
+import 'package:photo_to_pdf/helpers/pdf_1/pdf_size.dart';
+import 'package:photo_to_pdf/helpers/pdf_1/save_pdf.dart';
 import 'package:photo_to_pdf/helpers/share_pdf.dart';
 import 'package:photo_to_pdf/helpers/show_popup_review.dart';
 import 'package:photo_to_pdf/providers/ratio_images_provider.dart';
+import 'package:photo_to_pdf/screens/module_editor/bodies/body_saveTo.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/helpers/pdf/create_pdf.dart';
@@ -212,6 +220,34 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     await IsarProjectService().updateProject(_project);
   }
 
+  Future<void> _onShare(File file) async {
+    popNavigator(context);
+    sharePdf([
+      XFile(file.path),
+    ]);
+    var isRating = await checkRating();
+    // check xem da danh gia hay chua
+    if (!isRating) {
+      await ShowPopupReview.showPopupReview();
+      await updateRating();
+    }
+  }
+
+  Future<void> _onSave(File file, String fileName) async {
+    final pickedDirectory = await FlutterFileDialog.pickDirectory();
+    if (pickedDirectory != null) {
+      final result = await FlutterFileDialog.saveFileToDirectory(
+        directory: pickedDirectory,
+        data: file.readAsBytesSync(),
+        mimeType: "application/pdf",
+        fileName: fileName.split(".").first,
+        replace: true,
+      );
+      print("Save file in ${result}");
+    }
+    return;
+  }
+
   @override
   Widget build(BuildContext context) {
     _size = MediaQuery.sizeOf(context);
@@ -238,8 +274,6 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                       },
                       child: Container(
                         color: transparent,
-                        // padding: EdgeInsets.only(
-                        //     top: 10, bottom: MediaQuery.of(context).padding.bottom),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
@@ -327,7 +361,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
-                                        buildSelection(
+                                        buildEditorSelection(
                                           context,
                                           _paperConfig['mediaSrc'],
                                           _paperConfig['title'],
@@ -339,7 +373,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                         WSpacer(
                                           width: 10,
                                         ),
-                                        buildSelection(
+                                        buildEditorSelection(
                                           context,
                                           _layoutConfig['mediaSrc'],
                                           _layoutConfig['title'],
@@ -362,7 +396,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
-                                        buildSelection(
+                                        buildEditorSelection(
                                           context,
                                           _photosConfig['mediaSrc'],
                                           _photosConfig['title'],
@@ -386,7 +420,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                         WSpacer(
                                           width: 10,
                                         ),
-                                        buildSelection(
+                                        buildEditorSelection(
                                           context,
                                           _coverConfig['mediaSrc'],
                                           _coverConfig['title'],
@@ -408,9 +442,7 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                         setState(() {
                                           _isLoading = true;
                                         });
-                                        // createAndPreviewPdf(_project, context,
-                                        //     _getRatioProject(LIST_RATIO_PDF));
-
+                                        // createAndPreviewPdf(_project, context, _getRatioProject(LIST_RATIO_PDF));
                                         Uint8List data = await createPdfFile(
                                             _project,
                                             context,
@@ -426,16 +458,8 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                         setState(() {
                                           _isLoading = false;
                                         });
-                                        sharePdf([
-                                          XFile(result["data"].path),
-                                        ]);
-                                        var isRating = await checkRating();
-                                        // check xem da danh gia hay chua
-                                        if (!isRating) {
-                                          await ShowPopupReview
-                                              .showPopupReview();
-                                          await updateRating();
-                                        }
+                                        _showBottomSheetSaveTo(
+                                            result["data"], result['fileName']);
                                       },
                                       onCancel: () async {
                                         await _onCancel();
@@ -835,5 +859,28 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         );
       }
     }
+  }
+
+  void _showBottomSheetSaveTo(File file, String fileName) {
+    showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return BodySaveTo(
+            project: _project,
+            onSave: () {
+              // _onSave(file, fileName);
+              previewPdf(_project, context, _getRatioProject(LIST_RATIO_PDF),
+                  compressValue: _sliderCompressionValue,
+                  ratioWHImages:
+                      ref.watch(ratioWHImagesControllerProvider).listRatioWH);
+            },
+            onShare: () {
+              _onShare(file);
+            },
+            fileSizeValue: _sizeOfFile,
+          );
+        },
+        isScrollControlled: true,
+        backgroundColor: transparent);
   }
 }
