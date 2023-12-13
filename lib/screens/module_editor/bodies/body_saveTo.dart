@@ -1,4 +1,8 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/commons/themes.dart';
@@ -11,24 +15,48 @@ import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
 import 'package:provider/provider.dart';
 
-class BodySaveTo extends StatelessWidget {
-  final void Function()? onSave;
+class BodySaveTo extends StatefulWidget {
+  final Future<bool> Function()? onSave;
   final void Function()? onShare;
   // final void Function()? onPreview;
   final Project project;
   final String fileSizeValue;
-  const BodySaveTo(
-      {super.key,
-      required this.project,
-      required this.onSave,
-      required this.onShare,
-      required this.fileSizeValue,
-      // required this.onPreview,
-      });
+  const BodySaveTo({
+    super.key,
+    required this.project,
+    required this.onSave,
+    required this.onShare,
+    required this.fileSizeValue,
+  });
+
+  @override
+  State<BodySaveTo> createState() => _BodySaveToState();
+}
+
+class _BodySaveToState extends State<BodySaveTo> with TickerProviderStateMixin {
+  late AnimationController _controller;
+  bool _isPlayVideo = false;
+  @override
+  void initState() {
+    super.initState();
+    _controller =
+        AnimationController(vsync: this, duration: const Duration(seconds: 2));
+    _controller.addStatusListener((status) async {
+      if (status == AnimationStatus.completed) {
+        Navigator.pop(context);
+        _controller.reset();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    // final _size = MediaQuery.sizeOf(context);
     final isDarkMode = Provider.of<ThemeManager>(context).isDarkMode;
     return Container(
       height: 500,
@@ -58,37 +86,54 @@ class BodySaveTo extends StatelessWidget {
             ),
           ),
         ),
-        _buildProjectItemHome(context),
-        WSpacer(
-          height: 10,
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Stack(
+          alignment: Alignment.center,
           children: [
-            WTextContent(
-              value: "PDF Document",
-              textSize: 14,
-              textFontWeight: FontWeight.w500,
-              textLineHeight: 17.5,
+            Column(
+              children: [
+                _buildProjectItemHome(context),
+                WSpacer(
+                  height: 10,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    WTextContent(
+                      value: "PDF Document",
+                      textSize: 14,
+                      textFontWeight: FontWeight.w500,
+                      textLineHeight: 17.5,
+                    ),
+                    Container(
+                      height: 4,
+                      width: 4,
+                      margin: const EdgeInsets.symmetric(horizontal: 7),
+                      decoration: BoxDecoration(
+                          color: Theme.of(context).textTheme.bodySmall!.color,
+                          borderRadius: BorderRadius.circular(3)),
+                    ),
+                    WTextContent(
+                      value: widget.fileSizeValue,
+                      textSize: 14,
+                      textFontWeight: FontWeight.w500,
+                      textLineHeight: 17.5,
+                    )
+                  ],
+                ),
+                WSpacer(
+                  height: 30,
+                ),
+              ],
             ),
-            Container(
-              height: 4,
-              width: 4,
-              margin: const EdgeInsets.symmetric(horizontal: 7),
-              decoration: BoxDecoration(
-                  color: Theme.of(context).textTheme.bodySmall!.color,
-                  borderRadius: BorderRadius.circular(3)),
-            ),
-            WTextContent(
-              value: fileSizeValue,
-              textSize: 14,
-              textFontWeight: FontWeight.w500,
-              textLineHeight: 17.5,
-            )
+            if (_isPlayVideo)
+              Lottie.asset(
+                'assets/videos/video_lottie.json',
+                controller: _controller,
+                height: 150,
+                width: 150,
+                fit: BoxFit.fill,
+              )
           ],
-        ),
-        WSpacer(
-          height: 30,
         ),
         WButtonFilled(
           message: "  Save to Files",
@@ -100,7 +145,16 @@ class BodySaveTo extends StatelessWidget {
           isVerticalAlignment: false,
           textColor: colorBlack,
           isHaveTextShadow: false,
-          onPressed: onSave,
+          onPressed: () async {
+            final result = await widget.onSave!();
+            if (result) {
+              _isPlayVideo = true;
+              setState(() {
+                _controller.reset();
+                _controller.forward();
+              });
+            }
+          },
         ),
         WSpacer(
           height: 10,
@@ -116,24 +170,8 @@ class BodySaveTo extends StatelessWidget {
           isVerticalAlignment: false,
           textColor: colorWhite,
           isHaveTextShadow: false,
-          onPressed: onShare,
+          onPressed: widget.onShare,
         ),
-        // WSpacer(
-        //   height: 10,
-        // ),
-        // WButtonFilled(
-        //   message: "   Preview",
-        //   mediaValue: "${PATH_PREFIX_ICON}icon_share_pdf.png",
-        //   mediaSize: 30,
-        //   height: 58,
-        //   borderRadius: 20,
-        //   mediaColor: colorWhite,
-        //   backgroundColor: colorBlue,
-        //   isVerticalAlignment: false,
-        //   textColor: colorWhite,
-        //   isHaveTextShadow: false,
-        //   onPressed: onPreview,
-        // ),
       ]),
     );
   }
@@ -152,16 +190,18 @@ class BodySaveTo extends StatelessWidget {
 
   List? _getEtractList(int index) {
     var result;
-    if (project.listMedia.isEmpty) return result;
-    if (project.paper?.title == LIST_PAGE_SIZE[0].title) {
-      result = extractList1(LIST_LAYOUT_SUGGESTION[0], project.listMedia);
+    if (widget.project.listMedia.isEmpty) return result;
+    if (widget.project.paper?.title == LIST_PAGE_SIZE[0].title) {
+      result =
+          extractList1(LIST_LAYOUT_SUGGESTION[0], widget.project.listMedia);
     }
-    if (project.useAvailableLayout) {
-      result = extractList1(
-          LIST_LAYOUT_SUGGESTION[project.layoutIndex], project.listMedia)[0];
+    if (widget.project.useAvailableLayout) {
+      result = extractList1(LIST_LAYOUT_SUGGESTION[widget.project.layoutIndex],
+          widget.project.listMedia)[0];
     } else {
-      if (project.placements != null) {
-        result = extractList(project.placements!.length, project.listMedia)[0];
+      if (widget.project.placements != null) {
+        result = extractList(
+            widget.project.placements!.length, widget.project.listMedia)[0];
       }
     }
     return result;
@@ -169,19 +209,19 @@ class BodySaveTo extends StatelessWidget {
 
   Widget _buildProjectItemHome(BuildContext context) {
     return WProjectItemEditor(
-      project: project,
+      project: widget.project,
       isFocusByLongPress: false,
       indexImage: 0,
       useCoverPhoto: true,
       layoutExtractList: _getEtractList(0),
-      title: project.title,
+      title: widget.project.title,
       textSize: 16,
       textLineHeight: 20,
       textFontWeight: FontWeight.w700,
       textColor: Provider.of<ThemeManager>(context).isDarkMode
           ? colorWhite
           : colorBlack,
-      ratioTarget: _getRatioProject(project, LIST_RATIO_PROJECT_ITEM),
+      ratioTarget: _getRatioProject(widget.project, LIST_RATIO_PROJECT_ITEM),
     );
   }
 }

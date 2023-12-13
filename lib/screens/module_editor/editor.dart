@@ -228,8 +228,9 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
     }
   }
 
-  Future<void> _onSave(File file, String fileName) async {
+  Future<bool> _onSave(File file, String fileName) async {
     final pickedDirectory = await FlutterFileDialog.pickDirectory();
+
     if (pickedDirectory != null) {
       final result = await FlutterFileDialog.saveFileToDirectory(
         directory: pickedDirectory,
@@ -238,9 +239,10 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         fileName: fileName.split(".").first,
         replace: true,
       );
-      print("Save file in ${result}");
+      return true;
+    } else {
+      return false;
     }
-    return;
   }
 
   @override
@@ -433,7 +435,8 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                   buildBottomButton(
                                       context: context,
                                       titleCancel: "Close",
-                                      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 15, vertical: 15),
                                       onApply: () async {
                                         setState(() {
                                           _isLoading = true;
@@ -869,20 +872,13 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
         builder: (context) {
           return BodySaveTo(
             project: _project,
-            onSave: () {
-              _onSave(file, fileName);
+            onSave: () async {
+              final result = await _onSave(file, fileName);
+              return result;
             },
             onShare: () {
               _onShare(file);
             },
-            // onPreview: () {
-            //   createAndPreviewPdf(
-            //     _project,
-            //     context,
-            //     _getRatioProject(LIST_RATIO_PDF),
-            //     compressValue: _sliderCompressionValue,
-            //   );
-            // },
             fileSizeValue: _sizeOfFile,
           );
         },

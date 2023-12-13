@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/models/project.dart';
-import 'package:photo_to_pdf/screens/module_editor/editor_padding_spacing.dart';
+import 'package:photo_to_pdf/screens/module_editor/bodies/editor_padding_spacing.dart';
 import 'package:photo_to_pdf/widgets/w_drag_zoom_image.dart';
 import 'package:photo_to_pdf/widgets/w_editor.dart';
 import 'package:photo_to_pdf/widgets/w_layout_suggestion.dart';

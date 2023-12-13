@@ -1,6 +1,5 @@
 // 1. compress file and get Uint8List
 import 'dart:io';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 
@@ -72,21 +71,21 @@ int _getLastIndexOfFormat(String filePath) {
   return -1;
 }
 
-CompressFormat _getCompressFormat(String filePath, int lastIndex) {
-  CompressFormat format = CompressFormat.jpeg;
-  switch (filePath.substring(lastIndex)) {
-    case F_JPEG:
-      format = CompressFormat.jpeg;
-    case F_JPG:
-      format = CompressFormat.jpeg;
-    case F_PNG:
-      format = CompressFormat.png;
-    case F_HEIC:
-      format = CompressFormat.heic;
-    case F_WEBP:
-      format = CompressFormat.webp;
-    default:
-      break;
-  }
-  return format;
-}
+// CompressFormat _getCompressFormat(String filePath, int lastIndex) {
+//   CompressFormat format = CompressFormat.jpeg;
+//   switch (filePath.substring(lastIndex)) {
+//     case F_JPEG:
+//       format = CompressFormat.jpeg;
+//     case F_JPG:
+//       format = CompressFormat.jpeg;
+//     case F_PNG:
+//       format = CompressFormat.png;
+//     case F_HEIC:
+//       format = CompressFormat.heic;
+//     case F_WEBP:
+//       format = CompressFormat.webp;
+//     default:
+//       break;
+//   }
+//   return format;
+// }
