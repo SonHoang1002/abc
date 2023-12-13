@@ -14,6 +14,7 @@ import 'package:provider/provider.dart';
 class BodySaveTo extends StatelessWidget {
   final void Function()? onSave;
   final void Function()? onShare;
+  // final void Function()? onPreview;
   final Project project;
   final String fileSizeValue;
   const BodySaveTo(
@@ -21,7 +22,9 @@ class BodySaveTo extends StatelessWidget {
       required this.project,
       required this.onSave,
       required this.onShare,
-      required this.fileSizeValue});
+      required this.fileSizeValue,
+      // required this.onPreview,
+      });
 
   @override
   Widget build(BuildContext context) {
@@ -115,6 +118,22 @@ class BodySaveTo extends StatelessWidget {
           isHaveTextShadow: false,
           onPressed: onShare,
         ),
+        // WSpacer(
+        //   height: 10,
+        // ),
+        // WButtonFilled(
+        //   message: "   Preview",
+        //   mediaValue: "${PATH_PREFIX_ICON}icon_share_pdf.png",
+        //   mediaSize: 30,
+        //   height: 58,
+        //   borderRadius: 20,
+        //   mediaColor: colorWhite,
+        //   backgroundColor: colorBlue,
+        //   isVerticalAlignment: false,
+        //   textColor: colorWhite,
+        //   isHaveTextShadow: false,
+        //   onPressed: onPreview,
+        // ),
       ]),
     );
   }

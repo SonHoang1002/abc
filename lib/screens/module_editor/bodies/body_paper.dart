@@ -417,8 +417,7 @@ class _BodyPaperState extends State<BodyPaper> {
         widthValue.length > 5 ? "${widthValue.substring(0, 5)}..." : widthValue;
     heightValue = heightValue.length > 5
         ? "${heightValue.substring(0, 5)}..."
-        : heightValue;
-    print("widthValue ${widthValue}");
+        : heightValue; 
     if (_paperConfig['content'].title == "None") {
       return "$widthValue x -- $unitValue";
     }

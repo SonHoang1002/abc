@@ -2,12 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:flutter_file_dialog/flutter_file_dialog.dart';
-import 'package:open_file/open_file.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:photo_to_pdf/helpers/firebase_helper.dart';
-import 'package:photo_to_pdf/helpers/pdf_1/create_pdf.dart';
-import 'package:photo_to_pdf/helpers/pdf_1/pdf_size.dart';
-import 'package:photo_to_pdf/helpers/pdf_1/save_pdf.dart';
 import 'package:photo_to_pdf/helpers/share_pdf.dart';
 import 'package:photo_to_pdf/helpers/show_popup_review.dart';
 import 'package:photo_to_pdf/providers/ratio_images_provider.dart';
@@ -438,11 +433,18 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
                                   buildBottomButton(
                                       context: context,
                                       titleCancel: "Close",
+                                      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
                                       onApply: () async {
                                         setState(() {
                                           _isLoading = true;
                                         });
-                                        // createAndPreviewPdf(_project, context, _getRatioProject(LIST_RATIO_PDF));
+                                        // createAndPreviewPdf(
+                                        //   _project,
+                                        //   context,
+                                        //   _getRatioProject(LIST_RATIO_PDF),
+                                        //   compressValue:
+                                        //       _sliderCompressionValue,
+                                        // );
                                         Uint8List data = await createPdfFile(
                                             _project,
                                             context,
@@ -868,15 +870,19 @@ class _EditorState extends flutter_riverpod.ConsumerState<Editor> {
           return BodySaveTo(
             project: _project,
             onSave: () {
-              // _onSave(file, fileName);
-              previewPdf(_project, context, _getRatioProject(LIST_RATIO_PDF),
-                  compressValue: _sliderCompressionValue,
-                  ratioWHImages:
-                      ref.watch(ratioWHImagesControllerProvider).listRatioWH);
+              _onSave(file, fileName);
             },
             onShare: () {
               _onShare(file);
             },
+            // onPreview: () {
+            //   createAndPreviewPdf(
+            //     _project,
+            //     context,
+            //     _getRatioProject(LIST_RATIO_PDF),
+            //     compressValue: _sliderCompressionValue,
+            //   );
+            // },
             fileSizeValue: _sizeOfFile,
           );
         },

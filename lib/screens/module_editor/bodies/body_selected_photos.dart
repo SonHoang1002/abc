@@ -6,7 +6,6 @@ import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/helpers/convert.dart';
 import 'package:photo_to_pdf/helpers/navigator_route.dart';
 import 'package:photo_to_pdf/helpers/pdf/create_pdf.dart';
-import 'package:photo_to_pdf/helpers/pdf_1/create_pdf.dart';
 import 'package:photo_to_pdf/helpers/pick_media.dart';
 import 'package:photo_to_pdf/helpers/scan_document.dart';
 import 'package:photo_to_pdf/models/project.dart';
@@ -308,9 +307,9 @@ class _BodySelectedPhotosState extends State<BodySelectedPhotos> {
                                 Theme.of(context).textTheme.bodyMedium!.color,
                           ),
                           WTextContent(
-                            value: widget.sliderCompressionLevelValue == 1.0
+                            value: widget.sliderCompressionLevelValue >= 1.0
                                 ? "Original"
-                                : "${(widget.sliderCompressionLevelValue * 100).toStringAsFixed(0)}%",
+                                : "${(widget.sliderCompressionLevelValue * 100).toString().split(".").first}%",
                             textSize: 14,
                             textLineHeight: 16.71,
                             textColor: const Color.fromRGBO(10, 132, 255, 1),

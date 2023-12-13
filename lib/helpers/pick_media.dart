@@ -7,7 +7,8 @@ Future<List<File>> pickImage(ImageSource src, bool isMultiMedia) async {
   if (isMultiMedia) {
     listXFile = await ImagePicker().pickMultiImage(imageQuality: 99);
   } else {
-    XFile? result = await ImagePicker().pickImage(source: src);
+    XFile? result =
+        await ImagePicker().pickImage(source: src, imageQuality: 99);
     if (result != null) {
       listXFile.add(result);
     }

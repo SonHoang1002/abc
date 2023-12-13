@@ -168,7 +168,8 @@ Widget buildPageSizeOrientationItem(
 Widget buildFileNameInput(BuildContext context, Project project,
     TextEditingController controller, Function(String value) onChange,
     {bool autofocus = false, Function()? onTap}) {
-  TextStyle buildTextStyleInputFileName(Color textColor, {FontWeight? fontWeight}) {
+  TextStyle buildTextStyleInputFileName(Color textColor,
+      {FontWeight? fontWeight}) {
     return TextStyle(
         color: textColor,
         fontFamily: FONT_GOOGLESANS,
@@ -193,8 +194,8 @@ Widget buildFileNameInput(BuildContext context, Project project,
       child: CupertinoTextField(
         onChanged: onChange,
         decoration: const BoxDecoration(),
-        style: buildTextStyleInputFileName(
-                  colorBlue,fontWeight: FontWeight.w600),
+        style:
+            buildTextStyleInputFileName(colorBlue, fontWeight: FontWeight.w600),
         controller: controller,
         onTap: onTap,
         prefix: Container(
@@ -289,9 +290,11 @@ Widget buildBottomButton(
     required void Function() onApply,
     String? titleApply,
     String? titleCancel,
+    EdgeInsets? padding =
+        const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
     void Function()? onCancel}) {
   return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+    padding: padding!,
     child: Flex(
       direction: Axis.horizontal,
       children: [
@@ -303,7 +306,7 @@ Widget buildBottomButton(
                 height: 60,
                 onPressed: onCancel)),
         WSpacer(
-          width: 20,
+          width: 10,
         ),
         Flexible(
             child: WButtonFilled(

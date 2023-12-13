@@ -84,8 +84,7 @@ class _LayoutMediaState extends ConsumerState<LayoutMedia> {
     }
     if (project.useAvailableLayout != true &&
         project.placements != null &&
-        project.placements!.isNotEmpty) {
-      print("090909");
+        project.placements!.isNotEmpty) { 
       return Stack(
         children: layoutExtractList!.map((e) {
           final indexExtract = layoutExtractList.indexOf(e);

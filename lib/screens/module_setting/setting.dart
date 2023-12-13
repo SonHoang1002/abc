@@ -1,8 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/material.dart'; 
 import 'package:flutter_email_sender/flutter_email_sender.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart'; 
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/commons/themes.dart';
