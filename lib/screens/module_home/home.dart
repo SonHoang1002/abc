@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:ui' as ui;
+import 'package:flutter/scheduler.dart';
 import 'package:photo_to_pdf/helpers/scan_document.dart';
 import 'package:photo_to_pdf/services/isar_project_service.dart';
 import 'package:flutter/material.dart';
@@ -85,41 +86,42 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
   Widget build(BuildContext context) {
     _listProject = ref.watch(projectControllerProvider).listProject;
     return Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        appBar: _listProject.isNotEmpty && _naviSelected == 0
-            ? AppBar(
-                centerTitle: true,
-                title: WTextContent(
-                  value: "All Files",
-                  textSize: 15,
-                  textLineHeight: 17.9,
-                  textColor: Theme.of(context).textTheme.titleLarge!.color,
-                ),
-                shadowColor: transparent,
-                actions: [
-                  _isFocusProjectList
-                      ? Container(
-                          alignment: Alignment.center,
-                          margin: const EdgeInsets.only(right: 10),
-                          child: WTextContent(
-                              value: "Done",
-                              textColor: colorBlue,
-                              textSize: 15,
-                              textLineHeight: 17.9,
-                              onTap: () {
-                                _disableReOrderFocus();
-                              }),
-                        )
-                      : const SizedBox()
-                ],
-                backgroundColor: Theme.of(context).canvasColor)
-            : null,
-        body: Column(
-          children: [
-            Expanded(child: Container(child: _buildBody())),
-            _buildBottomNavigatorButtons()
-          ],
-        ));
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: _listProject.isNotEmpty && _naviSelected == 0
+          ? AppBar(
+              centerTitle: true,
+              title: WTextContent(
+                value: "All Files",
+                textSize: 15,
+                textLineHeight: 17.9,
+                textColor: Theme.of(context).textTheme.titleLarge!.color,
+              ),
+              shadowColor: transparent,
+              actions: [
+                _isFocusProjectList
+                    ? Container(
+                        alignment: Alignment.center,
+                        margin: const EdgeInsets.only(right: 10),
+                        child: WTextContent(
+                            value: "Done",
+                            textColor: colorBlue,
+                            textSize: 15,
+                            textLineHeight: 17.9,
+                            onTap: () {
+                              _disableReOrderFocus();
+                            }),
+                      )
+                    : const SizedBox()
+              ],
+              backgroundColor: Theme.of(context).canvasColor)
+          : null,
+      body: Column(
+        children: [
+          Expanded(child: Container(child: _buildBody())),
+          _buildBottomNavigatorButtons()
+        ],
+      ),
+    );
   }
 
   Widget _buildBody() {
@@ -588,11 +590,10 @@ class _HomePageState extends flutter_riverpod.ConsumerState<HomePage> {
                             borderRadius: 20,
                             onPressed: () async {
                               _currentProject = _currentProject.copyWith(
-                                paper: LIST_PAGE_SIZE[0],
-                                paddingAttribute: PADDING_OPTIONS,
-                                spacingAttribute: SPACING_OPTIONS,
-                                alignmentAttribute: AlignmentAttribute()
-                              );
+                                  paper: LIST_PAGE_SIZE[0],
+                                  paddingAttribute: PADDING_OPTIONS,
+                                  spacingAttribute: SPACING_OPTIONS,
+                                  alignmentAttribute: AlignmentAttribute());
                               ref
                                   .read(projectControllerProvider.notifier)
                                   .addProject(_currentProject);

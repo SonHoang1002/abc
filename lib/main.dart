@@ -21,7 +21,7 @@ void main() async {
   // check dark mode
   Brightness themeMode =
       SchedulerBinding.instance.platformDispatcher.platformBrightness;
-  bool darkMode = themeMode == Brightness.dark;
+  bool darkMode = themeMode == Brightness.dark; 
   redoSystemStyle(darkMode);
 
   // check length isar db
