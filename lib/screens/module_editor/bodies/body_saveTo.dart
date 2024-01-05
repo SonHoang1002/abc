@@ -1,8 +1,9 @@
 import 'dart:async';
-import 'dart:convert';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:photo_to_pdf/commons/colors.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
 import 'package:photo_to_pdf/commons/themes.dart';
@@ -146,6 +147,10 @@ class _BodySaveToState extends State<BodySaveTo> with TickerProviderStateMixin {
           textColor: colorBlack,
           isHaveTextShadow: false,
           onPressed: () async {
+            // String? outputFile = await FilePicker.platform.getDirectoryPath(
+            //   dialogTitle: 'Please select an output file:', 
+            //   initialDirectory: (await getExternalStorageDirectory())!.path,
+            // );
             final result = await widget.onSave!();
             if (result) {
               _isPlayVideo = true;
