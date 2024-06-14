@@ -1,24 +1,22 @@
-import 'package:flutter/material.dart'; 
+import 'package:android_id/android_id.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart'; 
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_to_pdf/commons/constants.dart';
-import 'package:photo_to_pdf/commons/themes.dart';
 import 'package:photo_to_pdf/widgets/w_spacer.dart';
 import 'package:photo_to_pdf/widgets/w_text_content.dart';
-import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 class Setting extends StatelessWidget {
   const Setting({super.key});
 
   void _onFeedback() async {
-    final Email email = Email(
-      // body: 'Feedback',
-      // subject: 'Feedback',
+    var id = await const AndroidId().getId();
+    final Email email = Email( 
+      subject: 'PhptoToPdf Android Feedback: $id',
       // receiver
-      recipients: ['tapuniverse@gmail.com'],
-      // bcc: ['abc@gmail.com'],
+      recipients: ['tapuniverse@gmail.com'], 
       isHTML: false,
     );
     await FlutterEmailSender.send(email);
@@ -48,7 +46,7 @@ class Setting extends StatelessWidget {
     //   ));
     // }
   }
-  
+
   void _saveInternetLink(String link) async {
     // final result = await GallerySaver.saveImage(link);
     // print("result save Inter Link: $result");
@@ -103,7 +101,6 @@ class Setting extends StatelessWidget {
               //                 .textTheme
               //                 .displayLarge!
               //                 .color))),
-            
             ],
           ),
         ),
